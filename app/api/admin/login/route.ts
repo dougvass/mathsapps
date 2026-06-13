@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  if (!body.password || !checkAdminPassword(body.password)) {
+  if (!body.password || !(await checkAdminPassword(body.password))) {
     return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
   }
 

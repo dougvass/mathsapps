@@ -1,9 +1,7 @@
-export type ProductCategory = "fidgets" | "shapes" | "custom";
-
 export type Product = {
   id: string;
   name: string;
-  category: ProductCategory;
+  category: string;
   price: number;
   description: string;
   emoji: string;
@@ -11,10 +9,25 @@ export type Product = {
   active: boolean;
 };
 
-export const CATEGORY_ORDER: ProductCategory[] = ["fidgets", "shapes", "custom"];
+export type CategoryDef = {
+  value: string;
+  label: string;
+};
 
-export const CATEGORY_LABELS: Record<ProductCategory, string> = {
-  fidgets: "Fidgets",
-  shapes: "Standard Shapes",
-  custom: "Design Your Own",
+export type SizeOption = {
+  label: string;
+  maxDimensionMm: number;
+};
+
+export type StoreSettings = {
+  printerMaxBuildMm: number;
+};
+
+export type StoreData = {
+  products: Product[];
+  categories: CategoryDef[];
+  colors: string[];
+  sizeOptions: SizeOption[];
+  settings: StoreSettings;
+  adminPasswordHash: string | null;
 };

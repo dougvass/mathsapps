@@ -43,12 +43,16 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs text-white/50">
-          © {new Date().getFullYear()} HugosToyz. All rights reserved.
-          {" · "}
-          <a href="/admin" className="hover:text-htz-lime">
-            Admin
+        <div className="mt-10 flex flex-col items-center gap-4 border-t border-white/10 pt-6 text-center">
+          <a
+            href="/admin"
+            className="inline-flex items-center gap-2 rounded-full bg-htz-lime px-6 py-2 font-display text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"
+          >
+            🔐 Admin Login
           </a>
+          <p className="text-xs text-white/50">
+            © {new Date().getFullYear()} HugosToyz. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

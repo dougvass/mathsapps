@@ -1,7 +1,17 @@
-import { CATEGORY_LABELS, CATEGORY_ORDER, type Product } from "@/lib/product-types";
+import type { CategoryDef, Product, SizeOption } from "@/lib/product-types";
 import ProductCard from "./ProductCard";
 
-export default function ProductGrid({ products }: { products: Product[] }) {
+export default function ProductGrid({
+  products,
+  categories,
+  colors,
+  sizeOptions,
+}: {
+  products: Product[];
+  categories: CategoryDef[];
+  colors: string[];
+  sizeOptions: SizeOption[];
+}) {
   return (
     <section id="shop" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto mb-12 max-w-2xl text-center">
@@ -15,18 +25,23 @@ export default function ProductGrid({ products }: { products: Product[] }) {
       </div>
 
       <div className="flex flex-col gap-14">
-        {CATEGORY_ORDER.map((category) => {
-          const items = products.filter((product) => product.category === category);
+        {categories.map((category) => {
+          const items = products.filter((product) => product.category === category.value);
           if (items.length === 0) return null;
 
           return (
-            <div key={category}>
+            <div key={category.value}>
               <h3 className="font-display mb-6 text-2xl font-semibold text-htz-navy">
-                {CATEGORY_LABELS[category]}
+                {category.label}
               </h3>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    colors={colors}
+                    sizeOptions={sizeOptions}
+                  />
                 ))}
               </div>
             </div>

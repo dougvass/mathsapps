@@ -4,6 +4,8 @@ import { getActiveProducts } from "@/lib/products";
 
 type CheckoutItem = {
   productId: string;
+  color?: string;
+  size?: string;
   quantity: number;
 };
 
@@ -31,7 +33,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const products = getActiveProducts();
+  const products = await getActiveProducts();
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
   for (const item of items) {
@@ -40,13 +42,16 @@ export async function POST(request: Request) {
 
     const quantity = Math.min(99, Math.max(1, Math.floor(item.quantity) || 1));
 
+    const variant = [item.color, item.size].filter((value): value is string => Boolean(value));
+    const name = variant.length > 0 ? `${product.name} (${variant.join(", ")})` : product.name;
+
     lineItems.push({
       quantity,
       price_data: {
         currency: "aud",
         unit_amount: Math.round(product.price * 100),
         product_data: {
-          name: product.name,
+          name,
           description: product.description,
           ...(product.image.startsWith("http") ? { images: [product.image] } : {}),
         },

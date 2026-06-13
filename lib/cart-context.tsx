@@ -12,6 +12,8 @@ import type { Product } from "@/lib/product-types";
 
 export type CartItem = {
   productId: string;
+  color: string;
+  size: string;
   quantity: number;
 };
 
@@ -25,15 +27,19 @@ type CartContextValue = {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (productId: string) => void;
-  removeItem: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  addItem: (productId: string, color: string, size: string) => void;
+  removeItem: (productId: string, color: string, size: string) => void;
+  setQuantity: (productId: string, color: string, size: string, quantity: number) => void;
   clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const STORAGE_KEY = "htz-cart";
+const STORAGE_KEY = "htz-cart-v2";
+
+function sameLine(item: CartItem, productId: string, color: string, size: string): boolean {
+  return item.productId === productId && item.color === color && item.size === size;
+}
 
 // Cart items are stored outside React state and synced via
 // useSyncExternalStore, so the cart persists across reloads without
@@ -88,35 +94,38 @@ export function CartProvider({
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addItem = useCallback((productId: string) => {
+  const addItem = useCallback((productId: string, color: string, size: string) => {
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.productId === productId);
+      const existing = prev.find((item) => sameLine(item, productId, color, size));
       if (existing) {
         return prev.map((item) =>
-          item.productId === productId
+          sameLine(item, productId, color, size)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prev, { productId, quantity: 1 }];
+      return [...prev, { productId, color, size, quantity: 1 }];
     });
     setIsOpen(true);
   }, []);
 
-  const removeItem = useCallback((productId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.productId !== productId));
+  const removeItem = useCallback((productId: string, color: string, size: string) => {
+    setCartItems((prev) => prev.filter((item) => !sameLine(item, productId, color, size)));
   }, []);
 
-  const setQuantity = useCallback((productId: string, quantity: number) => {
-    setCartItems((prev) => {
-      if (quantity <= 0) {
-        return prev.filter((item) => item.productId !== productId);
-      }
-      return prev.map((item) =>
-        item.productId === productId ? { ...item, quantity } : item
-      );
-    });
-  }, []);
+  const setQuantity = useCallback(
+    (productId: string, color: string, size: string, quantity: number) => {
+      setCartItems((prev) => {
+        if (quantity <= 0) {
+          return prev.filter((item) => !sameLine(item, productId, color, size));
+        }
+        return prev.map((item) =>
+          sameLine(item, productId, color, size) ? { ...item, quantity } : item
+        );
+      });
+    },
+    []
+  );
 
   const clearCart = useCallback(() => setCartItems(() => []), []);
   const openCart = useCallback(() => setIsOpen(true), []);

@@ -1,25 +1,44 @@
-import fs from "fs";
-import path from "path";
-import type { Product } from "./product-types";
+import { readStore, writeStore } from "./store";
+import type { CategoryDef, Product, SizeOption, StoreSettings } from "./product-types";
 
-export type { Product, ProductCategory } from "./product-types";
-export { CATEGORY_ORDER, CATEGORY_LABELS } from "./product-types";
+export type { Product, CategoryDef, SizeOption, StoreSettings, StoreData } from "./product-types";
 
-const DATA_FILE = path.join(process.cwd(), "data", "products.json");
-
-export function getAllProducts(): Product[] {
-  const raw = fs.readFileSync(DATA_FILE, "utf-8");
-  return JSON.parse(raw) as Product[];
+export async function getAllProducts(): Promise<Product[]> {
+  const store = await readStore();
+  return store.products;
 }
 
-export function getActiveProducts(): Product[] {
-  return getAllProducts().filter((product) => product.active);
+export async function getActiveProducts(): Promise<Product[]> {
+  return (await getAllProducts()).filter((product) => product.active);
 }
 
-export function getProductById(id: string): Product | undefined {
-  return getAllProducts().find((product) => product.id === id);
+export async function getProductById(id: string): Promise<Product | undefined> {
+  return (await getAllProducts()).find((product) => product.id === id);
 }
 
-export function saveAllProducts(products: Product[]): void {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(products, null, 2) + "\n");
+export async function saveAllProducts(products: Product[]): Promise<void> {
+  const store = await readStore();
+  await writeStore({ ...store, products });
+}
+
+export type StoreConfig = {
+  categories: CategoryDef[];
+  colors: string[];
+  sizeOptions: SizeOption[];
+  settings: StoreSettings;
+};
+
+export async function getStoreConfig(): Promise<StoreConfig> {
+  const store = await readStore();
+  return {
+    categories: store.categories,
+    colors: store.colors,
+    sizeOptions: store.sizeOptions,
+    settings: store.settings,
+  };
+}
+
+export async function saveStoreConfig(products: Product[], config: StoreConfig): Promise<void> {
+  const store = await readStore();
+  await writeStore({ ...store, products, ...config });
 }

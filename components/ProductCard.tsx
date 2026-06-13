@@ -2,16 +2,30 @@
 
 import { useState } from "react";
 import confetti from "canvas-confetti";
-import type { Product } from "@/lib/product-types";
+import type { Product, SizeOption } from "@/lib/product-types";
 import { useCart } from "@/lib/cart-context";
 import ProductImage from "./ProductImage";
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({
+  product,
+  colors,
+  sizeOptions,
+}: {
+  product: Product;
+  colors: string[];
+  sizeOptions: SizeOption[];
+}) {
   const { addItem } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  const [color, setColor] = useState("");
+  const [size, setSize] = useState("");
+
+  const canAdd = color !== "" && size !== "";
 
   function handleAddToCart(event: React.MouseEvent<HTMLButtonElement>) {
-    addItem(product.id);
+    if (!canAdd) return;
+
+    addItem(product.id, color, size);
 
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 350);
@@ -42,6 +56,41 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.name}
         </h3>
         <p className="flex-1 text-sm text-htz-navy/70">{product.description}</p>
+
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold text-htz-navy/70">Colour</span>
+            <select
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="rounded-lg border border-htz-navy/20 px-2 py-1.5 text-sm focus:border-htz-orange focus:outline-none"
+            >
+              <option value="">Choose…</option>
+              {colors.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-semibold text-htz-navy/70">Size</span>
+            <select
+              value={size}
+              onChange={(e) => setSize(e.target.value)}
+              className="rounded-lg border border-htz-navy/20 px-2 py-1.5 text-sm focus:border-htz-orange focus:outline-none"
+            >
+              <option value="">Choose…</option>
+              {sizeOptions.map((option) => (
+                <option key={option.label} value={option.label}>
+                  {option.label} (up to {option.maxDimensionMm}mm)
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <div className="mt-2 flex items-center justify-between gap-3">
           <span className="font-display text-xl font-bold text-htz-orange">
             ${product.price.toFixed(2)}
@@ -49,7 +98,9 @@ export default function ProductCard({ product }: { product: Product }) {
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`rounded-full bg-htz-lime px-4 py-2 text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95 ${justAdded ? "animate-pop" : ""}`}
+            disabled={!canAdd}
+            title={canAdd ? undefined : "Pick a colour and size first"}
+            className={`rounded-full bg-htz-lime px-4 py-2 text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 ${justAdded ? "animate-pop" : ""}`}
           >
             Add to Cart
           </button>

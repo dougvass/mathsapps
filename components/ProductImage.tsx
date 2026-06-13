@@ -1,10 +1,12 @@
 import type { Product } from "@/lib/product-types";
 
-const CATEGORY_GRADIENTS: Record<Product["category"], string> = {
+const CATEGORY_GRADIENTS: Record<string, string> = {
   fidgets: "from-htz-orange to-htz-pink",
   shapes: "from-htz-teal to-htz-navy",
   custom: "from-htz-pink to-htz-orange",
 };
+
+const DEFAULT_GRADIENT = "from-htz-orange to-htz-teal";
 
 export default function ProductImage({ product }: { product: Product }) {
   if (product.image) {
@@ -20,7 +22,7 @@ export default function ProductImage({ product }: { product: Product }) {
 
   return (
     <div
-      className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${CATEGORY_GRADIENTS[product.category]}`}
+      className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${CATEGORY_GRADIENTS[product.category] ?? DEFAULT_GRADIENT}`}
     >
       <span className="text-6xl drop-shadow-sm" aria-hidden="true">
         {product.emoji}
