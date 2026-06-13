@@ -7,6 +7,9 @@ type CheckoutItem = {
   quantity: number;
 };
 
+// Flat-rate domestic shipping. Adjust to match real postage costs.
+const STANDARD_SHIPPING_AUD_CENTS = 995;
+
 export async function POST(request: Request) {
   let body: { items?: CheckoutItem[] };
   try {
@@ -64,6 +67,30 @@ export async function POST(request: Request) {
     success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/cancel`,
     shipping_address_collection: { allowed_countries: ["AU"] },
+    shipping_options: [
+      {
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: { amount: STANDARD_SHIPPING_AUD_CENTS, currency: "aud" },
+          display_name: "Standard Shipping",
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: 3 },
+            maximum: { unit: "business_day", value: 7 },
+          },
+        },
+      },
+      {
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: { amount: 0, currency: "aud" },
+          display_name: "Local Pickup (Free)",
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: 1 },
+            maximum: { unit: "business_day", value: 3 },
+          },
+        },
+      },
+    ],
   });
 
   return NextResponse.json({ url: session.url });

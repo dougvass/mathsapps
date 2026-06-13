@@ -67,6 +67,27 @@ export default function AdminPage() {
     );
   }
 
+  function addProduct() {
+    const newProduct: Product = {
+      id: `product-${Date.now()}`,
+      name: "New Product",
+      category: "fidgets",
+      price: 0,
+      description: "",
+      emoji: "✨",
+      image: "",
+      active: false,
+    };
+    setProducts((prev) => [...prev, newProduct]);
+  }
+
+  function removeProduct(id: string) {
+    if (!window.confirm("Remove this product? This can't be undone once you save.")) {
+      return;
+    }
+    setProducts((prev) => prev.filter((product) => product.id !== id));
+  }
+
   async function handleSave() {
     setSaveState("saving");
     setSaveError(null);
@@ -137,18 +158,37 @@ export default function AdminPage() {
               Edit product details, then save your changes.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-full border border-htz-navy/20 px-4 py-2 text-sm font-semibold text-htz-navy transition-colors hover:bg-htz-navy/5"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={addProduct}
+              className="rounded-full bg-htz-orange px-4 py-2 text-sm font-bold text-white shadow transition-transform hover:scale-105 active:scale-95"
+            >
+              + Add Product
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full border border-htz-navy/20 px-4 py-2 text-sm font-semibold text-htz-navy transition-colors hover:bg-htz-navy/5"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
           {products.map((product) => (
             <div key={product.id} className="rounded-2xl bg-white p-5 shadow-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-mono text-xs text-htz-navy/40">{product.id}</span>
+                <button
+                  type="button"
+                  onClick={() => removeProduct(product.id)}
+                  className="text-xs font-semibold text-htz-pink hover:underline"
+                >
+                  Remove
+                </button>
+              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="flex flex-col gap-1">
                   <span className="text-sm font-semibold text-htz-navy">Name</span>
