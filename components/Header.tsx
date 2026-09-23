@@ -24,9 +24,6 @@ export default function Header() {
           <a href="#about" className="transition-colors hover:text-htz-lime">
             About
           </a>
-          <a href="#footer" className="transition-colors hover:text-htz-lime">
-            Contact
-          </a>
         </nav>
 
         <button

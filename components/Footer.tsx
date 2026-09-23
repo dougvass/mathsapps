@@ -20,16 +20,6 @@ export default function Footer() {
                   hello@hugostoyz.com
                 </a>
               </li>
-              <li>
-                <a href="#" className="hover:text-htz-lime">
-                  Instagram
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-htz-lime">
-                  TikTok
-                </a>
-              </li>
             </ul>
           </div>
 

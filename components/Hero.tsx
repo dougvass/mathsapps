@@ -14,7 +14,7 @@ export default function Hero() {
             <span className="text-htz-pink">FUN</span>.
           </h1>
           <p className="mx-auto mt-5 max-w-md text-lg text-white/80 lg:mx-0">
-            Bright, bouncy, 3D-printed fidgets and toys for busy hands and big
+            Bright, 3D-printed fidgets and toys for busy hands and big
             imaginations. Spin it, click it, twist it, love it.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
