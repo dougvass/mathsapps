@@ -11,23 +11,28 @@ function readSeed(): StoreData {
   return JSON.parse(raw) as StoreData;
 }
 
-// On Vercel, the production filesystem is read-only, so writes go to Vercel
-// Blob instead (enabled by connecting a Blob store, which provides
-// BLOB_READ_WRITE_TOKEN). Locally, and until Blob is connected, everything
-// falls back to the bundled data/store.json file on disk.
+// A connected Blob store provides either BLOB_STORE_ID (newer stores, which
+// authenticate with Vercel's OIDC token) or BLOB_READ_WRITE_TOKEN; @vercel/blob
+// picks up whichever is present.
+function blobConfigured(): boolean {
+  return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+// On Vercel the filesystem is read-only, so data lives in Vercel Blob. Locally,
+// and until Blob is connected, it falls back to the bundled data/store.json.
 export async function readStore(): Promise<StoreData> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
+  if (!blobConfigured()) {
     return readSeed();
   }
 
   try {
-    const result = await get(BLOB_PATHNAME, { access: "private", token, useCache: false });
+    const result = await get(BLOB_PATHNAME, { access: "private", useCache: false });
     if (result && result.statusCode === 200) {
       const text = await new Response(result.stream).text();
       return JSON.parse(text) as StoreData;
     }
-  } catch {
+  } catch (error) {
+    console.error("Reading store from Vercel Blob failed:", error);
     return readSeed();
   }
 
@@ -38,8 +43,7 @@ export async function readStore(): Promise<StoreData> {
 }
 
 export async function writeStore(data: StoreData): Promise<void> {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) {
+  if (!blobConfigured()) {
     if (process.env.VERCEL) {
       throw new Error(
         "Saving isn't set up: connect a Vercel Blob store to this project, then redeploy."
@@ -54,6 +58,5 @@ export async function writeStore(data: StoreData): Promise<void> {
     addRandomSuffix: false,
     allowOverwrite: true,
     contentType: "application/json",
-    token,
   });
 }

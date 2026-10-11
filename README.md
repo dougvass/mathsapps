@@ -23,7 +23,7 @@ Copy `.env.example` to `.env.local` and fill in the values:
 | `ADMIN_PASSWORD` | Bootstrap password for `/admin`, and the secret used to sign the admin session cookie. The in-app "Change Password" form stores its own password hash, but this env var must stay set (session signing depends on it). |
 | `STRIPE_SECRET_KEY` | Stripe secret key. Use a **test** key (`sk_test_...`) until ready to go live. |
 | `NEXT_PUBLIC_SITE_URL` | Fallback base URL for Stripe redirect links. Optional for normal browser checkouts. |
-| `BLOB_READ_WRITE_TOKEN` | Optional. Set automatically when you connect a Vercel Blob store to the project. When present, the store (products, categories, colours, sizes, settings, password hash) is persisted to Blob instead of the local `data/store.json` file — required for admin edits to persist on Vercel. |
+| `BLOB_STORE_ID` / `BLOB_READ_WRITE_TOKEN` | Optional. Set automatically when you connect a Vercel Blob store to the project (newer stores provide `BLOB_STORE_ID`, older ones `BLOB_READ_WRITE_TOKEN`). When either is present, the store (products, categories, colours, sizes, settings, password hash) is persisted to Blob instead of the local `data/store.json` file — required for admin edits to persist on Vercel. |
 
 ## Project structure
 
@@ -60,8 +60,7 @@ cart.
 > **Persistence:** locally, all of this is read from and written to
 > `data/store.json`. On Vercel, the production filesystem is **read-only**, so
 > admin edits are persisted to **Vercel Blob** instead — connect a Blob store
-> to the project (Storage tab in the Vercel dashboard) to provision
-> `BLOB_READ_WRITE_TOKEN` automatically. Until that's connected, admin edits in
+> to the project (Storage tab in the Vercel dashboard), then redeploy. Until that's connected, admin edits in
 > production won't be saved.
 
 ## Payments
