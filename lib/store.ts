@@ -40,6 +40,11 @@ export async function readStore(): Promise<StoreData> {
 export async function writeStore(data: StoreData): Promise<void> {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) {
+    if (process.env.VERCEL) {
+      throw new Error(
+        "Saving isn't set up: connect a Vercel Blob store to this project, then redeploy."
+      );
+    }
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2) + "\n");
     return;
   }

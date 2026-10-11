@@ -20,7 +20,7 @@ export default function ProductCard({
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
 
-  const canAdd = color !== "" && size !== "";
+  const canAdd = (!product.chooseColor || color !== "") && size !== "";
 
   function handleAddToCart(event: React.MouseEvent<HTMLButtonElement>) {
     if (!canAdd) return;
@@ -58,6 +58,7 @@ export default function ProductCard({
         <p className="flex-1 text-sm text-htz-navy/70">{product.description}</p>
 
         <div className="grid grid-cols-2 gap-2">
+          {product.chooseColor && (
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold text-htz-navy/70">Colour</span>
             <select
@@ -73,6 +74,7 @@ export default function ProductCard({
               ))}
             </select>
           </label>
+          )}
 
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold text-htz-navy/70">Size</span>
@@ -99,7 +101,7 @@ export default function ProductCard({
             type="button"
             onClick={handleAddToCart}
             disabled={!canAdd}
-            title={canAdd ? undefined : "Pick a colour and size first"}
+            title={canAdd ? undefined : product.chooseColor ? "Pick a colour and size first" : "Pick a size first"}
             className={`rounded-full bg-htz-lime px-4 py-2 text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 ${justAdded ? "animate-pop" : ""}`}
           >
             Add to Cart

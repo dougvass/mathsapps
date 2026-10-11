@@ -87,6 +87,7 @@ export default function AdminPage() {
       emoji: "✨",
       image: "",
       active: false,
+      chooseColor: false,
     };
     setProducts((prev) => [...prev, newProduct]);
   }
@@ -506,6 +507,18 @@ export default function AdminPage() {
                   />
                   <span className="text-sm font-semibold text-htz-navy">
                     Active (visible in store)
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={product.chooseColor}
+                    onChange={(e) => updateProduct(product.id, { chooseColor: e.target.checked })}
+                    className="h-5 w-5 accent-htz-orange"
+                  />
+                  <span className="text-sm font-semibold text-htz-navy">
+                    Customer picks a colour
                   </span>
                 </label>
               </div>

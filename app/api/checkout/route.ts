@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     const quantity = Math.min(99, Math.max(1, Math.floor(item.quantity) || 1));
 
-    const variant = [item.color, item.size].filter((value): value is string => Boolean(value));
+    const variant = [product.chooseColor ? item.color : undefined, item.size].filter((value): value is string => Boolean(value));
     const name = variant.length > 0 ? `${product.name} (${variant.join(", ")})` : product.name;
 
     lineItems.push({

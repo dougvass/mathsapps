@@ -26,6 +26,12 @@ export async function POST(request: Request) {
     );
   }
 
-  await setAdminPassword(body.newPassword);
+  try {
+    await setAdminPassword(body.newPassword);
+  } catch (error) {
+    console.error(error);
+    const message = error instanceof Error ? error.message : "Couldn't update the password.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }

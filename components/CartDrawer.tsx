@@ -87,7 +87,7 @@ export default function CartDrawer() {
                       {line.product.name}
                     </span>
                     <span className="text-xs text-htz-navy/60">
-                      {line.color} · {line.size}
+                      {[line.color, line.size].filter(Boolean).join(" · ")}
                     </span>
                     <span className="text-sm text-htz-navy/60">
                       ${line.product.price.toFixed(2)} each

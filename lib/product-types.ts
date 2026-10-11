@@ -7,6 +7,7 @@ export type Product = {
   emoji: string;
   image: string;
   active: boolean;
+  chooseColor: boolean;
 };
 
 export type CategoryDef = {

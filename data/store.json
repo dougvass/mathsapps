@@ -8,7 +8,8 @@
       "description": "Endlessly foldable and satisfyingly clicky. The fidget that never gets boring.",
       "emoji": "🔲",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "fidget-spinner-pro",
@@ -18,7 +19,8 @@
       "description": "Smooth-spinning, pocket-sized stress relief. Give it a flick and zone out.",
       "emoji": "🌀",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "pop-click-slider",
@@ -28,7 +30,8 @@
       "description": "Click, slide, repeat. A tiny tactile rhythm machine for busy hands.",
       "emoji": "🔘",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "twisty-puzzle-sphere",
@@ -38,7 +41,8 @@
       "description": "Part puzzle, part fidget. Twist it into new shapes, or just twist for fun.",
       "emoji": "🔮",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "gear-stim-toy",
@@ -48,7 +52,8 @@
       "description": "Interlocking gears that spin together in a satisfying chain reaction.",
       "emoji": "⚙️",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "articulated-dragon",
@@ -58,7 +63,8 @@
       "description": "A fully poseable 3D-printed dragon with wiggly joints from nose to tail.",
       "emoji": "🐉",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "flexi-rainbow-snake",
@@ -68,7 +74,8 @@
       "description": "A colourful, bendy snake that slithers and coils right in your hands.",
       "emoji": "🐍",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "mini-articulated-fox",
@@ -78,7 +85,8 @@
       "description": "A pocket-sized fox with poseable joints, ready for desk adventures.",
       "emoji": "🦊",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "geometric-gem",
@@ -88,7 +96,8 @@
       "description": "A faceted crystal centrepiece that catches the light beautifully.",
       "emoji": "💎",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "articulated-axolotl",
@@ -98,7 +107,8 @@
       "description": "A friendly, wiggly axolotl with a swishy tail and a big smile.",
       "emoji": "🦎",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": false
     },
     {
       "id": "custom-name-keychain",
@@ -108,7 +118,8 @@
       "description": "Your name, your colours. A personalised keychain or bag tag made just for you.",
       "emoji": "🏷️",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": true
     },
     {
       "id": "build-your-own-dragon",
@@ -118,13 +129,23 @@
       "description": "Design your dream dragon — pick the colours and size, and we'll print it just for you.",
       "emoji": "🐲",
       "image": "",
-      "active": true
+      "active": true,
+      "chooseColor": true
     }
   ],
   "categories": [
-    { "value": "fidgets", "label": "Fidgets" },
-    { "value": "shapes", "label": "Standard Shapes" },
-    { "value": "custom", "label": "Design Your Own" }
+    {
+      "value": "fidgets",
+      "label": "Fidgets"
+    },
+    {
+      "value": "shapes",
+      "label": "Standard Shapes"
+    },
+    {
+      "value": "custom",
+      "label": "Design Your Own"
+    }
   ],
   "colors": [
     "Black",
@@ -141,9 +162,18 @@
     "Rainbow (Gradient)"
   ],
   "sizeOptions": [
-    { "label": "Small", "maxDimensionMm": 80 },
-    { "label": "Medium", "maxDimensionMm": 140 },
-    { "label": "Large", "maxDimensionMm": 220 }
+    {
+      "label": "Small",
+      "maxDimensionMm": 80
+    },
+    {
+      "label": "Medium",
+      "maxDimensionMm": 140
+    },
+    {
+      "label": "Large",
+      "maxDimensionMm": 220
+    }
   ],
   "settings": {
     "printerMaxBuildMm": 220

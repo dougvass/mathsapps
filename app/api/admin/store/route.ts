@@ -61,6 +61,7 @@ export async function PUT(request: Request) {
       !Number.isFinite(product.price) ||
       product.price < 0 ||
       typeof product.active !== "boolean" ||
+      typeof product.chooseColor !== "boolean" ||
       typeof product.category !== "string" ||
       !product.category
     ) {
@@ -111,6 +112,12 @@ export async function PUT(request: Request) {
     }
   }
 
-  await saveStoreConfig(products, { categories, colors, sizeOptions, settings });
+  try {
+    await saveStoreConfig(products, { categories, colors, sizeOptions, settings });
+  } catch (error) {
+    console.error(error);
+    const message = error instanceof Error ? error.message : "Couldn't save changes.";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }
