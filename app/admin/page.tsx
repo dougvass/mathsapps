@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type {
-  BannerSettings,
-  CategoryDef,
-  Product,
-  SizeOption,
-  StoreSettings,
+import {
+  MAX_STOCK,
+  type BannerSettings,
+  type CategoryDef,
+  type Product,
+  type SizeOption,
+  type StoreSettings,
 } from "@/lib/product-types";
 import ImageDropzone from "@/components/ImageDropzone";
 
@@ -102,6 +103,7 @@ export default function AdminPage() {
       image: "",
       active: false,
       chooseColor: false,
+      stock: "made-to-order",
     };
     setProducts((prev) => [...prev, newProduct]);
   }
@@ -537,6 +539,31 @@ export default function AdminPage() {
                     }
                     className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
                   />
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-htz-navy">Stock</span>
+                  <select
+                    value={String(product.stock)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      updateProduct(product.id, {
+                        stock:
+                          value === "out-of-stock" || value === "made-to-order"
+                            ? value
+                            : Number(value),
+                      });
+                    }}
+                    className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
+                  >
+                    {Array.from({ length: MAX_STOCK }, (_, i) => i + 1).map((count) => (
+                      <option key={count} value={count}>
+                        {count} in stock
+                      </option>
+                    ))}
+                    <option value="out-of-stock">Out of stock</option>
+                    <option value="made-to-order">Made to order</option>
+                  </select>
                 </label>
 
                 <div className="flex flex-col gap-1 sm:row-span-2">

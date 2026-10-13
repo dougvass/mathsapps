@@ -2,9 +2,24 @@
 
 import { useState } from "react";
 import confetti from "canvas-confetti";
-import type { Product, SizeOption } from "@/lib/product-types";
+import type { Product, SizeOption, StockLevel } from "@/lib/product-types";
 import { useCart } from "@/lib/cart-context";
 import ProductImage from "./ProductImage";
+
+function StockBadge({ stock }: { stock: StockLevel }) {
+  const [label, style] =
+    stock === "out-of-stock"
+      ? ["Out of stock", "bg-htz-pink/10 text-htz-pink"]
+      : stock === "made-to-order"
+        ? ["Made to order", "bg-htz-navy/5 text-htz-navy/70"]
+        : [`${stock} in stock`, "bg-htz-teal/10 text-htz-teal"];
+
+  return (
+    <span className={`self-start rounded-full px-3 py-1 text-xs font-semibold ${style}`}>
+      {label}
+    </span>
+  );
+}
 
 export default function ProductCard({
   product,
@@ -15,12 +30,21 @@ export default function ProductCard({
   colors: string[];
   sizeOptions: SizeOption[];
 }) {
-  const { addItem } = useCart();
+  const { addItem, canAddMore } = useCart();
   const [justAdded, setJustAdded] = useState(false);
   const [color, setColor] = useState("");
   const [size, setSize] = useState("");
 
-  const canAdd = (!product.chooseColor || color !== "") && size !== "";
+  const outOfStock = product.stock === "out-of-stock";
+  const stockLeft = !outOfStock && canAddMore(product.id);
+  const optionsChosen = (!product.chooseColor || color !== "") && size !== "";
+  const canAdd = stockLeft && optionsChosen;
+
+  let disabledReason: string | undefined;
+  if (outOfStock) disabledReason = "Out of stock";
+  else if (!stockLeft) disabledReason = "All available stock is already in your cart";
+  else if (!optionsChosen)
+    disabledReason = product.chooseColor ? "Pick a colour and size first" : "Pick a size first";
 
   function handleAddToCart(event: React.MouseEvent<HTMLButtonElement>) {
     if (!canAdd) return;
@@ -56,6 +80,8 @@ export default function ProductCard({
           {product.name}
         </h3>
         <p className="flex-1 text-sm text-htz-navy/70">{product.description}</p>
+
+        <StockBadge stock={product.stock} />
 
         <div className="grid grid-cols-2 gap-2">
           {product.chooseColor && (
@@ -101,7 +127,7 @@ export default function ProductCard({
             type="button"
             onClick={handleAddToCart}
             disabled={!canAdd}
-            title={canAdd ? undefined : product.chooseColor ? "Pick a colour and size first" : "Pick a size first"}
+            title={disabledReason}
             className={`rounded-full bg-htz-lime px-4 py-2 text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 ${justAdded ? "animate-pop" : ""}`}
           >
             Add to Cart

@@ -15,7 +15,14 @@ const DEFAULT_BANNER: BannerSettings = {
 
 // Data saved before a field existed won't have it, so fill in defaults.
 function withDefaults(data: StoreData): StoreData {
-  return { ...data, banner: { ...DEFAULT_BANNER, ...data.banner } };
+  return {
+    ...data,
+    products: data.products.map((product) => ({
+      ...product,
+      stock: product.stock ?? "made-to-order",
+    })),
+    banner: { ...DEFAULT_BANNER, ...data.banner },
+  };
 }
 
 function readSeed(): StoreData {

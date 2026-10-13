@@ -5,7 +5,7 @@ import { useCart } from "@/lib/cart-context";
 import ProductImage from "./ProductImage";
 
 export default function CartDrawer() {
-  const { lines, isOpen, closeCart, setQuantity, removeItem, totalItems, totalPrice } =
+  const { lines, isOpen, closeCart, setQuantity, removeItem, canAddMore, totalItems, totalPrice } =
     useCart();
   const [checkingOut, setCheckingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -107,7 +107,9 @@ export default function CartDrawer() {
                       <button
                         type="button"
                         onClick={() => setQuantity(line.productId, line.color, line.size, line.quantity + 1)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full border border-htz-navy/20 text-htz-navy transition-colors hover:bg-htz-navy/5"
+                        disabled={!canAddMore(line.productId)}
+                        title={canAddMore(line.productId) ? undefined : "No more in stock"}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-htz-navy/20 text-htz-navy transition-colors hover:bg-htz-navy/5 disabled:cursor-not-allowed disabled:opacity-40"
                         aria-label={`Increase quantity of ${line.product.name}`}
                       >
                         +

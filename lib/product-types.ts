@@ -1,3 +1,20 @@
+export type StockLevel = number | "out-of-stock" | "made-to-order";
+
+export const MAX_STOCK = 10;
+
+export function isValidStock(value: unknown): value is StockLevel {
+  return (
+    value === "out-of-stock" ||
+    value === "made-to-order" ||
+    (Number.isInteger(value) && (value as number) >= 1 && (value as number) <= MAX_STOCK)
+  );
+}
+
+export function stockLimit(stock: StockLevel): number {
+  if (typeof stock === "number") return stock;
+  return stock === "out-of-stock" ? 0 : Infinity;
+}
+
 export type Product = {
   id: string;
   name: string;
@@ -8,6 +25,7 @@ export type Product = {
   image: string;
   active: boolean;
   chooseColor: boolean;
+  stock: StockLevel;
 };
 
 export type CategoryDef = {

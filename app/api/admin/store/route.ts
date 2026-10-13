@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/auth";
+import { isValidStock } from "@/lib/product-types";
 import {
   getAllProducts,
   getStoreConfig,
@@ -68,6 +69,7 @@ export async function PUT(request: Request) {
       product.price < 0 ||
       typeof product.active !== "boolean" ||
       typeof product.chooseColor !== "boolean" ||
+      !isValidStock(product.stock) ||
       typeof product.category !== "string" ||
       !product.category
     ) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getActiveProducts } from "@/lib/products";
+import { stockLimit } from "@/lib/product-types";
 
 type CheckoutItem = {
   productId: string;
@@ -35,12 +36,23 @@ export async function POST(request: Request) {
 
   const products = await getActiveProducts();
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+  const quantityByProduct = new Map<string, number>();
 
   for (const item of items) {
     const product = products.find((p) => p.id === item.productId);
     if (!product) continue;
 
     const quantity = Math.min(99, Math.max(1, Math.floor(item.quantity) || 1));
+
+    const ordered = (quantityByProduct.get(product.id) ?? 0) + quantity;
+    quantityByProduct.set(product.id, ordered);
+    if (ordered > stockLimit(product.stock)) {
+      const error =
+        product.stock === "out-of-stock"
+          ? `Sorry, ${product.name} is now out of stock. Please remove it from your cart.`
+          : `Sorry, there are only ${product.stock} of ${product.name} left. Please reduce the quantity in your cart.`;
+      return NextResponse.json({ error }, { status: 400 });
+    }
 
     const variant = [product.chooseColor ? item.color : undefined, item.size].filter((value): value is string => Boolean(value));
     const name = variant.length > 0 ? `${product.name} (${variant.join(", ")})` : product.name;

@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import type { Product } from "@/lib/product-types";
+import { stockLimit, type Product } from "@/lib/product-types";
 
 export type CartItem = {
   productId: string;
@@ -30,6 +30,7 @@ type CartContextValue = {
   addItem: (productId: string, color: string, size: string) => void;
   removeItem: (productId: string, color: string, size: string) => void;
   setQuantity: (productId: string, color: string, size: string, quantity: number) => void;
+  canAddMore: (productId: string) => boolean;
   clearCart: () => void;
 };
 
@@ -39,6 +40,25 @@ const STORAGE_KEY = "htz-cart-v2";
 
 function sameLine(item: CartItem, productId: string, color: string, size: string): boolean {
   return item.productId === productId && item.color === color && item.size === size;
+}
+
+// Stock is per product, so every colour/size line of it shares the limit.
+function remainingStock(
+  items: CartItem[],
+  products: Product[],
+  productId: string,
+  excludeLine?: { color: string; size: string }
+): number {
+  const product = products.find((p) => p.id === productId);
+  if (!product) return 0;
+  const inCart = items
+    .filter(
+      (item) =>
+        item.productId === productId &&
+        !(excludeLine && sameLine(item, productId, excludeLine.color, excludeLine.size))
+    )
+    .reduce((sum, item) => sum + item.quantity, 0);
+  return stockLimit(product.stock) - inCart;
 }
 
 // Cart items are stored outside React state and synced via
@@ -96,6 +116,7 @@ export function CartProvider({
 
   const addItem = useCallback((productId: string, color: string, size: string) => {
     setCartItems((prev) => {
+      if (remainingStock(prev, products, productId) < 1) return prev;
       const existing = prev.find((item) => sameLine(item, productId, color, size));
       if (existing) {
         return prev.map((item) =>
@@ -107,7 +128,7 @@ export function CartProvider({
       return [...prev, { productId, color, size, quantity: 1 }];
     });
     setIsOpen(true);
-  }, []);
+  }, [products]);
 
   const removeItem = useCallback((productId: string, color: string, size: string) => {
     setCartItems((prev) => prev.filter((item) => !sameLine(item, productId, color, size)));
@@ -119,12 +140,22 @@ export function CartProvider({
         if (quantity <= 0) {
           return prev.filter((item) => !sameLine(item, productId, color, size));
         }
+        const allowed = Math.min(
+          quantity,
+          remainingStock(prev, products, productId, { color, size })
+        );
+        if (allowed <= 0) return prev;
         return prev.map((item) =>
-          sameLine(item, productId, color, size) ? { ...item, quantity } : item
+          sameLine(item, productId, color, size) ? { ...item, quantity: allowed } : item
         );
       });
     },
-    []
+    [products]
+  );
+
+  const canAddMore = useCallback(
+    (productId: string) => remainingStock(items, products, productId) >= 1,
+    [items, products]
   );
 
   const clearCart = useCallback(() => setCartItems(() => []), []);
@@ -163,9 +194,10 @@ export function CartProvider({
       addItem,
       removeItem,
       setQuantity,
+      canAddMore,
       clearCart,
     }),
-    [items, lines, totalItems, totalPrice, isOpen, openCart, closeCart, addItem, removeItem, setQuantity, clearCart]
+    [items, lines, totalItems, totalPrice, isOpen, openCart, closeCart, addItem, removeItem, setQuantity, canAddMore, clearCart]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
