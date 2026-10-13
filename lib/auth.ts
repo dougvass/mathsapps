@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { cookies } from "next/headers";
 import { readStore, writeStore } from "./store";
 
 export const ADMIN_SESSION_COOKIE = "htz_admin_session";
@@ -62,4 +63,9 @@ export function isValidSessionToken(token: string | undefined): boolean {
   const expected = getSessionToken();
   if (!expected || !token) return false;
   return timingSafeEqualStrings(token, expected);
+}
+
+export async function isAdminRequest(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return isValidSessionToken(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 }

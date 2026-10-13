@@ -1,9 +1,10 @@
 "use client";
 
-import type { CategoryDef, Product, SizeOption } from "@/lib/product-types";
+import type { BannerSettings, CategoryDef, Product, SizeOption } from "@/lib/product-types";
 import { CartProvider } from "@/lib/cart-context";
 import Header from "./Header";
 import Hero from "./Hero";
+import SaleBanner from "./SaleBanner";
 import ProductGrid from "./ProductGrid";
 import About from "./About";
 import Footer from "./Footer";
@@ -14,17 +15,20 @@ export default function StoreClient({
   categories,
   colors,
   sizeOptions,
+  banner,
 }: {
   products: Product[];
   categories: CategoryDef[];
   colors: string[];
   sizeOptions: SizeOption[];
+  banner: BannerSettings;
 }) {
   return (
     <CartProvider products={products}>
       <Header />
       <main>
         <Hero />
+        <SaleBanner banner={banner} />
         <ProductGrid
           products={products}
           categories={categories}

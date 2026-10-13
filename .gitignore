@@ -40,3 +40,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# locally uploaded images (production uses Vercel Blob)
+/.uploads/

@@ -178,5 +178,11 @@
   "settings": {
     "printerMaxBuildMm": 220
   },
+  "banner": {
+    "enabled": false,
+    "image": "",
+    "headline": "Sale Now On",
+    "subtext": "Bonus on your first order"
+  },
   "adminPasswordHash": null
 }

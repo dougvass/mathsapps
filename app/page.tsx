@@ -14,6 +14,7 @@ export default async function Home() {
       categories={config.categories}
       colors={config.colors}
       sizeOptions={config.sizeOptions}
+      banner={config.banner}
     />
   );
 }

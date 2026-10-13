@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import type { CategoryDef, Product, SizeOption, StoreSettings } from "@/lib/product-types";
+import type {
+  BannerSettings,
+  CategoryDef,
+  Product,
+  SizeOption,
+  StoreSettings,
+} from "@/lib/product-types";
+import ImageDropzone from "@/components/ImageDropzone";
 
 export default function AdminPage() {
   const [status, setStatus] = useState<"checking" | "authed" | "unauthed">("checking");
@@ -11,6 +18,12 @@ export default function AdminPage() {
   const [colors, setColors] = useState<string[]>([]);
   const [sizeOptions, setSizeOptions] = useState<SizeOption[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({ printerMaxBuildMm: 220 });
+  const [banner, setBanner] = useState<BannerSettings>({
+    enabled: false,
+    image: "",
+    headline: "",
+    subtext: "",
+  });
 
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -38,6 +51,7 @@ export default function AdminPage() {
       setColors(data.colors);
       setSizeOptions(data.sizeOptions);
       setSettings(data.settings);
+      setBanner(data.banner);
       setStatus("authed");
     } else {
       setStatus("unauthed");
@@ -145,7 +159,7 @@ export default function AdminPage() {
     const response = await fetch("/api/admin/store", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ products, categories, colors, sizeOptions, settings }),
+      body: JSON.stringify({ products, categories, colors, sizeOptions, settings, banner }),
     });
 
     if (response.ok) {
@@ -272,6 +286,58 @@ export default function AdminPage() {
         </div>
 
         <div className="flex flex-col gap-4">
+          {/* Sale banner */}
+          <div className="rounded-2xl bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold text-htz-navy">Sale Banner</h2>
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={banner.enabled}
+                  onChange={(e) => setBanner({ ...banner, enabled: e.target.checked })}
+                  className="h-5 w-5 accent-htz-orange"
+                />
+                <span className="text-sm font-semibold text-htz-navy">Show on the shop</span>
+              </label>
+            </div>
+            <p className="mb-3 text-sm text-htz-navy/60">
+              Appears under the welcome section. Upload a banner image (a wide image works
+              best, around 3:1), or leave it empty to show the text below on a coloured strip.
+            </p>
+            <ImageDropzone
+              value={banner.image}
+              onChange={(url) => setBanner({ ...banner, image: url })}
+              maxDimension={2400}
+              aspectClass="aspect-[3/1]"
+              emptyLabel="Drop a banner image here, or click to choose"
+            />
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-semibold text-htz-navy">Headline</span>
+                <input
+                  type="text"
+                  value={banner.headline}
+                  onChange={(e) => setBanner({ ...banner, headline: e.target.value })}
+                  placeholder="Sale Now On"
+                  className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-sm font-semibold text-htz-navy">Subtext</span>
+                <input
+                  type="text"
+                  value={banner.subtext}
+                  onChange={(e) => setBanner({ ...banner, subtext: e.target.value })}
+                  placeholder="Bonus on your first order"
+                  className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
+                />
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-htz-navy/50">
+              With an image, the headline is used as its description for screen readers.
+            </p>
+          </div>
+
           {/* Categories */}
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
@@ -473,18 +539,19 @@ export default function AdminPage() {
                   />
                 </label>
 
-                <label className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 sm:row-span-2">
                   <span className="text-sm font-semibold text-htz-navy">
-                    Image URL <span className="text-htz-navy/50">(blank = placeholder icon)</span>
+                    Photo <span className="text-htz-navy/50">(none = placeholder icon)</span>
                   </span>
-                  <input
-                    type="text"
-                    value={product.image}
-                    onChange={(e) => updateProduct(product.id, { image: e.target.value })}
-                    placeholder="https://…"
-                    className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
-                  />
-                </label>
+                  <div className="w-40">
+                    <ImageDropzone
+                      value={product.image}
+                      onChange={(url) => updateProduct(product.id, { image: url })}
+                      maxDimension={1200}
+                      emptyLabel="Drop a photo here, or click to choose"
+                    />
+                  </div>
+                </div>
 
                 <label className="sm:col-span-2 flex flex-col gap-1">
                   <span className="text-sm font-semibold text-htz-navy">Description</span>
@@ -540,6 +607,11 @@ export default function AdminPage() {
           )}
           {saveState === "error" && (
             <span className="text-sm font-semibold text-htz-pink">{saveError}</span>
+          )}
+          {saveState === "idle" && (
+            <span className="text-xs text-htz-navy/50">
+              New photos and banner changes go live when you save.
+            </span>
           )}
         </div>
 

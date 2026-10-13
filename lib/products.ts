@@ -1,7 +1,20 @@
 import { readStore, writeStore } from "./store";
-import type { CategoryDef, Product, SizeOption, StoreSettings } from "./product-types";
+import type {
+  BannerSettings,
+  CategoryDef,
+  Product,
+  SizeOption,
+  StoreSettings,
+} from "./product-types";
 
-export type { Product, CategoryDef, SizeOption, StoreSettings, StoreData } from "./product-types";
+export type {
+  Product,
+  CategoryDef,
+  SizeOption,
+  StoreSettings,
+  StoreData,
+  BannerSettings,
+} from "./product-types";
 
 export async function getAllProducts(): Promise<Product[]> {
   const store = await readStore();
@@ -26,6 +39,7 @@ export type StoreConfig = {
   colors: string[];
   sizeOptions: SizeOption[];
   settings: StoreSettings;
+  banner: BannerSettings;
 };
 
 export async function getStoreConfig(): Promise<StoreConfig> {
@@ -35,6 +49,7 @@ export async function getStoreConfig(): Promise<StoreConfig> {
     colors: store.colors,
     sizeOptions: store.sizeOptions,
     settings: store.settings,
+    banner: store.banner,
   };
 }
 

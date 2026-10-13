@@ -1,23 +1,18 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { ADMIN_SESSION_COOKIE, isValidSessionToken } from "@/lib/auth";
+import { isAdminRequest } from "@/lib/auth";
 import {
   getAllProducts,
   getStoreConfig,
   saveStoreConfig,
+  type BannerSettings,
   type CategoryDef,
   type Product,
   type SizeOption,
   type StoreSettings,
 } from "@/lib/products";
 
-async function isAuthenticated(): Promise<boolean> {
-  const cookieStore = await cookies();
-  return isValidSessionToken(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
-}
-
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdminRequest())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -31,10 +26,11 @@ type StorePayload = {
   colors?: string[];
   sizeOptions?: SizeOption[];
   settings?: StoreSettings;
+  banner?: BannerSettings;
 };
 
 export async function PUT(request: Request) {
-  if (!(await isAuthenticated())) {
+  if (!(await isAdminRequest())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -45,7 +41,17 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const { products, categories, colors, sizeOptions, settings } = body;
+  const { products, categories, colors, sizeOptions, settings, banner } = body;
+
+  if (
+    !banner ||
+    typeof banner.enabled !== "boolean" ||
+    typeof banner.image !== "string" ||
+    typeof banner.headline !== "string" ||
+    typeof banner.subtext !== "string"
+  ) {
+    return NextResponse.json({ error: "Invalid banner settings." }, { status: 400 });
+  }
 
   if (!Array.isArray(products)) {
     return NextResponse.json({ error: "Expected an array of products." }, { status: 400 });
@@ -113,7 +119,7 @@ export async function PUT(request: Request) {
   }
 
   try {
-    await saveStoreConfig(products, { categories, colors, sizeOptions, settings });
+    await saveStoreConfig(products, { categories, colors, sizeOptions, settings, banner });
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Couldn't save changes.";

@@ -24,11 +24,19 @@ export type StoreSettings = {
   printerMaxBuildMm: number;
 };
 
+export type BannerSettings = {
+  enabled: boolean;
+  image: string;
+  headline: string;
+  subtext: string;
+};
+
 export type StoreData = {
   products: Product[];
   categories: CategoryDef[];
   colors: string[];
   sizeOptions: SizeOption[];
   settings: StoreSettings;
+  banner: BannerSettings;
   adminPasswordHash: string | null;
 };
