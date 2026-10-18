@@ -71,7 +71,10 @@ export default function ProductCard({
   }
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-3xl border-4 border-htz-navy/5 bg-white shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <div
+      id={`product-${product.id}`}
+      className="group flex scroll-mt-24 flex-col overflow-hidden rounded-3xl border-4 border-htz-navy/5 bg-white shadow-md transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl"
+    >
       <div className="aspect-square overflow-hidden transition-transform duration-300 group-hover:animate-wiggle">
         <ProductImage product={product} />
       </div>

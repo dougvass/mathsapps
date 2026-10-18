@@ -4,6 +4,7 @@ import {
   absoluteUrl,
   CHANGE_OF_MIND_RETURN_DAYS,
   NON_RETURNABLE_CATEGORY,
+  productUrl,
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_URL,
@@ -81,7 +82,7 @@ function storeJsonLd(products: Product[], categories: CategoryDef[]) {
         ...(product.image ? { image: absoluteUrl(product.image) } : {}),
         offers: {
           "@type": "Offer",
-          url: `${SITE_URL}/#shop`,
+          url: productUrl(product.id),
           price: product.price.toFixed(2),
           priceCurrency: "AUD",
           availability: availability(product),

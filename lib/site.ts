@@ -19,6 +19,10 @@ export const FAULTY_ITEM_REPORT_DAYS = 15;
 // Personalised items in this category can't be returned for change of mind.
 export const NON_RETURNABLE_CATEGORY = "custom";
 
+export function productUrl(productId: string): string {
+  return `${SITE_URL}/#product-${productId}`;
+}
+
 export function absoluteUrl(path: string): string {
   return path.startsWith("http") ? path : new URL(path, SITE_URL).toString();
 }
