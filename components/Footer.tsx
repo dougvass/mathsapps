@@ -39,7 +39,7 @@ export default function Footer() {
             <ul className="mt-2 space-y-2 text-sm">
               <li>
                 <span className="font-semibold text-white">Changed your mind?</span>{" "}
-                {`Return unused items within ${CHANGE_OF_MIND_RETURN_DAYS} days. Return postage is paid by you.`}
+                {`Return unused items within ${CHANGE_OF_MIND_RETURN_DAYS} days and we'll refund your money. Return postage is paid by you.`}
               </li>
               <li>
                 <span className="font-semibold text-white">Faulty item?</span>{" "}
