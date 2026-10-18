@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getActiveProducts } from "@/lib/products";
 import { stockLimit } from "@/lib/product-types";
+import { absoluteUrl } from "@/lib/site";
 
 type CheckoutItem = {
   productId: string;
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
         product_data: {
           name,
           description: product.description,
-          ...(product.image.startsWith("http") ? { images: [product.image] } : {}),
+          ...(product.image ? { images: [absoluteUrl(product.image)] } : {}),
         },
       },
     });

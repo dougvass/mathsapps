@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fredoka, Poppins } from "next/font/google";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -15,9 +16,23 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "HugosToyz | 3D Printed Fidgets & Toys",
-  description:
-    "Playful 3D-printed fidgets, articulated toys, and custom designs — made by HugosToyz.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "en_AU",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +41,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fredoka.variable} ${poppins.variable}`}>
+    <html lang="en-AU"className={`${fredoka.variable} ${poppins.variable}`}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );
