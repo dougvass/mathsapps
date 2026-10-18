@@ -1,17 +1,41 @@
 import { getActiveProducts, getStoreConfig } from "@/lib/products";
 import type { CategoryDef, Product } from "@/lib/product-types";
-import { absoluteUrl, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import {
+  absoluteUrl,
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  STANDARD_SHIPPING_AUD_CENTS,
+} from "@/lib/site";
 import StoreClient from "@/components/StoreClient";
 
 // Always read the latest store data so admin edits show up without a
 // redeploy (the store can be edited at runtime via Vercel Blob).
 export const dynamic = "force-dynamic";
 
+// Google doesn't accept MadeToOrder, so made-to-order items count as InStock
+// (available to buy now).
 function availability(product: Product): string {
-  if (product.stock === "out-of-stock") return "https://schema.org/OutOfStock";
-  if (product.stock === "made-to-order") return "https://schema.org/MadeToOrder";
-  return "https://schema.org/InStock";
+  return product.stock === "out-of-stock"
+    ? "https://schema.org/OutOfStock"
+    : "https://schema.org/InStock";
 }
+
+// Matches the checkout's flat rate and the dispatch/delivery times shown on the site.
+const SHIPPING_DETAILS = {
+  "@type": "OfferShippingDetails",
+  shippingRate: {
+    "@type": "MonetaryAmount",
+    value: (STANDARD_SHIPPING_AUD_CENTS / 100).toFixed(2),
+    currency: "AUD",
+  },
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: "AU" },
+  deliveryTime: {
+    "@type": "ShippingDeliveryTime",
+    handlingTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 5, unitCode: "DAY" },
+    transitTime: { "@type": "QuantitativeValue", minValue: 3, maxValue: 7, unitCode: "DAY" },
+  },
+};
 
 // Structured data so search engines understand the shop and its products.
 function storeJsonLd(products: Product[], categories: CategoryDef[]) {
@@ -41,6 +65,7 @@ function storeJsonLd(products: Product[], categories: CategoryDef[]) {
           price: product.price.toFixed(2),
           priceCurrency: "AUD",
           availability: availability(product),
+          shippingDetails: SHIPPING_DETAILS,
           seller: { "@id": storeId },
         },
       })),

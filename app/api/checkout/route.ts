@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getActiveProducts } from "@/lib/products";
 import { stockLimit } from "@/lib/product-types";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, STANDARD_SHIPPING_AUD_CENTS } from "@/lib/site";
 
 type CheckoutItem = {
   productId: string;
@@ -10,9 +10,6 @@ type CheckoutItem = {
   size?: string;
   quantity: number;
 };
-
-// Flat-rate domestic shipping. Adjust to match real postage costs.
-const STANDARD_SHIPPING_AUD_CENTS = 995;
 
 export async function POST(request: Request) {
   let body: { items?: CheckoutItem[] };

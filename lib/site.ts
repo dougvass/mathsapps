@@ -9,6 +9,10 @@ export const SITE_TITLE = "HugosToyz | 3D Printed Fidget Toys & Custom Gifts in 
 export const SITE_DESCRIPTION =
   "Shop colourful 3D printed fidget toys, articulated dragons and animals, and personalised name keychains. Printed and finished by hand in Australia, with Aussie-wide shipping.";
 
+// Flat-rate domestic shipping, charged at checkout and listed for search engines.
+// Adjust to match real postage costs.
+export const STANDARD_SHIPPING_AUD_CENTS = 995;
+
 export function absoluteUrl(path: string): string {
   return path.startsWith("http") ? path : new URL(path, SITE_URL).toString();
 }
