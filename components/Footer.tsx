@@ -1,8 +1,10 @@
+import { CHANGE_OF_MIND_RETURN_DAYS, FAULTY_ITEM_REPORT_DAYS } from "@/lib/site";
+
 export default function Footer() {
   return (
     <footer id="footer" className="bg-htz-navy text-white/80">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <p className="font-display text-xl font-bold text-white">
               Hugos<span className="text-htz-lime">Toyz</span>
@@ -29,6 +31,28 @@ export default function Footer() {
               Aussie-wide shipping. Most orders print and ship within 3–5
               business days. Custom designs may take a little longer — worth
               the wait!
+            </p>
+          </div>
+
+          <div id="returns">
+            <p className="font-display font-semibold text-white">Returns</p>
+            <ul className="mt-2 space-y-2 text-sm">
+              <li>
+                <span className="font-semibold text-white">Changed your mind?</span>{" "}
+                {`Return unused items within ${CHANGE_OF_MIND_RETURN_DAYS} days. Return postage is paid by you.`}
+              </li>
+              <li>
+                <span className="font-semibold text-white">Faulty item?</span>{" "}
+                {`Let us know within ${FAULTY_ITEM_REPORT_DAYS} days and we'll repair, replace or refund it.`}
+              </li>
+              <li>
+                <span className="font-semibold text-white">Custom items</span>{" "}
+                (Design Your Own) are made just for you, so they can&apos;t be returned for a
+                change of mind.
+              </li>
+            </ul>
+            <p className="mt-2 text-xs text-white/50">
+              This doesn&apos;t affect your rights under Australian Consumer Law.
             </p>
           </div>
         </div>

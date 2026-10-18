@@ -2,6 +2,8 @@ import { getActiveProducts, getStoreConfig } from "@/lib/products";
 import type { CategoryDef, Product } from "@/lib/product-types";
 import {
   absoluteUrl,
+  CHANGE_OF_MIND_RETURN_DAYS,
+  NON_RETURNABLE_CATEGORY,
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_URL,
@@ -37,6 +39,24 @@ const SHIPPING_DETAILS = {
   },
 };
 
+function returnPolicy(product: Product) {
+  if (product.category === NON_RETURNABLE_CATEGORY) {
+    return {
+      "@type": "MerchantReturnPolicy",
+      applicableCountry: "AU",
+      returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    };
+  }
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: "AU",
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: CHANGE_OF_MIND_RETURN_DAYS,
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+  };
+}
+
 // Structured data so search engines understand the shop and its products.
 function storeJsonLd(products: Product[], categories: CategoryDef[]) {
   const storeId = `${SITE_URL}/#store`;
@@ -66,6 +86,7 @@ function storeJsonLd(products: Product[], categories: CategoryDef[]) {
           priceCurrency: "AUD",
           availability: availability(product),
           shippingDetails: SHIPPING_DETAILS,
+          hasMerchantReturnPolicy: returnPolicy(product),
           seller: { "@id": storeId },
         },
       })),

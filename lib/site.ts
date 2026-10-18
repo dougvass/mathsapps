@@ -13,6 +13,12 @@ export const SITE_DESCRIPTION =
 // Adjust to match real postage costs.
 export const STANDARD_SHIPPING_AUD_CENTS = 995;
 
+// Returns policy, shown in the footer and listed for search engines.
+export const CHANGE_OF_MIND_RETURN_DAYS = 20;
+export const FAULTY_ITEM_REPORT_DAYS = 15;
+// Personalised items in this category can't be returned for change of mind.
+export const NON_RETURNABLE_CATEGORY = "custom";
+
 export function absoluteUrl(path: string): string {
   return path.startsWith("http") ? path : new URL(path, SITE_URL).toString();
 }
