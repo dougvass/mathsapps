@@ -42,6 +42,17 @@ export type StoreSettings = {
   printerMaxBuildMm: number;
 };
 
+export type DiscountCode = {
+  id: string;
+  code: string;
+  label: string;
+  active: boolean;
+  timesRedeemed: number;
+  maxRedemptions: number | null;
+  expiresAt: number | null;
+  firstOrderOnly: boolean;
+};
+
 export type BannerSettings = {
   enabled: boolean;
   image: string;

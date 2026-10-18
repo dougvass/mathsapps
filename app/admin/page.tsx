@@ -11,6 +11,7 @@ import {
   type StoreSettings,
 } from "@/lib/product-types";
 import ImageDropzone from "@/components/ImageDropzone";
+import DiscountCodes from "@/components/DiscountCodes";
 
 export default function AdminPage() {
   const [status, setStatus] = useState<"checking" | "authed" | "unauthed">("checking");
@@ -641,6 +642,8 @@ export default function AdminPage() {
             </span>
           )}
         </div>
+
+        <DiscountCodes />
 
         {/* Change password */}
         <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm">
