@@ -11,7 +11,6 @@ import {
   type Faq,
   type Product,
   type ProductBadge,
-  type Review,
   type SizeOption,
   type SocialLinks,
   type StoreSettings,
@@ -23,7 +22,7 @@ import QrCodeCard from "@/components/QrCodeCard";
 import {
   FaqEditor,
   HeroPhotoSection,
-  ReviewsEditor,
+  ReviewsModerator,
   SocialLinksEditor,
 } from "@/components/AdminSiteSections";
 
@@ -41,7 +40,6 @@ export default function AdminPage() {
     subtext: "",
   });
   const [heroImage, setHeroImage] = useState("");
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [faqs, setFaqs] = useState<Faq[]>([]);
   const [socialLinks, setSocialLinks] = useState<SocialLinks>({
     instagram: "",
@@ -78,7 +76,6 @@ export default function AdminPage() {
       setSettings(data.settings);
       setBanner(data.banner);
       setHeroImage(data.heroImage);
-      setReviews(data.reviews);
       setFaqs(data.faqs);
       setSocialLinks(data.socialLinks);
       setStatus("authed");
@@ -200,7 +197,6 @@ export default function AdminPage() {
         settings,
         banner,
         heroImage,
-        reviews,
         faqs,
         socialLinks,
       }),
@@ -736,7 +732,6 @@ export default function AdminPage() {
             </div>
           ))}
 
-          <ReviewsEditor reviews={reviews} onChange={setReviews} />
           <FaqEditor faqs={faqs} defaults={DEFAULT_FAQS} onChange={setFaqs} />
           <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
         </div>
@@ -764,6 +759,8 @@ export default function AdminPage() {
         </div>
 
         <DiscountCodes />
+
+        <ReviewsModerator />
 
         <QrCodeCard />
 

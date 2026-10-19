@@ -1,4 +1,5 @@
 import { getActiveProducts, getStoreConfig } from "@/lib/products";
+import { getReviews } from "@/lib/reviews";
 import { homeJsonLd, jsonLdScript } from "@/lib/structured-data";
 import ShopShell from "@/components/ShopShell";
 import Hero from "@/components/Hero";
@@ -13,7 +14,11 @@ import FaqSection from "@/components/FaqSection";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [products, config] = await Promise.all([getActiveProducts(), getStoreConfig()]);
+  const [products, config, reviews] = await Promise.all([
+    getActiveProducts(),
+    getStoreConfig(),
+    getReviews(),
+  ]);
 
   return (
     <ShopShell products={products} socialLinks={config.socialLinks}>
@@ -29,7 +34,7 @@ export default async function Home() {
         colors={config.colors}
         sizeOptions={config.sizeOptions}
       />
-      <Reviews reviews={config.reviews} />
+      <Reviews reviews={reviews} />
       <About />
       <FaqSection faqs={config.faqs} />
     </ShopShell>

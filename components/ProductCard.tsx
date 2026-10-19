@@ -39,7 +39,15 @@ export default function ProductCard({
         </h3>
         <p className="flex-1 text-sm text-htz-navy/70">{product.description}</p>
 
-        <StockBadge stock={product.stock} />
+        <div className="flex items-center justify-between gap-2">
+          <StockBadge stock={product.stock} />
+          <Link
+            href={href}
+            className="shrink-0 text-sm font-semibold text-htz-orange hover:underline"
+          >
+            View details →
+          </Link>
+        </div>
 
         <AddToCartForm product={product} colors={colors} sizeOptions={sizeOptions} />
       </div>

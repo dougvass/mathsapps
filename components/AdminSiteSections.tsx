@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   SOCIAL_NETWORKS,
   type Faq,
@@ -50,87 +51,74 @@ export function HeroPhotoSection({
   );
 }
 
-export function ReviewsEditor({
-  reviews,
-  onChange,
-}: {
-  reviews: Review[];
-  onChange: (reviews: Review[]) => void;
-}) {
-  function update(index: number, changes: Partial<Review>) {
-    onChange(reviews.map((review, i) => (i === index ? { ...review, ...changes } : review)));
+export function ReviewsModerator() {
+  const [reviews, setReviews] = useState<Review[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/reviews")
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error ?? "Couldn't load reviews.");
+        setReviews(data.reviews);
+      })
+      .catch((err: Error) => setError(err.message));
+  }, []);
+
+  async function remove(review: Review) {
+    if (!window.confirm(`Delete the review from ${review.name}? This can't be undone.`)) return;
+    const response = await fetch("/api/admin/reviews", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: review.id }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      window.alert(data.error ?? "Couldn't delete the review.");
+      return;
+    }
+    setReviews((prev) => prev?.filter((r) => r.id !== review.id) ?? null);
   }
 
   return (
-    <div className={cardClass}>
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold text-htz-navy">Customer Reviews</h2>
-        <button
-          type="button"
-          onClick={() =>
-            onChange([...reviews, { id: `review-${Date.now()}`, name: "", text: "", rating: 5 }])
-          }
-          className={smallButtonClass}
-        >
-          + Add Review
-        </button>
-      </div>
-      <p className="mb-3 text-sm text-htz-navy/60">
-        Shown on the homepage. Only add real reviews from real customers, with their permission –
-        first name is enough.
+    <div className={`${cardClass} mt-6`}>
+      <h2 className="font-display text-lg font-bold text-htz-navy">Customer Reviews</h2>
+      <p className="mb-3 mt-1 text-sm text-htz-navy/60">
+        Customers post reviews on the homepage and they appear straight away. Deleting one removes
+        it from the shop immediately (no need to Save Changes).
       </p>
-      {reviews.length === 0 && <p className="text-sm text-htz-navy/50">No reviews yet.</p>}
-      <div className="flex flex-col gap-4">
-        {reviews.map((review, index) => (
-          <div key={review.id} className="rounded-xl border border-htz-navy/10 p-3">
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
-              <input
-                type="text"
-                value={review.name}
-                maxLength={60}
-                onChange={(e) => update(index, { name: e.target.value })}
-                placeholder="Customer name, e.g. Sarah from Sydney"
-                className={inputClass}
-              />
-              <select
-                value={review.rating}
-                onChange={(e) => update(index, { rating: Number(e.target.value) })}
-                className={inputClass}
-                aria-label="Star rating"
-              >
-                {[5, 4, 3, 2, 1].map((stars) => (
-                  <option key={stars} value={stars}>
-                    {"★".repeat(stars)} ({stars})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <textarea
-              value={review.text}
-              maxLength={600}
-              onChange={(e) => update(index, { text: e.target.value })}
-              placeholder="What they said"
-              rows={2}
-              className={`${inputClass} mt-2 w-full`}
-            />
-            <div className="mt-1 flex gap-4">
-              <button type="button" onClick={() => onChange(move(reviews, index, -1))} disabled={index === 0} className={`${linkButtonClass} text-htz-navy`}>
-                ↑ Up
-              </button>
-              <button type="button" onClick={() => onChange(move(reviews, index, 1))} disabled={index === reviews.length - 1} className={`${linkButtonClass} text-htz-navy`}>
-                ↓ Down
-              </button>
+      {error && <p className="text-sm text-htz-pink">{error}</p>}
+      {!error && reviews === null && <p className="text-sm text-htz-navy/50">Loading…</p>}
+      {reviews?.length === 0 && <p className="text-sm text-htz-navy/50">No reviews yet.</p>}
+      {reviews && reviews.length > 0 && (
+        <ul className="divide-y divide-htz-navy/10">
+          {reviews.map((review) => (
+            <li key={review.id} className="flex gap-4 py-3">
+              <div className="flex-1">
+                <p className="text-sm">
+                  <span className="text-htz-orange">{"★".repeat(review.rating)}</span>
+                  <span className="text-htz-navy/15">{"★".repeat(5 - review.rating)}</span>{" "}
+                  <span className="font-semibold text-htz-navy">{review.name}</span>
+                  {review.createdAt && (
+                    <span className="text-xs text-htz-navy/50">
+                      {" "}
+                      · {new Date(review.createdAt).toLocaleDateString("en-AU")}
+                    </span>
+                  )}
+                </p>
+                <p className="mt-1 break-words text-sm text-htz-navy/80">{review.text}</p>
+              </div>
               <button
                 type="button"
-                onClick={() => onChange(reviews.filter((_, i) => i !== index))}
-                className={`${linkButtonClass} ml-auto text-htz-pink`}
+                onClick={() => remove(review)}
+                className="self-start text-xs font-semibold text-htz-pink hover:underline"
               >
-                Remove
+                Delete
               </button>
-            </div>
-          </div>
-        ))}
-      </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

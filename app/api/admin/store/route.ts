@@ -47,27 +47,9 @@ const BADGES: ProductBadge[] = ["", "new", "bestseller"];
 const PRODUCT_ID_PATTERN = /^[A-Za-z0-9-]+$/;
 
 function validateExtras(body: StorePayload): string | null {
-  const { heroImage, reviews, faqs, socialLinks } = body;
+  const { heroImage, faqs, socialLinks } = body;
 
   if (!isImageUrl(heroImage)) return "Invalid homepage photo.";
-
-  if (!Array.isArray(reviews)) return "Invalid reviews.";
-  for (const review of reviews) {
-    if (
-      typeof review.id !== "string" ||
-      typeof review.name !== "string" ||
-      !review.name.trim() ||
-      review.name.length > 60 ||
-      typeof review.text !== "string" ||
-      !review.text.trim() ||
-      review.text.length > 600 ||
-      !Number.isInteger(review.rating) ||
-      review.rating < 1 ||
-      review.rating > 5
-    ) {
-      return "Each review needs a name, some text (under 600 characters) and 1–5 stars.";
-    }
-  }
 
   if (!Array.isArray(faqs)) return "Invalid FAQ.";
   for (const faq of faqs) {
@@ -200,12 +182,6 @@ export async function PUT(request: Request) {
       settings,
       banner,
       heroImage: body.heroImage as string,
-      reviews: body.reviews!.map(({ id, name, text, rating }) => ({
-        id,
-        name: name.trim(),
-        text: text.trim(),
-        rating,
-      })),
       faqs: body.faqs!.map(({ question, answer }) => ({
         question: question.trim(),
         answer: answer.trim(),

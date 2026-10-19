@@ -8,7 +8,6 @@ export type {
   StoreSettings,
   StoreData,
   BannerSettings,
-  Review,
   Faq,
   SocialLinks,
 } from "./product-types";

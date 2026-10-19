@@ -59,7 +59,13 @@ export type Review = {
   name: string;
   text: string;
   rating: number;
+  // ISO date; empty for reviews added before dates were recorded.
+  createdAt: string;
 };
+
+export const REVIEW_NAME_MAX = 40;
+export const REVIEW_TEXT_MIN = 10;
+export const REVIEW_TEXT_MAX = 600;
 
 export type Faq = {
   question: string;
@@ -110,7 +116,6 @@ export type StoreData = {
   settings: StoreSettings;
   banner: BannerSettings;
   heroImage: string;
-  reviews: Review[];
   faqs: Faq[];
   socialLinks: SocialLinks;
   adminPasswordHash: string | null;

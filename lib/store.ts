@@ -35,7 +35,6 @@ function withDefaults(data: StoreData): StoreData {
     })),
     banner: { ...DEFAULT_BANNER, ...data.banner },
     heroImage: data.heroImage ?? "",
-    reviews: data.reviews ?? [],
     faqs: data.faqs ?? DEFAULT_FAQS,
     socialLinks: { ...DEFAULT_SOCIAL_LINKS, ...data.socialLinks },
   };
