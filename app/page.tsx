@@ -5,9 +5,11 @@ import {
   CHANGE_OF_MIND_RETURN_DAYS,
   NON_RETURNABLE_CATEGORY,
   productUrl,
+  SITE_ALTERNATE_NAMES,
   SITE_DESCRIPTION,
   SITE_NAME,
   SITE_URL,
+  SOCIAL_PROFILE_URLS,
   STANDARD_SHIPPING_AUD_CENTS,
 } from "@/lib/site";
 import StoreClient from "@/components/StoreClient";
@@ -65,9 +67,19 @@ function storeJsonLd(products: Product[], categories: CategoryDef[]) {
     "@context": "https://schema.org",
     "@graph": [
       {
+        // Tells Google the site's name for search results, and its other spellings.
+        "@type": "WebSite",
+        name: SITE_NAME,
+        alternateName: SITE_ALTERNATE_NAMES,
+        url: `${SITE_URL}/`,
+        publisher: { "@id": storeId },
+      },
+      {
         "@type": "OnlineStore",
         "@id": storeId,
         name: SITE_NAME,
+        alternateName: SITE_ALTERNATE_NAMES,
+        ...(SOCIAL_PROFILE_URLS.length > 0 ? { sameAs: SOCIAL_PROFILE_URLS } : {}),
         url: SITE_URL,
         description: SITE_DESCRIPTION,
         email: "hello@hugostoyz.com",

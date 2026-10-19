@@ -4,6 +4,14 @@ export const SITE_URL = "https://hugostoyz.vercel.app";
 
 export const SITE_NAME = "HugosToyz";
 
+// Other ways people write the name, so search engines link them to this site.
+export const SITE_ALTERNATE_NAMES = ["Hugos Toyz", "Hugo's Toyz", "Hugos Toys", "HTZ"];
+
+// Full links to the shop's social media profiles, e.g.
+// "https://www.instagram.com/hugostoyz". Search engines use these to connect
+// mentions of the business across the web.
+export const SOCIAL_PROFILE_URLS: string[] = [];
+
 export const SITE_TITLE = "HugosToyz | 3D Printed Fidget Toys & Custom Gifts in Australia";
 
 export const SITE_DESCRIPTION =
