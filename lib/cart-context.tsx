@@ -10,12 +10,15 @@ import {
 } from "react";
 import { stockLimit, type Product } from "@/lib/product-types";
 
-export type CartItem = {
+// What makes one cart line different from another of the same product.
+export type LineKey = {
   productId: string;
   color: string;
   size: string;
-  quantity: number;
+  customText: string;
 };
+
+export type CartItem = LineKey & { quantity: number };
 
 export type CartLine = CartItem & { product: Product };
 
@@ -27,9 +30,9 @@ type CartContextValue = {
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (productId: string, color: string, size: string) => void;
-  removeItem: (productId: string, color: string, size: string) => void;
-  setQuantity: (productId: string, color: string, size: string, quantity: number) => void;
+  addItem: (key: LineKey) => void;
+  removeItem: (key: LineKey) => void;
+  setQuantity: (key: LineKey, quantity: number) => void;
   canAddMore: (productId: string) => boolean;
   clearCart: () => void;
 };
@@ -38,25 +41,25 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "htz-cart-v2";
 
-function sameLine(item: CartItem, productId: string, color: string, size: string): boolean {
-  return item.productId === productId && item.color === color && item.size === size;
+export function lineId(key: LineKey): string {
+  return [key.productId, key.color, key.size, key.customText].join("::");
 }
 
-// Stock is per product, so every colour/size line of it shares the limit.
+function sameLine(a: LineKey, b: LineKey): boolean {
+  return lineId(a) === lineId(b);
+}
+
+// Stock is per product, so every colour/size/text line of it shares the limit.
 function remainingStock(
   items: CartItem[],
   products: Product[],
   productId: string,
-  excludeLine?: { color: string; size: string }
+  excludeLine?: LineKey
 ): number {
   const product = products.find((p) => p.id === productId);
   if (!product) return 0;
   const inCart = items
-    .filter(
-      (item) =>
-        item.productId === productId &&
-        !(excludeLine && sameLine(item, productId, excludeLine.color, excludeLine.size))
-    )
+    .filter((item) => item.productId === productId && !(excludeLine && sameLine(item, excludeLine)))
     .reduce((sum, item) => sum + item.quantity, 0);
   return stockLimit(product.stock) - inCart;
 }
@@ -74,7 +77,9 @@ function loadFromStorage(): CartItem[] {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return EMPTY_CART;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : EMPTY_CART;
+    if (!Array.isArray(parsed)) return EMPTY_CART;
+    // Carts saved before custom text existed don't have the field.
+    return parsed.map((item) => ({ ...item, customText: item.customText ?? "" }));
   } catch {
     return EMPTY_CART;
   }
@@ -114,40 +119,36 @@ export function CartProvider({
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addItem = useCallback((productId: string, color: string, size: string) => {
-    setCartItems((prev) => {
-      if (remainingStock(prev, products, productId) < 1) return prev;
-      const existing = prev.find((item) => sameLine(item, productId, color, size));
-      if (existing) {
-        return prev.map((item) =>
-          sameLine(item, productId, color, size)
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { productId, color, size, quantity: 1 }];
-    });
-    setIsOpen(true);
-  }, [products]);
+  const addItem = useCallback(
+    (key: LineKey) => {
+      setCartItems((prev) => {
+        if (remainingStock(prev, products, key.productId) < 1) return prev;
+        const existing = prev.find((item) => sameLine(item, key));
+        if (existing) {
+          return prev.map((item) =>
+            sameLine(item, key) ? { ...item, quantity: item.quantity + 1 } : item
+          );
+        }
+        return [...prev, { ...key, quantity: 1 }];
+      });
+      setIsOpen(true);
+    },
+    [products]
+  );
 
-  const removeItem = useCallback((productId: string, color: string, size: string) => {
-    setCartItems((prev) => prev.filter((item) => !sameLine(item, productId, color, size)));
+  const removeItem = useCallback((key: LineKey) => {
+    setCartItems((prev) => prev.filter((item) => !sameLine(item, key)));
   }, []);
 
   const setQuantity = useCallback(
-    (productId: string, color: string, size: string, quantity: number) => {
+    (key: LineKey, quantity: number) => {
       setCartItems((prev) => {
         if (quantity <= 0) {
-          return prev.filter((item) => !sameLine(item, productId, color, size));
+          return prev.filter((item) => !sameLine(item, key));
         }
-        const allowed = Math.min(
-          quantity,
-          remainingStock(prev, products, productId, { color, size })
-        );
+        const allowed = Math.min(quantity, remainingStock(prev, products, key.productId, key));
         if (allowed <= 0) return prev;
-        return prev.map((item) =>
-          sameLine(item, productId, color, size) ? { ...item, quantity: allowed } : item
-        );
+        return prev.map((item) => (sameLine(item, key) ? { ...item, quantity: allowed } : item));
       });
     },
     [products]

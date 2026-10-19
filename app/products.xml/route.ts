@@ -34,7 +34,9 @@ export async function GET() {
       <g:title>${xml(product.name)}</g:title>
       <g:description>${xml(product.description || product.name)}</g:description>
       <g:link>${xml(productUrl(product.id))}</g:link>
-      <g:image_link>${xml(absoluteUrl(product.image))}</g:image_link>
+      <g:image_link>${xml(absoluteUrl(product.image))}</g:image_link>${product.gallery
+        .map((photo) => `\n      <g:additional_image_link>${xml(absoluteUrl(photo))}</g:additional_image_link>`)
+        .join("")}
       <g:availability>${product.stock === "out-of-stock" ? "out_of_stock" : "in_stock"}</g:availability>
       <g:price>${product.price.toFixed(2)} AUD</g:price>
       <g:condition>new</g:condition>

@@ -1,15 +1,17 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/auth";
-import { isValidStock } from "@/lib/product-types";
+import {
+  isValidStock,
+  MAX_GALLERY_PHOTOS,
+  SOCIAL_NETWORKS,
+  type ProductBadge,
+} from "@/lib/product-types";
 import {
   getAllProducts,
   getStoreConfig,
   saveStoreConfig,
-  type BannerSettings,
-  type CategoryDef,
   type Product,
-  type SizeOption,
-  type StoreSettings,
+  type StoreConfig,
 } from "@/lib/products";
 
 export async function GET() {
@@ -21,14 +23,73 @@ export async function GET() {
   return NextResponse.json({ products, ...config });
 }
 
-type StorePayload = {
-  products?: Product[];
-  categories?: CategoryDef[];
-  colors?: string[];
-  sizeOptions?: SizeOption[];
-  settings?: StoreSettings;
-  banner?: BannerSettings;
-};
+type StorePayload = Partial<StoreConfig> & { products?: Product[] };
+
+function isImageUrl(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    (value === "" || value.startsWith("/api/images/") || value.startsWith("https://"))
+  );
+}
+
+function isHttpsUrlOrEmpty(value: unknown): value is string {
+  if (value === "") return true;
+  if (typeof value !== "string") return false;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+const BADGES: ProductBadge[] = ["", "new", "bestseller"];
+// Product ids appear in page addresses (/products/<id>).
+const PRODUCT_ID_PATTERN = /^[A-Za-z0-9-]+$/;
+
+function validateExtras(body: StorePayload): string | null {
+  const { heroImage, reviews, faqs, socialLinks } = body;
+
+  if (!isImageUrl(heroImage)) return "Invalid homepage photo.";
+
+  if (!Array.isArray(reviews)) return "Invalid reviews.";
+  for (const review of reviews) {
+    if (
+      typeof review.id !== "string" ||
+      typeof review.name !== "string" ||
+      !review.name.trim() ||
+      review.name.length > 60 ||
+      typeof review.text !== "string" ||
+      !review.text.trim() ||
+      review.text.length > 600 ||
+      !Number.isInteger(review.rating) ||
+      review.rating < 1 ||
+      review.rating > 5
+    ) {
+      return "Each review needs a name, some text (under 600 characters) and 1–5 stars.";
+    }
+  }
+
+  if (!Array.isArray(faqs)) return "Invalid FAQ.";
+  for (const faq of faqs) {
+    if (
+      typeof faq.question !== "string" ||
+      !faq.question.trim() ||
+      typeof faq.answer !== "string" ||
+      !faq.answer.trim()
+    ) {
+      return "Each FAQ needs a question and an answer.";
+    }
+  }
+
+  if (!socialLinks || typeof socialLinks !== "object") return "Invalid social links.";
+  for (const network of SOCIAL_NETWORKS) {
+    if (!isHttpsUrlOrEmpty(socialLinks[network])) {
+      return `The ${network} link must be a full web address starting with https://`;
+    }
+  }
+
+  return null;
+}
 
 export async function PUT(request: Request) {
   if (!(await isAdminRequest())) {
@@ -44,10 +105,15 @@ export async function PUT(request: Request) {
 
   const { products, categories, colors, sizeOptions, settings, banner } = body;
 
+  const extrasError = validateExtras(body);
+  if (extrasError) {
+    return NextResponse.json({ error: extrasError }, { status: 400 });
+  }
+
   if (
     !banner ||
     typeof banner.enabled !== "boolean" ||
-    typeof banner.image !== "string" ||
+    !isImageUrl(banner.image) ||
     typeof banner.headline !== "string" ||
     typeof banner.subtext !== "string"
   ) {
@@ -60,10 +126,16 @@ export async function PUT(request: Request) {
   for (const product of products) {
     if (
       typeof product.id !== "string" ||
+      !PRODUCT_ID_PATTERN.test(product.id) ||
       typeof product.name !== "string" ||
       typeof product.description !== "string" ||
       typeof product.emoji !== "string" ||
-      typeof product.image !== "string" ||
+      !isImageUrl(product.image) ||
+      !Array.isArray(product.gallery) ||
+      product.gallery.length > MAX_GALLERY_PHOTOS ||
+      !product.gallery.every((photo) => photo !== "" && isImageUrl(photo)) ||
+      !BADGES.includes(product.badge) ||
+      typeof product.needsCustomText !== "boolean" ||
       typeof product.price !== "number" ||
       !Number.isFinite(product.price) ||
       product.price < 0 ||
@@ -121,7 +193,25 @@ export async function PUT(request: Request) {
   }
 
   try {
-    await saveStoreConfig(products, { categories, colors, sizeOptions, settings, banner });
+    await saveStoreConfig(products, {
+      categories,
+      colors,
+      sizeOptions,
+      settings,
+      banner,
+      heroImage: body.heroImage as string,
+      reviews: body.reviews!.map(({ id, name, text, rating }) => ({
+        id,
+        name: name.trim(),
+        text: text.trim(),
+        rating,
+      })),
+      faqs: body.faqs!.map(({ question, answer }) => ({
+        question: question.trim(),
+        answer: answer.trim(),
+      })),
+      socialLinks: body.socialLinks!,
+    });
   } catch (error) {
     console.error(error);
     const message = error instanceof Error ? error.message : "Couldn't save changes.";

@@ -117,7 +117,7 @@ export default function ImageDropzone({
         }}
       />
 
-      <div className="flex items-center gap-3 text-xs">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {value && (
           <>
             <button

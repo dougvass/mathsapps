@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { get, put } from "@vercel/blob";
-import type { BannerSettings, StoreData } from "./product-types";
+import type { BannerSettings, SocialLinks, StoreData } from "./product-types";
+import { DEFAULT_FAQS } from "./default-faqs";
+import { NON_RETURNABLE_CATEGORY } from "./site";
 
 const DATA_FILE = path.join(process.cwd(), "data", "store.json");
 const BLOB_PATHNAME = "hugostoyz/store.json";
@@ -13,6 +15,13 @@ const DEFAULT_BANNER: BannerSettings = {
   subtext: "Bonus on your first order",
 };
 
+const DEFAULT_SOCIAL_LINKS: SocialLinks = {
+  instagram: "",
+  tiktok: "",
+  facebook: "",
+  youtube: "",
+};
+
 // Data saved before a field existed won't have it, so fill in defaults.
 function withDefaults(data: StoreData): StoreData {
   return {
@@ -20,8 +29,15 @@ function withDefaults(data: StoreData): StoreData {
     products: data.products.map((product) => ({
       ...product,
       stock: product.stock ?? "made-to-order",
+      gallery: product.gallery ?? [],
+      badge: product.badge ?? "",
+      needsCustomText: product.needsCustomText ?? product.category === NON_RETURNABLE_CATEGORY,
     })),
     banner: { ...DEFAULT_BANNER, ...data.banner },
+    heroImage: data.heroImage ?? "",
+    reviews: data.reviews ?? [],
+    faqs: data.faqs ?? DEFAULT_FAQS,
+    socialLinks: { ...DEFAULT_SOCIAL_LINKS, ...data.socialLinks },
   };
 }
 

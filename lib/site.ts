@@ -6,12 +6,6 @@ export const SITE_NAME = "HugosToyz";
 
 // Other ways people write the name, so search engines link them to this site.
 export const SITE_ALTERNATE_NAMES = ["Hugos Toyz", "Hugo's Toyz", "Hugos Toys", "HTZ"];
-
-// Full links to the shop's social media profiles, e.g.
-// "https://www.instagram.com/hugostoyz". Search engines use these to connect
-// mentions of the business across the web.
-export const SOCIAL_PROFILE_URLS: string[] = [];
-
 export const SITE_TITLE = "HugosToyz | 3D Printed Fidget Toys & Custom Gifts in Australia";
 
 export const SITE_DESCRIPTION =
@@ -27,8 +21,12 @@ export const FAULTY_ITEM_REPORT_DAYS = 15;
 // Personalised items in this category can't be returned for change of mind.
 export const NON_RETURNABLE_CATEGORY = "custom";
 
+export function productPath(productId: string): string {
+  return `/products/${productId}`;
+}
+
 export function productUrl(productId: string): string {
-  return `${SITE_URL}/#product-${productId}`;
+  return `${SITE_URL}${productPath(productId)}`;
 }
 
 export function absoluteUrl(path: string): string {

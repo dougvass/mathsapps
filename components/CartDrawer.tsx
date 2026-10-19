@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useCart } from "@/lib/cart-context";
+import Link from "next/link";
+import { lineId, useCart } from "@/lib/cart-context";
 import ProductImage from "./ProductImage";
 
 export default function CartDrawer() {
@@ -22,6 +23,7 @@ export default function CartDrawer() {
             productId: line.productId,
             color: line.color,
             size: line.size,
+            customText: line.customText,
             quantity: line.quantity,
           })),
         }),
@@ -78,24 +80,33 @@ export default function CartDrawer() {
           ) : (
             <ul className="flex flex-col gap-4">
               {lines.map((line) => (
-                <li key={`${line.productId}::${line.color}::${line.size}`} className="flex gap-3">
+                <li key={lineId(line)} className="flex gap-3">
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl">
                     <ProductImage product={line.product} />
                   </div>
                   <div className="flex flex-1 flex-col">
-                    <span className="font-display font-semibold text-htz-navy">
+                    <Link
+                      href={`/products/${line.product.id}`}
+                      onClick={closeCart}
+                      className="font-display font-semibold text-htz-navy hover:text-htz-orange"
+                    >
                       {line.product.name}
-                    </span>
+                    </Link>
                     <span className="text-xs text-htz-navy/60">
                       {[line.color, line.size].filter(Boolean).join(" · ")}
                     </span>
+                    {line.customText && (
+                      <span className="text-xs text-htz-navy/60">
+                        Text: &ldquo;{line.customText}&rdquo;
+                      </span>
+                    )}
                     <span className="text-sm text-htz-navy/60">
                       ${line.product.price.toFixed(2)} each
                     </span>
                     <div className="mt-2 flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setQuantity(line.productId, line.color, line.size, line.quantity - 1)}
+                        onClick={() => setQuantity(line, line.quantity - 1)}
                         className="flex h-7 w-7 items-center justify-center rounded-full border border-htz-navy/20 text-htz-navy transition-colors hover:bg-htz-navy/5"
                         aria-label={`Decrease quantity of ${line.product.name}`}
                       >
@@ -106,7 +117,7 @@ export default function CartDrawer() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => setQuantity(line.productId, line.color, line.size, line.quantity + 1)}
+                        onClick={() => setQuantity(line, line.quantity + 1)}
                         disabled={!canAddMore(line.productId)}
                         title={canAddMore(line.productId) ? undefined : "No more in stock"}
                         className="flex h-7 w-7 items-center justify-center rounded-full border border-htz-navy/20 text-htz-navy transition-colors hover:bg-htz-navy/5 disabled:cursor-not-allowed disabled:opacity-40"
@@ -116,7 +127,7 @@ export default function CartDrawer() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => removeItem(line.productId, line.color, line.size)}
+                        onClick={() => removeItem(line)}
                         className="ml-auto text-sm font-medium text-htz-pink hover:underline"
                       >
                         Remove

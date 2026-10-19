@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getActiveProducts } from "@/lib/products";
-import { stockLimit } from "@/lib/product-types";
+import { cleanCustomText, MAX_CUSTOM_TEXT_LENGTH, stockLimit } from "@/lib/product-types";
 import { absoluteUrl, STANDARD_SHIPPING_AUD_CENTS } from "@/lib/site";
 
 type CheckoutItem = {
   productId: string;
   color?: string;
   size?: string;
+  customText?: string;
   quantity: number;
 };
 
@@ -52,7 +53,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error }, { status: 400 });
     }
 
-    const variant = [product.chooseColor ? item.color : undefined, item.size].filter((value): value is string => Boolean(value));
+    const customText = product.needsCustomText ? cleanCustomText(item.customText) : "";
+    if (product.needsCustomText && !customText) {
+      return NextResponse.json(
+        { error: `Please add the name or text to print for ${product.name}.` },
+        { status: 400 }
+      );
+    }
+    if (customText.length > MAX_CUSTOM_TEXT_LENGTH) {
+      return NextResponse.json(
+        { error: `The text for ${product.name} must be ${MAX_CUSTOM_TEXT_LENGTH} characters or fewer.` },
+        { status: 400 }
+      );
+    }
+
+    const variant = [
+      product.chooseColor ? item.color : undefined,
+      item.size,
+      customText ? `Text: "${customText}"` : undefined,
+    ].filter((value): value is string => Boolean(value));
     const name = variant.length > 0 ? `${product.name} (${variant.join(", ")})` : product.name;
 
     lineItems.push({

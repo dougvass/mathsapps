@@ -1,4 +1,4 @@
-export default function Hero() {
+export default function Hero({ heroImage }: { heroImage: string }) {
   return (
     <section
       id="top"
@@ -34,11 +34,20 @@ export default function Hero() {
         </div>
 
         <div className="flex justify-center">
-          <div className="animate-float flex h-56 w-56 items-center justify-center rounded-full bg-white/10 shadow-2xl ring-4 ring-htz-pink/40 sm:h-72 sm:w-72">
-            <span className="text-8xl sm:text-9xl" aria-hidden="true">
-              🌀
-            </span>
-          </div>
+          {heroImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={heroImage}
+              alt="3D printed fidget toys by HugosToyz"
+              className="animate-float aspect-square w-64 rounded-[2rem] object-cover shadow-2xl ring-4 ring-htz-pink/40 sm:w-80 lg:w-96"
+            />
+          ) : (
+            <div className="animate-float flex h-56 w-56 items-center justify-center rounded-full bg-white/10 shadow-2xl ring-4 ring-htz-pink/40 sm:h-72 sm:w-72">
+              <span className="text-8xl sm:text-9xl" aria-hidden="true">
+                🌀
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </section>

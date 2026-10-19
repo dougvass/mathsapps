@@ -1,7 +1,12 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/site";
+import { getActiveProducts } from "@/lib/products";
+import { productUrl, SITE_URL } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Product list changes from the admin panel, so build the sitemap per request.
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const products = await getActiveProducts();
   return [
     {
       url: SITE_URL,
@@ -9,5 +14,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+    ...products.map((product) => ({
+      url: productUrl(product.id),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
   ];
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 
 export default function Header() {
@@ -8,22 +9,25 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-htz-navy/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <a href="#top" className="flex items-baseline gap-2">
+        <Link href="/#top" className="flex items-baseline gap-2">
           <span className="font-display text-2xl font-bold text-white">
             Hugos<span className="text-htz-lime">Toyz</span>
           </span>
           <span className="hidden text-xs font-semibold tracking-widest text-htz-pink sm:inline">
             HTZ
           </span>
-        </a>
+        </Link>
 
         <nav className="hidden items-center gap-6 text-sm font-medium text-white/80 sm:flex">
-          <a href="#shop" className="transition-colors hover:text-htz-lime">
+          <Link href="/#shop" className="transition-colors hover:text-htz-lime">
             Shop
-          </a>
-          <a href="#about" className="transition-colors hover:text-htz-lime">
+          </Link>
+          <Link href="/#about" className="transition-colors hover:text-htz-lime">
             About
-          </a>
+          </Link>
+          <Link href="/#faq" className="transition-colors hover:text-htz-lime">
+            FAQ
+          </Link>
         </nav>
 
         <button

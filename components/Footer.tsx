@@ -1,6 +1,8 @@
+import type { SocialLinks } from "@/lib/product-types";
 import { CHANGE_OF_MIND_RETURN_DAYS, FAULTY_ITEM_REPORT_DAYS } from "@/lib/site";
+import SocialIcons from "./SocialIcons";
 
-export default function Footer() {
+export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
   return (
     <footer id="footer" className="bg-htz-navy text-white/80">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -12,6 +14,9 @@ export default function Footer() {
             <p className="mt-2 text-sm">
               Playful 3D-printed fidgets and toys, made in small batches.
             </p>
+            <div className="mt-4">
+              <SocialIcons links={socialLinks} />
+            </div>
           </div>
 
           <div>

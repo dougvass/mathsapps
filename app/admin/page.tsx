@@ -3,15 +3,29 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
+  BADGE_LABELS,
+  MAX_GALLERY_PHOTOS,
   MAX_STOCK,
   type BannerSettings,
   type CategoryDef,
+  type Faq,
   type Product,
+  type ProductBadge,
+  type Review,
   type SizeOption,
+  type SocialLinks,
   type StoreSettings,
 } from "@/lib/product-types";
+import { DEFAULT_FAQS } from "@/lib/default-faqs";
 import ImageDropzone from "@/components/ImageDropzone";
 import DiscountCodes from "@/components/DiscountCodes";
+import QrCodeCard from "@/components/QrCodeCard";
+import {
+  FaqEditor,
+  HeroPhotoSection,
+  ReviewsEditor,
+  SocialLinksEditor,
+} from "@/components/AdminSiteSections";
 
 export default function AdminPage() {
   const [status, setStatus] = useState<"checking" | "authed" | "unauthed">("checking");
@@ -25,6 +39,15 @@ export default function AdminPage() {
     image: "",
     headline: "",
     subtext: "",
+  });
+  const [heroImage, setHeroImage] = useState("");
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>({
+    instagram: "",
+    tiktok: "",
+    facebook: "",
+    youtube: "",
   });
 
   const [password, setPassword] = useState("");
@@ -54,6 +77,10 @@ export default function AdminPage() {
       setSizeOptions(data.sizeOptions);
       setSettings(data.settings);
       setBanner(data.banner);
+      setHeroImage(data.heroImage);
+      setReviews(data.reviews);
+      setFaqs(data.faqs);
+      setSocialLinks(data.socialLinks);
       setStatus("authed");
     } else {
       setStatus("unauthed");
@@ -104,6 +131,9 @@ export default function AdminPage() {
       image: "",
       active: false,
       chooseColor: false,
+      needsCustomText: false,
+      gallery: [],
+      badge: "",
       stock: "made-to-order",
     };
     setProducts((prev) => [...prev, newProduct]);
@@ -162,7 +192,18 @@ export default function AdminPage() {
     const response = await fetch("/api/admin/store", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ products, categories, colors, sizeOptions, settings, banner }),
+      body: JSON.stringify({
+        products,
+        categories,
+        colors,
+        sizeOptions,
+        settings,
+        banner,
+        heroImage,
+        reviews,
+        faqs,
+        socialLinks,
+      }),
     });
 
     if (response.ok) {
@@ -289,6 +330,8 @@ export default function AdminPage() {
         </div>
 
         <div className="flex flex-col gap-4">
+          <HeroPhotoSection heroImage={heroImage} onChange={setHeroImage} />
+
           {/* Sale banner */}
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
@@ -567,17 +610,67 @@ export default function AdminPage() {
                   </select>
                 </label>
 
-                <div className="flex flex-col gap-1 sm:row-span-2">
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-htz-navy">Badge</span>
+                  <select
+                    value={product.badge}
+                    onChange={(e) =>
+                      updateProduct(product.id, { badge: e.target.value as ProductBadge })
+                    }
+                    className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
+                  >
+                    <option value="">None</option>
+                    {Object.entries(BADGE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="flex flex-col gap-1 sm:col-span-2">
                   <span className="text-sm font-semibold text-htz-navy">
-                    Photo <span className="text-htz-navy/50">(none = placeholder icon)</span>
+                    Photos{" "}
+                    <span className="font-normal text-htz-navy/50">
+                      (first = main photo; up to {MAX_GALLERY_PHOTOS} extra)
+                    </span>
                   </span>
-                  <div className="w-40">
-                    <ImageDropzone
-                      value={product.image}
-                      onChange={(url) => updateProduct(product.id, { image: url })}
-                      maxDimension={1200}
-                      emptyLabel="Drop a photo here, or click to choose"
-                    />
+                  <div className="flex flex-wrap items-start gap-3">
+                    <div className="w-32">
+                      <ImageDropzone
+                        value={product.image}
+                        onChange={(url) => updateProduct(product.id, { image: url })}
+                        maxDimension={1200}
+                        emptyLabel="Main photo"
+                      />
+                    </div>
+                    {product.gallery.map((photo, index) => (
+                      <div key={photo} className="w-28">
+                        <ImageDropzone
+                          value={photo}
+                          onChange={(url) =>
+                            updateProduct(product.id, {
+                              gallery: url
+                                ? product.gallery.map((p, i) => (i === index ? url : p))
+                                : product.gallery.filter((_, i) => i !== index),
+                            })
+                          }
+                          maxDimension={1200}
+                        />
+                      </div>
+                    ))}
+                    {product.image && product.gallery.length < MAX_GALLERY_PHOTOS && (
+                      <div className="w-28">
+                        <ImageDropzone
+                          value=""
+                          onChange={(url) =>
+                            url && updateProduct(product.id, { gallery: [...product.gallery, url] })
+                          }
+                          maxDimension={1200}
+                          emptyLabel="+ Add photo"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -616,9 +709,36 @@ export default function AdminPage() {
                     Customer picks a colour
                   </span>
                 </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={product.needsCustomText}
+                    onChange={(e) =>
+                      updateProduct(product.id, { needsCustomText: e.target.checked })
+                    }
+                    className="h-5 w-5 accent-htz-orange"
+                  />
+                  <span className="text-sm font-semibold text-htz-navy">
+                    Customer types text to print (e.g. a name)
+                  </span>
+                </label>
+
+                <a
+                  href={`/products/${product.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="self-center text-sm font-semibold text-htz-orange hover:underline"
+                >
+                  View product page ↗
+                </a>
               </div>
             </div>
           ))}
+
+          <ReviewsEditor reviews={reviews} onChange={setReviews} />
+          <FaqEditor faqs={faqs} defaults={DEFAULT_FAQS} onChange={setFaqs} />
+          <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
         </div>
 
         <div className="sticky bottom-4 mt-6 flex items-center gap-4 rounded-2xl bg-white p-4 shadow-lg">
@@ -644,6 +764,8 @@ export default function AdminPage() {
         </div>
 
         <DiscountCodes />
+
+        <QrCodeCard />
 
         {/* Change password */}
         <div className="mt-6 rounded-2xl bg-white p-5 shadow-sm">
