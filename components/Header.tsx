@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
+import { SEARCH_INPUT_ID } from "./ProductGrid";
 
 export default function Header() {
   const { totalItems, openCart } = useCart();
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-htz-navy/95 backdrop-blur">
@@ -30,6 +33,24 @@ export default function Header() {
           </Link>
         </nav>
 
+        <div className="flex items-center gap-2">
+        <Link
+          href={`/#${SEARCH_INPUT_ID}`}
+          onClick={(event) => {
+            if (pathname !== "/") return;
+            event.preventDefault();
+            const box = document.getElementById(SEARCH_INPUT_ID);
+            box?.scrollIntoView({ behavior: "smooth", block: "start" });
+            box?.querySelector("input")?.focus({ preventScroll: true });
+          }}
+          aria-label="Search products"
+          className="flex h-9 w-9 items-center justify-center rounded-full text-white/80 transition-colors hover:bg-white/10 hover:text-htz-lime"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-4-4" />
+          </svg>
+        </Link>
         <button
           type="button"
           onClick={openCart}
@@ -42,6 +63,7 @@ export default function Header() {
             </span>
           )}
         </button>
+        </div>
       </div>
     </header>
   );
