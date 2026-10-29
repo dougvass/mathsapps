@@ -52,7 +52,7 @@ export function HeroPhotoSection({
   );
 }
 
-export function ReviewsModerator() {
+export function ReviewsModerator({ products }: { products: { id: string; name: string }[] }) {
   const [reviews, setReviews] = useState<Review[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -106,6 +106,11 @@ export function ReviewsModerator() {
                       · {new Date(review.createdAt).toLocaleDateString("en-AU")}
                     </span>
                   )}
+                </p>
+                <p className="mt-0.5 text-xs text-htz-navy/60">
+                  {review.productId
+                    ? `On: ${products.find((p) => p.id === review.productId)?.name ?? "a removed product"}`
+                    : "Shop review (homepage)"}
                 </p>
                 <p className="mt-1 break-words text-sm text-htz-navy/80">{review.text}</p>
               </div>

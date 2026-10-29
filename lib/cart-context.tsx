@@ -27,10 +27,11 @@ type CartContextValue = {
   lines: CartLine[];
   totalItems: number;
   totalPrice: number;
-  isOpen: boolean;
-  openCart: () => void;
-  closeCart: () => void;
-  addItem: (key: LineKey) => void;
+  // Most recent add, for the "Added to cart" pop-up.
+  lastAdded: { key: LineKey; quantity: number; at: number } | null;
+  dismissAdded: () => void;
+  // Returns how many were actually added (limited by stock).
+  addItem: (key: LineKey, quantity?: number) => number;
   removeItem: (key: LineKey) => void;
   setQuantity: (key: LineKey, quantity: number) => void;
   canAddMore: (productId: string) => boolean;
@@ -127,21 +128,23 @@ export function CartProvider({
   children: React.ReactNode;
 }) {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-  const [isOpen, setIsOpen] = useState(false);
+  const [lastAdded, setLastAdded] = useState<CartContextValue["lastAdded"]>(null);
 
   const addItem = useCallback(
-    (key: LineKey) => {
+    (key: LineKey, quantity = 1) => {
+      const allowed = Math.min(quantity, remainingStock(getSnapshot(), products, key.productId));
+      if (allowed < 1) return 0;
       setCartItems((prev) => {
-        if (remainingStock(prev, products, key.productId) < 1) return prev;
         const existing = prev.find((item) => sameLine(item, key));
         if (existing) {
           return prev.map((item) =>
-            sameLine(item, key) ? { ...item, quantity: item.quantity + 1 } : item
+            sameLine(item, key) ? { ...item, quantity: item.quantity + allowed } : item
           );
         }
-        return [...prev, { ...key, quantity: 1 }];
+        return [...prev, { ...key, quantity: allowed }];
       });
-      setIsOpen(true);
+      setLastAdded({ key, quantity: allowed, at: Date.now() });
+      return allowed;
     },
     [products]
   );
@@ -170,8 +173,7 @@ export function CartProvider({
   );
 
   const clearCart = useCallback(() => setCartItems(() => []), []);
-  const openCart = useCallback(() => setIsOpen(true), []);
-  const closeCart = useCallback(() => setIsOpen(false), []);
+  const dismissAdded = useCallback(() => setLastAdded(null), []);
 
   const lines = useMemo<CartLine[]>(() => {
     return items
@@ -199,16 +201,15 @@ export function CartProvider({
       lines,
       totalItems,
       totalPrice,
-      isOpen,
-      openCart,
-      closeCart,
+      lastAdded,
+      dismissAdded,
       addItem,
       removeItem,
       setQuantity,
       canAddMore,
       clearCart,
     }),
-    [items, lines, totalItems, totalPrice, isOpen, openCart, closeCart, addItem, removeItem, setQuantity, canAddMore, clearCart]
+    [items, lines, totalItems, totalPrice, lastAdded, dismissAdded, addItem, removeItem, setQuantity, canAddMore, clearCart]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

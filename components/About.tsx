@@ -2,7 +2,7 @@ import type { HomeText } from "@/lib/product-types";
 
 export default function About({ text }: { text: HomeText }) {
   return (
-    <section id="about" className="bg-htz-teal text-white">
+    <section id="about" className="scroll-mt-36 bg-htz-teal text-white">
       <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
         <h2 className="font-display text-3xl font-bold sm:text-4xl">
           {text.aboutTitle}

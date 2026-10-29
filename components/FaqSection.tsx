@@ -4,7 +4,7 @@ export default function FaqSection({ faqs }: { faqs: Faq[] }) {
   if (faqs.length === 0) return null;
 
   return (
-    <section id="faq" className="mx-auto max-w-3xl scroll-mt-20 px-4 py-16 sm:px-6 lg:px-8">
+    <section id="faq" className="mx-auto max-w-3xl scroll-mt-36 px-4 py-16 sm:px-6 lg:px-8">
       <h2 className="mb-8 text-center font-display text-3xl font-bold text-htz-navy sm:text-4xl">
         Questions? We&apos;ve got answers
       </h2>

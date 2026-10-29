@@ -61,7 +61,11 @@ export type Review = {
   rating: number;
   // ISO date; empty for reviews added before dates were recorded.
   createdAt: string;
+  // The product reviewed; empty for reviews of the shop as a whole.
+  productId: string;
 };
+
+export type Rating = { average: number; count: number };
 
 export const REVIEW_NAME_MAX = 40;
 export const REVIEW_TEXT_MIN = 10;

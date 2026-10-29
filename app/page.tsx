@@ -1,10 +1,8 @@
-import { getActiveProducts, getStoreConfig } from "@/lib/products";
-import { getReviews } from "@/lib/reviews";
+import { loadShopData } from "@/lib/shop-data";
 import { homeJsonLd, jsonLdScript } from "@/lib/structured-data";
 import ShopShell from "@/components/ShopShell";
-import Hero from "@/components/Hero";
-import SaleBanner from "@/components/SaleBanner";
-import ProductGrid from "@/components/ProductGrid";
+import HomeCarousel from "@/components/HomeCarousel";
+import HomeRows from "@/components/HomeRows";
 import Reviews from "@/components/Reviews";
 import About from "@/components/About";
 import FaqSection from "@/components/FaqSection";
@@ -14,26 +12,16 @@ import FaqSection from "@/components/FaqSection";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [products, config, reviews] = await Promise.all([
-    getActiveProducts(),
-    getStoreConfig(),
-    getReviews(),
-  ]);
+  const { products, config, reviews, shop } = await loadShopData();
 
   return (
-    <ShopShell products={products} socialLinks={config.socialLinks}>
+    <ShopShell shop={shop} socialLinks={config.socialLinks}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLdScript(homeJsonLd(products, config.socialLinks))}
       />
-      <Hero heroImage={config.heroImage} text={config.homeText} />
-      <SaleBanner banner={config.banner} />
-      <ProductGrid
-        products={products}
-        categories={config.categories}
-        colors={config.colors}
-        sizeOptions={config.sizeOptions}
-      />
+      <HomeCarousel heroImage={config.heroImage} text={config.homeText} banner={config.banner} />
+      <HomeRows />
       <Reviews reviews={reviews} />
       <About text={config.homeText} />
       <FaqSection faqs={config.faqs} />

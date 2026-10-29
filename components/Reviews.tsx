@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useShop } from "@/lib/shop-context";
 import {
   REVIEW_NAME_MAX,
   REVIEW_TEXT_MAX,
@@ -12,7 +14,7 @@ const INITIAL_SHOWN = 6;
 const inputClass =
   "w-full rounded-lg border border-htz-navy/20 bg-white px-3 py-2 focus:border-htz-orange focus:outline-none";
 
-function Stars({ rating }: { rating: number }) {
+export function Stars({ rating }: { rating: number }) {
   return (
     <p className="text-lg tracking-wide" aria-label={`${rating} out of 5 stars`}>
       <span className="text-htz-orange">{"★".repeat(rating)}</span>
@@ -21,12 +23,20 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-function formatDate(iso: string): string {
+export function formatDate(iso: string): string {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("en-AU", { month: "short", year: "numeric" });
 }
 
-function ReviewForm({ onPosted }: { onPosted: (review: Review) => void }) {
+export function ReviewForm({
+  onPosted,
+  productId = "",
+  productName,
+}: {
+  onPosted: (review: Review) => void;
+  productId?: string;
+  productName?: string;
+}) {
   const [startedAt] = useState(() => Date.now());
   const [name, setName] = useState("");
   const [text, setText] = useState("");
@@ -46,7 +56,7 @@ function ReviewForm({ onPosted }: { onPosted: (review: Review) => void }) {
     const response = await fetch("/api/reviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, text, rating, website, startedAt }),
+      body: JSON.stringify({ name, text, rating, website, startedAt, productId }),
     });
     const data = await response.json().catch(() => ({}));
     setSending(false);
@@ -59,7 +69,9 @@ function ReviewForm({ onPosted }: { onPosted: (review: Review) => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto mb-10 max-w-xl rounded-3xl bg-white p-6 shadow-md">
-      <h3 className="font-display text-xl font-bold text-htz-navy">Write a review</h3>
+      <h3 className="font-display text-xl font-bold text-htz-navy">
+        {productName ? `Review ${productName}` : "Write a review"}
+      </h3>
 
       <fieldset className="mt-4">
         <legend className="text-sm font-semibold text-htz-navy">Your rating</legend>
@@ -136,6 +148,26 @@ function ReviewForm({ onPosted }: { onPosted: (review: Review) => void }) {
   );
 }
 
+export function ReviewCard({ review, showProduct = false }: { review: Review; showProduct?: boolean }) {
+  const { products } = useShop();
+  const product = showProduct && review.productId ? products.find((p) => p.id === review.productId) : null;
+  return (
+    <figure className="flex h-full flex-col gap-3 rounded-2xl bg-white p-6 shadow-sm">
+      <Stars rating={review.rating} />
+      {product && (
+        <Link href={`/products/${product.id}`} className="text-sm font-semibold text-htz-teal hover:text-htz-orange hover:underline">
+          {product.name}
+        </Link>
+      )}
+      <blockquote className="flex-1 break-words text-htz-navy/80">&ldquo;{review.text}&rdquo;</blockquote>
+      <figcaption className="flex items-baseline justify-between gap-2">
+        <span className="font-display font-semibold text-htz-navy">– {review.name}</span>
+        <span className="text-xs text-htz-navy/50">{formatDate(review.createdAt)}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
 export default function Reviews({ reviews: initialReviews }: { reviews: Review[] }) {
   const [reviews, setReviews] = useState(initialReviews);
   const [showAll, setShowAll] = useState(false);
@@ -147,7 +179,7 @@ export default function Reviews({ reviews: initialReviews }: { reviews: Review[]
     reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
 
   return (
-    <section id="reviews" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-16 sm:px-6 lg:px-8">
+    <section id="reviews" className="mx-auto max-w-7xl scroll-mt-36 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8 text-center">
         <h2 className="font-display text-3xl font-bold text-htz-navy sm:text-4xl">
           What customers say
@@ -190,19 +222,9 @@ export default function Reviews({ reviews: initialReviews }: { reviews: Review[]
       {shown.length > 0 && (
         <div className="flex flex-wrap justify-center gap-6">
           {shown.map((review) => (
-            <figure
-              key={review.id}
-              className="flex w-full flex-col gap-3 rounded-3xl bg-white p-6 shadow-md sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
-            >
-              <Stars rating={review.rating} />
-              <blockquote className="flex-1 break-words text-htz-navy/80">
-                &ldquo;{review.text}&rdquo;
-              </blockquote>
-              <figcaption className="flex items-baseline justify-between gap-2">
-                <span className="font-display font-semibold text-htz-navy">– {review.name}</span>
-                <span className="text-xs text-htz-navy/50">{formatDate(review.createdAt)}</span>
-              </figcaption>
-            </figure>
+            <div key={review.id} className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]">
+              <ReviewCard review={review} showProduct />
+            </div>
           ))}
         </div>
       )}

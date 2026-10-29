@@ -21,6 +21,7 @@ function normalise(reviews: Partial<Review>[]): Review[] {
     text: String(review.text ?? ""),
     rating: Number(review.rating ?? 5),
     createdAt: review.createdAt ?? "",
+    productId: review.productId ?? "",
   }));
 }
 

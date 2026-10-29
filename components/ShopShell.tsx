@@ -1,27 +1,32 @@
 "use client";
 
-import type { Product, SocialLinks } from "@/lib/product-types";
+import type { SocialLinks } from "@/lib/product-types";
 import { CartProvider } from "@/lib/cart-context";
+import { ShopDataProvider, type ShopData } from "@/lib/shop-context";
 import Header from "./Header";
 import Footer from "./Footer";
-import CartDrawer from "./CartDrawer";
+import CartToast from "./CartToast";
+import BackToTop from "./BackToTop";
 
-// Cart, header, footer and cart drawer shared by every shop page.
+// Shop data, cart, header, footer and pop-ups shared by every shop page.
 export default function ShopShell({
-  products,
+  shop,
   socialLinks,
   children,
 }: {
-  products: Product[];
+  shop: ShopData;
   socialLinks: SocialLinks;
   children: React.ReactNode;
 }) {
   return (
-    <CartProvider products={products}>
-      <Header />
-      <main>{children}</main>
-      <Footer socialLinks={socialLinks} />
-      <CartDrawer />
-    </CartProvider>
+    <ShopDataProvider data={shop}>
+      <CartProvider products={shop.products}>
+        <Header />
+        <main className="min-h-[60vh] bg-[#f4f5f7]">{children}</main>
+        <Footer socialLinks={socialLinks} />
+        <CartToast />
+        <BackToTop />
+      </CartProvider>
+    </ShopDataProvider>
   );
 }

@@ -1,29 +1,37 @@
-import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getActiveProducts, getStoreConfig } from "@/lib/products";
+import { loadShopData } from "@/lib/shop-data";
 import { productPhotos } from "@/lib/product-types";
-import { absoluteUrl, CHANGE_OF_MIND_RETURN_DAYS, FREE_SHIPPING_THRESHOLD_AUD_CENTS, NON_RETURNABLE_CATEGORY, productPath, SITE_NAME } from "@/lib/site";
+import {
+  absoluteUrl,
+  CHANGE_OF_MIND_RETURN_DAYS,
+  NON_RETURNABLE_CATEGORY,
+  productPath,
+  productUrl,
+  SITE_NAME,
+} from "@/lib/site";
 import { jsonLdScript, productJsonLd } from "@/lib/structured-data";
 import ShopShell from "@/components/ShopShell";
 import ProductGallery from "@/components/ProductGallery";
-import AddToCartForm from "@/components/AddToCartForm";
-import StockBadge from "@/components/StockBadge";
+import BuyBox from "@/components/BuyBox";
 import ProductBadgeTag from "@/components/ProductBadgeTag";
-import ProductCard from "@/components/ProductCard";
+import ProductRow from "@/components/ProductRow";
+import ProductReviews from "@/components/ProductReviews";
+import RecentlyViewed from "@/components/RecentlyViewed";
+import ShareButton from "@/components/ShareButton";
+import WishlistButton from "@/components/WishlistButton";
+import Stars from "@/components/Stars";
 
 // Always read the latest store data so admin edits show up without a redeploy.
 export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
-// Shared by generateMetadata and the page so the store is read once per request.
-const loadPage = cache(async (id: string) => {
-  const [products, config] = await Promise.all([getActiveProducts(), getStoreConfig()]);
-  const product = products.find((p) => p.id === id);
-  return { products, config, product };
-});
+async function loadPage(id: string) {
+  const data = await loadShopData();
+  return { ...data, product: data.products.find((p) => p.id === id) };
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
@@ -60,86 +68,103 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProductPage({ params }: Props) {
   const { id } = await params;
-  const { products, config, product } = await loadPage(id);
+  const { products, config, reviews, shop, product } = await loadPage(id);
   if (!product) notFound();
 
   const category = config.categories.find((c) => c.value === product.category);
-  const related = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 3);
+  const productReviews = reviews.filter((r) => r.productId === product.id);
+  const rating = shop.ratings[product.id];
+  const related = products.filter((p) => p.category === product.category && p.id !== product.id);
+  const others = products.filter((p) => p.category !== product.category);
   const returnsNote =
     product.category === NON_RETURNABLE_CATEGORY
       ? "Made just for you, so no change-of-mind returns."
       : `Change-of-mind returns within ${CHANGE_OF_MIND_RETURN_DAYS} days.`;
 
   return (
-    <ShopShell products={products} socialLinks={config.socialLinks}>
+    <ShopShell shop={shop} socialLinks={config.socialLinks}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={jsonLdScript(productJsonLd(product, config.categories))}
+        dangerouslySetInnerHTML={jsonLdScript(productJsonLd(product, config.categories, productReviews))}
       />
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        <nav className="mb-6 text-sm text-htz-navy/60" aria-label="Breadcrumb">
-          <Link href="/#shop" className="hover:text-htz-orange">
-            Shop
-          </Link>
-          {category && (
-            <>
-              {" / "}
-              <span>{category.label}</span>
-            </>
-          )}
-        </nav>
+      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-3 py-5 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <nav className="text-sm text-htz-navy/60" aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-1">
+              <li>
+                <Link href="/shop" className="hover:text-htz-orange hover:underline">
+                  Shop
+                </Link>
+              </li>
+              {category && (
+                <li>
+                  {"› "}
+                  <Link
+                    href={`/shop?category=${encodeURIComponent(category.value)}`}
+                    className="hover:text-htz-orange hover:underline"
+                  >
+                    {category.label}
+                  </Link>
+                </li>
+              )}
+              <li aria-current="page" className="text-htz-navy">
+                {`› ${product.name}`}
+              </li>
+            </ol>
+          </nav>
+          <ShareButton title={product.name} url={productUrl(product.id)} />
+        </div>
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
-          <ProductGallery product={product} />
+        <div className="grid grid-cols-1 gap-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 lg:grid-cols-[1.1fr_1fr_320px]">
+          <div className="relative">
+            <WishlistButton
+              productId={product.id}
+              productName={product.name}
+              className="absolute right-3 top-3 z-10 h-11 w-11 text-2xl"
+            />
+            <ProductGallery product={product} />
+          </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <ProductBadgeTag badge={product.badge} className="self-start" />
-            <h1 className="font-display text-3xl font-bold text-htz-navy sm:text-4xl">
+            <h1 className="font-display text-2xl font-bold leading-tight text-htz-navy sm:text-3xl">
               {product.name}
             </h1>
-            <StockBadge stock={product.stock} />
-            {product.description && (
-              <p className="text-lg text-htz-navy/80">{product.description}</p>
+            {rating ? (
+              <a href="#product-reviews" className="flex items-center gap-2 text-sm text-htz-teal hover:underline">
+                <Stars rating={rating.average} size="text-base" />
+                {`${rating.average.toFixed(1)} · ${rating.count} ${rating.count === 1 ? "review" : "reviews"}`}
+              </a>
+            ) : (
+              <a href="#product-reviews" className="text-sm text-htz-teal hover:underline">
+                Be the first to review this
+              </a>
             )}
-
-            <div className="rounded-2xl bg-white p-5 shadow-sm">
-              <AddToCartForm
-                product={product}
-                colors={config.colors}
-                sizeOptions={config.sizeOptions}
-                large
-              />
-            </div>
-
-            <ul className="flex flex-col gap-2 text-sm text-htz-navy/70">
-              <li>🖨️ 3D printed in PLA and finished by hand in Australia.</li>
-              <li>📦 Printed and posted within 3–5 business days. Free shipping over ${FREE_SHIPPING_THRESHOLD_AUD_CENTS / 100}.</li>
-              <li>↩️ {returnsNote}</li>
-              <li>⚠️ Not suitable for children under 3 – small parts.</li>
+            <hr className="border-htz-navy/10" />
+            {product.description && <p className="text-htz-navy/80">{product.description}</p>}
+            <h2 className="mt-2 font-display text-lg font-bold text-htz-navy">About this toy</h2>
+            <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-htz-navy/80">
+              <li>3D printed in PLA and finished by hand in Australia.</li>
+              <li>Printed and posted within 3–5 business days.</li>
+              <li>{returnsNote}</li>
+              <li>Not suitable for children under 3 – small parts.</li>
             </ul>
+          </div>
+
+          <div className="self-start rounded-2xl border border-htz-navy/10 p-4 md:col-span-2 lg:col-span-1 lg:sticky lg:top-36">
+            <BuyBox product={product} />
           </div>
         </div>
 
-        {related.length > 0 && (
-          <section className="mt-16">
-            <h2 className="font-display mb-6 text-2xl font-semibold text-htz-navy">
-              More {category?.label ?? "from the shop"}
-            </h2>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {related.map((item) => (
-                <ProductCard
-                  key={item.id}
-                  product={item}
-                  colors={config.colors}
-                  sizeOptions={config.sizeOptions}
-                />
-              ))}
-            </div>
-          </section>
-        )}
+        <ProductRow
+          title={`More ${category?.label ?? "from the shop"}`}
+          products={related}
+          seeAllHref={category ? `/shop?category=${encodeURIComponent(category.value)}` : "/shop"}
+        />
+        <ProductReviews productId={product.id} productName={product.name} reviews={productReviews} />
+        <RecentlyViewed currentId={product.id} />
+        <ProductRow title="You might also like" products={others} seeAllHref="/shop" />
       </div>
     </ShopShell>
   );

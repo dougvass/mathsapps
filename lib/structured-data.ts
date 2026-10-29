@@ -1,4 +1,4 @@
-import type { CategoryDef, Product, SocialLinks } from "./product-types";
+import type { CategoryDef, Product, Review, SocialLinks } from "./product-types";
 import { productPhotos } from "./product-types";
 import {
   absoluteUrl,
@@ -96,8 +96,27 @@ export function homeJsonLd(products: Product[], socialLinks: SocialLinks) {
   };
 }
 
-export function productJsonLd(product: Product, categories: CategoryDef[]) {
+export function productJsonLd(product: Product, categories: CategoryDef[], reviews: Review[] = []) {
   const photos = productPhotos(product).map(absoluteUrl);
+  const ratingInfo =
+    reviews.length > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1),
+            reviewCount: reviews.length,
+            bestRating: 5,
+            worstRating: 1,
+          },
+          review: reviews.slice(0, 10).map((r) => ({
+            "@type": "Review",
+            author: { "@type": "Person", name: r.name },
+            ...(r.createdAt ? { datePublished: r.createdAt.slice(0, 10) } : {}),
+            reviewBody: r.text,
+            reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+          })),
+        }
+      : {};
   return {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -106,6 +125,7 @@ export function productJsonLd(product: Product, categories: CategoryDef[]) {
     category: categories.find((c) => c.value === product.category)?.label,
     brand: { "@type": "Brand", name: SITE_NAME },
     ...(photos.length > 0 ? { image: photos } : {}),
+    ...ratingInfo,
     offers: {
       "@type": "Offer",
       url: productUrl(product.id),

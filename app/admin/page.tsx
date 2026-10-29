@@ -396,7 +396,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-htz-cream px-4 pb-32 pt-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-htz-cream px-4 pt-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <Link
           href="/"
@@ -932,49 +932,9 @@ export default function AdminPage() {
           <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
         </div>
 
-        {/* Pinned to the bottom of the screen for the whole admin page. */}
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-htz-navy/10 bg-white/95 shadow-[0_-4px_16px_rgba(11,43,58,0.08)] backdrop-blur">
-          <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saveState === "saving"}
-            className="rounded-full bg-htz-lime px-6 py-2 font-display font-bold text-htz-navy shadow transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50"
-          >
-            {saveState === "saving" ? "Saving…" : "Save Changes"}
-          </button>
-          {saveState === "saved" && (
-            <span className="text-sm font-semibold text-green-600">Saved!</span>
-          )}
-          {saveState === "error" && (
-            <span className="text-sm font-semibold text-htz-pink">{saveError}</span>
-          )}
-          {saveState === "conflict" && (
-            <span className="text-sm font-semibold text-htz-pink">
-              {saveError}{" "}
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="underline"
-              >
-                Reload now
-              </button>
-            </span>
-          )}
-          {saveState === "idle" && dirty && (
-            <span className="text-sm font-semibold text-htz-orange">● Unsaved changes</span>
-          )}
-          {saveState === "idle" && !dirty && (
-            <span className="text-xs text-htz-navy/50">
-              New photos and banner changes go live when you save.
-            </span>
-          )}
-          </div>
-        </div>
-
         <DiscountCodes />
 
-        <ReviewsModerator />
+        <ReviewsModerator products={products} />
 
         <QrCodeCard />
 
@@ -1026,6 +986,46 @@ export default function AdminPage() {
               {passwordError && <span className="text-sm font-semibold text-htz-pink">{passwordError}</span>}
             </div>
           </form>
+        </div>
+
+        {/* Last thing on the page, and sticks to the bottom of the screen all the way down. */}
+        <div className="sticky bottom-0 z-30 -mx-4 mt-8 border-t sm:-mx-6 lg:-mx-8 border-htz-navy/10 bg-white/95 shadow-[0_-4px_16px_rgba(11,43,58,0.08)] backdrop-blur">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saveState === "saving"}
+            className="rounded-full bg-htz-lime px-6 py-2 font-display font-bold text-htz-navy shadow transition-transform hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+          >
+            {saveState === "saving" ? "Saving…" : "Save Changes"}
+          </button>
+          {saveState === "saved" && (
+            <span className="text-sm font-semibold text-green-600">Saved!</span>
+          )}
+          {saveState === "error" && (
+            <span className="text-sm font-semibold text-htz-pink">{saveError}</span>
+          )}
+          {saveState === "conflict" && (
+            <span className="text-sm font-semibold text-htz-pink">
+              {saveError}{" "}
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="underline"
+              >
+                Reload now
+              </button>
+            </span>
+          )}
+          {saveState === "idle" && dirty && (
+            <span className="text-sm font-semibold text-htz-orange">● Unsaved changes</span>
+          )}
+          {saveState === "idle" && !dirty && (
+            <span className="text-xs text-htz-navy/50">
+              New photos and banner changes go live when you save.
+            </span>
+          )}
+          </div>
         </div>
       </div>
     </main>

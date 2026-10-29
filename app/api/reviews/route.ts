@@ -7,6 +7,7 @@ import {
   REVIEW_TEXT_MIN,
   type Review,
 } from "@/lib/product-types";
+import { getActiveProducts } from "@/lib/products";
 import { updateReviews } from "@/lib/reviews";
 
 // Real people take a few seconds to fill in the form; bots usually don't.
@@ -26,7 +27,14 @@ function tooManyRecent(visitor: string): boolean {
 }
 
 export async function POST(request: Request) {
-  let body: { name?: unknown; text?: unknown; rating?: unknown; website?: unknown; startedAt?: unknown };
+  let body: {
+    name?: unknown;
+    text?: unknown;
+    rating?: unknown;
+    website?: unknown;
+    startedAt?: unknown;
+    productId?: unknown;
+  };
   try {
     body = await request.json();
   } catch {
@@ -59,6 +67,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Links aren't allowed in reviews." }, { status: 400 });
   }
 
+  let productId = "";
+  if (body.productId) {
+    const products = await getActiveProducts();
+    const product = products.find((p) => p.id === body.productId);
+    if (!product) {
+      return NextResponse.json({ error: "That product isn't available." }, { status: 400 });
+    }
+    productId = product.id;
+  }
+
   const visitor = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   if (tooManyRecent(visitor)) {
     return NextResponse.json(
@@ -73,6 +91,7 @@ export async function POST(request: Request) {
     text,
     rating,
     createdAt: new Date().toISOString(),
+    productId,
   };
 
   try {

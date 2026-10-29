@@ -85,7 +85,7 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
             <Link href="/terms" className="hover:text-htz-lime">
               Terms &amp; Conditions
             </Link>
-            <Link href="/#returns" className="hover:text-htz-lime">
+            <Link href="#returns" className="hover:text-htz-lime">
               Returns
             </Link>
           </nav>
