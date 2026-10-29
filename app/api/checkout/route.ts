@@ -3,6 +3,9 @@ import Stripe from "stripe";
 import { getActiveProducts } from "@/lib/products";
 import { cleanCustomText, MAX_CUSTOM_TEXT_LENGTH, stockLimit } from "@/lib/product-types";
 import { discountCents, lookupDiscount, normaliseCode } from "@/lib/discount-lookup";
+import { getAccount } from "@/lib/accounts";
+import { ensureStripeCustomer } from "@/lib/account-view";
+import { currentAccountId } from "@/lib/user-session";
 import {
   absoluteUrl,
   FREE_SHIPPING_THRESHOLD_AUD_CENTS,
@@ -132,11 +135,27 @@ export async function POST(request: Request) {
   }
   const freeShipping = itemsAfterDiscount >= FREE_SHIPPING_THRESHOLD_AUD_CENTS;
 
+  // Signed-in shoppers earn points (via the webhook) and get their saved address filled in.
+  const accountId = await currentAccountId();
+  const account = accountId ? await getAccount(accountId) : null;
+  let customerId: string | null = null;
+  if (account) {
+    try {
+      customerId = await ensureStripeCustomer(stripe, account);
+    } catch (error) {
+      console.error("Couldn't set up the Stripe customer:", error);
+    }
+  }
+
   let session: Stripe.Checkout.Session;
   try {
     session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
+      ...(account ? { metadata: { accountId: account.id } } : {}),
+      ...(customerId
+        ? { customer: customerId, customer_update: { shipping: "auto" as const, name: "auto" as const } }
+        : {}),
       ...(promotionCodeId
         ? { discounts: [{ promotion_code: promotionCodeId }] }
         : { allow_promotion_codes: true }),

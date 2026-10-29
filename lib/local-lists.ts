@@ -57,11 +57,28 @@ const WISHLIST_KEY = "htz-wishlist";
 const RECENT_KEY = "htz-recently-viewed";
 const MAX_RECENT = 12;
 
+// When signed in, wishlist changes are also saved to the shopper's account.
+let wishlistSaver: ((ids: string[]) => void) | null = null;
+
+export function setWishlistSaver(saver: ((ids: string[]) => void) | null) {
+  wishlistSaver = saver;
+}
+
+// Combines this device's wishlist with the account's; returns the result.
+export function mergeWishlist(accountIds: string[]): string[] {
+  const current = read(WISHLIST_KEY);
+  const merged = [...current, ...accountIds.filter((id) => !current.includes(id))];
+  if (merged.length !== current.length) write(WISHLIST_KEY, merged);
+  return merged;
+}
+
 export function useWishlist() {
   const ids = useList(WISHLIST_KEY);
   const toggle = useCallback((id: string) => {
     const current = read(WISHLIST_KEY);
-    write(WISHLIST_KEY, current.includes(id) ? current.filter((x) => x !== id) : [id, ...current]);
+    const next = current.includes(id) ? current.filter((x) => x !== id) : [id, ...current];
+    write(WISHLIST_KEY, next);
+    wishlistSaver?.(next);
   }, []);
   return { ids, has: (id: string) => ids.includes(id), toggle };
 }

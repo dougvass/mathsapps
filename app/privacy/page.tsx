@@ -35,6 +35,12 @@ export default function PrivacyPage() {
           internet (IP) address to stop spam; it isn&apos;t published or stored with your review.
         </li>
         <li>
+          <strong>Accounts and rewards (optional).</strong> If you sign in with Google, Google tells
+          us your name, email address and profile photo. We use these to run your account and keep
+          your reward points, order history, wishlist, birthday (day and month only, if you add it)
+          and saved delivery address. You can shop without an account.
+        </li>
+        <li>
           <strong>Your cart.</strong> Items in your cart and any discount code you apply are saved
           in your own browser so they&apos;re still there when you come back. They aren&apos;t sent
           to us until you check out.
@@ -56,6 +62,7 @@ export default function PrivacyPage() {
         <li>To make, pack and deliver your order, and contact you about it.</li>
         <li>To answer your questions and handle returns or refunds.</li>
         <li>To show reviews on our website.</li>
+        <li>To run your account and reward points, if you have one.</li>
         <li>To keep records we&apos;re required to keep for tax and accounting.</li>
       </ul>
 
@@ -65,6 +72,7 @@ export default function PrivacyPage() {
         <li>Stripe – to process payments and refunds.</li>
         <li>Australia Post or another courier – your name and address, to deliver your order.</li>
         <li>Vercel – to host our website and store our shop data.</li>
+        <li>Google – only to let you sign in, if you choose to.</li>
       </ul>
       <p>
         Stripe and Vercel may store information on servers outside Australia, such as in the
@@ -74,8 +82,8 @@ export default function PrivacyPage() {
       <h2>How long we keep it</h2>
       <p>
         We keep order records for as long as the law requires for tax and accounting. Reviews stay
-        on the website until they&apos;re removed. Email {email} if you&apos;d like your review
-        taken down.
+        on the website until they&apos;re removed. Accounts are kept until you ask us to delete
+        them. Email {email} if you&apos;d like your review or account removed.
       </p>
 
       <h2>Your choices</h2>

@@ -1,6 +1,7 @@
 // The address search engines and link previews use. Change this when a custom
 // domain (e.g. https://hugostoyz.com) is connected in Vercel.
-export const SITE_URL = "https://hugostoyz.vercel.app";
+// Set NEXT_PUBLIC_SITE_URL in Vercel when the shop moves to its own domain.
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://hugostoyz.vercel.app").replace(/\/$/, "");
 
 export const SITE_NAME = "HugosToyz";
 

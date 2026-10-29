@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 import { useWishlist } from "@/lib/local-lists";
 import { useShop } from "@/lib/shop-context";
+import { useAccount } from "@/lib/account-context";
 import SearchBar from "./SearchBar";
 
 const PAGE_LINKS = [
+  { href: "/account", label: "🎁 Rewards" },
   { href: "/#reviews", label: "Reviews" },
   { href: "/#about", label: "About" },
   { href: "/#faq", label: "FAQ" },
@@ -26,6 +28,8 @@ export default function Header() {
   const { totalItems } = useCart();
   const { ids: wishlist } = useWishlist();
   const { products, categories } = useShop();
+  const { account } = useAccount();
+  const firstName = account?.name.split(" ")[0];
   const [menuOpen, setMenuOpen] = useState(false);
   const shownCategories = categories.filter((c) => products.some((p) => p.category === c.value));
 
@@ -56,6 +60,18 @@ export default function Header() {
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2">
+            <Link
+              href="/account"
+              onClick={close}
+              aria-label={account ? `Your account, ${account.points} points` : "Sign in"}
+              className="flex h-10 items-center gap-1 rounded-full px-2 text-white transition-colors hover:bg-white/10"
+            >
+              <span className="text-xl sm:hidden" aria-hidden="true">👤</span>
+              <span className="hidden flex-col leading-tight sm:flex">
+                <span className="text-[11px] text-white/70">{account ? `Hi, ${firstName}` : "Hello, sign in"}</span>
+                <span className="text-sm font-bold">{account ? `${account.points} points` : "Account & Rewards"}</span>
+              </span>
+            </Link>
             <Link
               href="/wishlist"
               onClick={close}
@@ -122,7 +138,12 @@ export default function Header() {
 
       {menuOpen && (
         <nav id="mobile-menu" className="max-h-[70vh] overflow-y-auto bg-htz-navy px-4 pb-4 sm:hidden">
-          {[{ href: "/shop", label: "Shop all toys" }, { href: "/wishlist", label: "Wishlist ♡" }, ...PAGE_LINKS].map((link) => (
+          {[
+            { href: "/shop", label: "Shop all toys" },
+            { href: "/account", label: account ? `My account · ${account.points} points` : "Sign in & earn points" },
+            { href: "/wishlist", label: "Wishlist ♡" },
+            ...PAGE_LINKS.filter((link) => link.href !== "/account"),
+          ].map((link) => (
             <Link
               key={link.href}
               href={link.href}

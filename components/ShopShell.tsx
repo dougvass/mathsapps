@@ -7,6 +7,8 @@ import Header from "./Header";
 import Footer from "./Footer";
 import CartToast from "./CartToast";
 import BackToTop from "./BackToTop";
+import ReferralCatcher from "./ReferralCatcher";
+import { AccountProvider } from "@/lib/account-context";
 
 // Shop data, cart, header, footer and pop-ups shared by every shop page.
 export default function ShopShell({
@@ -20,13 +22,16 @@ export default function ShopShell({
 }) {
   return (
     <ShopDataProvider data={shop}>
-      <CartProvider products={shop.products}>
-        <Header />
-        <main className="min-h-[60vh] bg-[#f4f5f7]">{children}</main>
-        <Footer socialLinks={socialLinks} />
-        <CartToast />
-        <BackToTop />
-      </CartProvider>
+      <AccountProvider>
+        <CartProvider products={shop.products}>
+          <Header />
+          <main className="min-h-[60vh] bg-[#f4f5f7]">{children}</main>
+          <Footer socialLinks={socialLinks} />
+          <CartToast />
+          <BackToTop />
+          <ReferralCatcher />
+        </CartProvider>
+      </AccountProvider>
     </ShopDataProvider>
   );
 }

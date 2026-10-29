@@ -27,6 +27,7 @@ import {
   HeroPhotoSection,
   HomeTextEditor,
   ReviewsModerator,
+  RewardsMembers,
   SocialLinksEditor,
 } from "@/components/AdminSiteSections";
 
@@ -935,6 +936,8 @@ export default function AdminPage() {
         <DiscountCodes />
 
         <ReviewsModerator products={products} />
+
+        <RewardsMembers />
 
         <QrCodeCard />
 

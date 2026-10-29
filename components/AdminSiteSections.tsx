@@ -300,3 +300,82 @@ export function HomeTextEditor({
     </div>
   );
 }
+
+type Member = { id: string; name: string; email: string; points: number; orders: number; createdAt: string };
+
+// Shoppers who signed in, with their reward points.
+export function RewardsMembers() {
+  const [members, setMembers] = useState<Member[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/accounts")
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error ?? "Couldn't load members.");
+        setMembers(data.members);
+      })
+      .catch((err: Error) => setError(err.message));
+  }, []);
+
+  async function adjust(member: Member) {
+    const input = window.prompt(`Points to give ${member.name} (use a minus sign to take away, e.g. -20):`, "20");
+    if (!input) return;
+    const points = Number(input);
+    if (!Number.isInteger(points) || points === 0) {
+      window.alert("Please enter a whole number.");
+      return;
+    }
+    const reason = window.prompt("Reason (shown to them):", points > 0 ? "Bonus from HugosToyz" : "Points adjusted") ?? "";
+    const response = await fetch("/api/admin/accounts", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: member.id, points, reason }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      window.alert(data.error ?? "Couldn't change points.");
+      return;
+    }
+    setMembers((prev) => prev?.map((m) => (m.id === member.id ? { ...m, points: data.points } : m)) ?? null);
+  }
+
+  return (
+    <div className={`mt-6 ${cardClass}`}>
+      <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between text-left">
+        <h2 className="font-display text-lg font-bold text-htz-navy">
+          🎁 Rewards Members {members ? `(${members.length})` : ""}
+        </h2>
+        <span className="text-sm font-semibold text-htz-orange">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="mt-3">
+          {error && <p className="text-sm text-htz-pink">{error}</p>}
+          {members && members.length === 0 && (
+            <p className="text-sm text-htz-navy/60">Nobody has signed in yet.</p>
+          )}
+          <ul className="divide-y divide-htz-navy/10">
+            {members?.map((member) => (
+              <li key={member.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <div>
+                  <p className="font-semibold text-htz-navy">{member.name}</p>
+                  <p className="text-xs text-htz-navy/60">
+                    {member.email} · {member.orders} {member.orders === 1 ? "order" : "orders"} · joined{" "}
+                    {new Date(member.createdAt).toLocaleDateString("en-AU")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-display font-bold text-htz-teal">{member.points} pts</span>
+                  <button type="button" onClick={() => adjust(member)} className={smallButtonClass}>
+                    ± Points
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}

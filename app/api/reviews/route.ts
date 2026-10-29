@@ -9,6 +9,8 @@ import {
 } from "@/lib/product-types";
 import { getActiveProducts } from "@/lib/products";
 import { updateReviews } from "@/lib/reviews";
+import { claimReviewPoints } from "@/lib/accounts";
+import { currentAccountId } from "@/lib/user-session";
 
 // Real people take a few seconds to fill in the form; bots usually don't.
 const MIN_FILL_MS = 3000;
@@ -102,5 +104,14 @@ export async function POST(request: Request) {
   }
 
   recentByVisitor.get(visitor)?.push(Date.now());
+
+  const accountId = await currentAccountId();
+  if (accountId) {
+    try {
+      await claimReviewPoints(accountId);
+    } catch (error) {
+      console.error("Review points failed:", error);
+    }
+  }
   return NextResponse.json({ review });
 }
