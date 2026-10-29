@@ -1,15 +1,16 @@
 import { cache } from "react";
-import { getActiveProducts, getStoreConfig } from "./products";
+import { getActiveProducts, getSoldCounts, getStoreConfig } from "./products";
 import { getReviews } from "./reviews";
 import { ratingsByProduct } from "./ratings";
 import { signInConfigured } from "./user-session";
 
 // Everything a shop page needs, read once per request.
 export const loadShopData = cache(async () => {
-  const [products, config, reviews] = await Promise.all([
+  const [products, config, reviews, soldCounts] = await Promise.all([
     getActiveProducts(),
     getStoreConfig(),
     getReviews(),
+    getSoldCounts(),
   ]);
   return {
     products,
@@ -22,6 +23,8 @@ export const loadShopData = cache(async () => {
       sizeOptions: config.sizeOptions,
       ratings: ratingsByProduct(reviews),
       signInEnabled: signInConfigured(),
+      holiday: config.holiday,
+      soldCounts,
     },
   };
 });

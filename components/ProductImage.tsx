@@ -8,13 +8,28 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
 
 const DEFAULT_GRADIENT = "from-htz-orange to-htz-teal";
 
-export default function ProductImage({ product }: { product: Product }) {
+// Our own uploads can be fetched smaller (see /api/images) for tiles and thumbnails.
+export function sizedImage(src: string, width?: 320 | 640 | 960): string {
+  return width && src.startsWith("/api/images/") ? `${src}?w=${width}` : src;
+}
+
+export default function ProductImage({
+  product,
+  width,
+  eager = false,
+}: {
+  product: Product;
+  width?: 320 | 640 | 960;
+  eager?: boolean;
+}) {
   if (product.image) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={product.image}
+        src={sizedImage(product.image, width)}
         alt={product.name}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
         className="h-full w-full object-cover"
       />
     );

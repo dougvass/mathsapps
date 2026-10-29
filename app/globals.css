@@ -8,6 +8,12 @@
   --color-htz-lime: #c6f53e;
   --color-htz-cream: #fff8ec;
 
+  /* Shop colours that change in dark mode (see .shop-theme below). */
+  --color-ink: #0b2b3a;
+  --color-surface: #ffffff;
+  --color-surface-2: #fff8ec;
+  --color-accent: #103c45;
+
   --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-fredoka), ui-rounded, sans-serif;
 
@@ -67,4 +73,38 @@
 body {
   background: var(--color-htz-cream);
   color: var(--color-htz-navy);
+}
+
+/* Shop pages: light by default, dark when the device is in dark mode. */
+.shop-theme {
+  color: var(--color-ink);
+}
+.page-bg {
+  background: linear-gradient(to bottom, #fff8ec, #fdf2f8, #ecfeff);
+}
+.tint-orange {
+  background: linear-gradient(to bottom right, #fff1e6, #ffe4ef);
+}
+.tint-lime {
+  background: linear-gradient(to bottom right, #f4ffd6, #e3fbf6);
+}
+
+@media (prefers-color-scheme: dark) {
+  .shop-theme {
+    color-scheme: dark;
+    --color-ink: #e8f0f3;
+    --color-surface: #16242e;
+    --color-surface-2: #1d2f3b;
+    --color-accent: #5eead4;
+    background: #0e1a22;
+  }
+  .shop-theme .page-bg {
+    background: linear-gradient(to bottom, #0e1a22, #131a2b, #0e1f24);
+  }
+  .shop-theme .tint-orange {
+    background: linear-gradient(to bottom right, #2a1d1a, #2a1a24);
+  }
+  .shop-theme .tint-lime {
+    background: linear-gradient(to bottom right, #1e2a15, #13282a);
+  }
 }

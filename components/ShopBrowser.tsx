@@ -99,7 +99,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
   const filterPanel = (place: string) => (
     <div className="flex flex-col gap-6 text-sm">
       <fieldset>
-        <legend className="mb-2 font-display text-base font-bold text-htz-navy">Category</legend>
+        <legend className="mb-2 font-display text-base font-bold text-ink">Category</legend>
         <ul className="flex flex-col gap-1">
           {[{ value: "", label: "All toys" }, ...categories].map((category) => (
             <li key={category.value}>
@@ -107,7 +107,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
                 type="button"
                 onClick={() => update({ category: category.value })}
                 aria-pressed={filters.category === category.value}
-                className={`text-left hover:text-htz-orange ${filters.category === category.value ? "font-bold text-htz-orange" : "text-htz-navy/80"}`}
+                className={`text-left hover:text-htz-orange ${filters.category === category.value ? "font-bold text-htz-orange" : "text-ink/80"}`}
               >
                 {category.label}
               </button>
@@ -117,11 +117,11 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 font-display text-base font-bold text-htz-navy">Price</legend>
+        <legend className="mb-2 font-display text-base font-bold text-ink">Price</legend>
         <ul className="flex flex-col gap-1">
           {(Object.keys(PRICES) as PriceKey[]).map((key) => (
             <li key={key}>
-              <label className="flex cursor-pointer items-center gap-2 text-htz-navy/80">
+              <label className="flex cursor-pointer items-center gap-2 text-ink/80">
                 <input
                   type="radio"
                   name={`price-${place}`}
@@ -135,7 +135,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
           ))}
           {filters.price && (
             <li>
-              <button type="button" onClick={() => update({ price: "" })} className="text-xs text-htz-teal hover:underline">
+              <button type="button" onClick={() => update({ price: "" })} className="text-xs text-accent hover:underline">
                 Any price
               </button>
             </li>
@@ -144,8 +144,8 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
       </fieldset>
 
       <fieldset>
-        <legend className="mb-2 font-display text-base font-bold text-htz-navy">Availability</legend>
-        <label className="flex cursor-pointer items-center gap-2 text-htz-navy/80">
+        <legend className="mb-2 font-display text-base font-bold text-ink">Availability</legend>
+        <label className="flex cursor-pointer items-center gap-2 text-ink/80">
           <input
             type="checkbox"
             checked={filters.inStock}
@@ -160,7 +160,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
         <button
           type="button"
           onClick={() => update({ q: "", category: "", price: "", inStock: false })}
-          className="self-start rounded-full border border-htz-navy/20 px-4 py-1.5 font-semibold text-htz-navy hover:border-htz-orange"
+          className="self-start rounded-full border border-ink/20 px-4 py-1.5 font-semibold text-ink hover:border-htz-orange"
         >
           Clear all filters
         </button>
@@ -170,10 +170,10 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
 
   return (
     <div className="mx-auto max-w-7xl px-3 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface px-4 py-3 shadow-sm">
         <div>
-          <h1 className="font-display text-xl font-bold text-htz-navy sm:text-2xl">{heading}</h1>
-          <p className="text-sm text-htz-navy/60" aria-live="polite">
+          <h1 className="font-display text-xl font-bold text-ink sm:text-2xl">{heading}</h1>
+          <p className="text-sm text-ink/60" aria-live="polite">
             {visible.length} {visible.length === 1 ? "toy" : "toys"}
           </p>
         </div>
@@ -181,17 +181,17 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
           <button
             type="button"
             onClick={() => setFiltersOpen(true)}
-            className="rounded-full border border-htz-navy/20 bg-white px-4 py-2 text-sm font-semibold text-htz-navy lg:hidden"
+            className="rounded-full border border-ink/20 bg-surface px-4 py-2 text-sm font-semibold text-ink lg:hidden"
           >
             Filters{activeCount > 0 ? ` (${activeCount})` : ""}
           </button>
-          <label className="flex items-center gap-2 text-sm text-htz-navy/70">
+          <label className="flex items-center gap-2 text-sm text-ink/70">
             <span className="hidden sm:inline">Sort by</span>
             <select
               value={filters.sort}
               onChange={(e) => update({ sort: e.target.value as SortKey })}
               aria-label="Sort by"
-              className="rounded-full border border-htz-navy/20 bg-htz-cream px-3 py-2 text-sm font-semibold text-htz-navy focus:border-htz-orange focus:outline-none"
+              className="rounded-full border border-ink/20 bg-surface-2 px-3 py-2 text-sm font-semibold text-ink focus:border-htz-orange focus:outline-none"
             >
               {(Object.keys(SORTS) as SortKey[]).map((key) => (
                 <option key={key} value={key}>
@@ -204,14 +204,14 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
-        <aside className="hidden self-start rounded-xl bg-white p-5 shadow-sm lg:sticky lg:top-36 lg:block" aria-label="Filters">
+        <aside className="hidden self-start rounded-xl bg-surface p-5 shadow-sm lg:sticky lg:top-36 lg:block" aria-label="Filters">
           {filterPanel("side")}
         </aside>
 
         {visible.length === 0 ? (
-          <div className="rounded-xl bg-white p-10 text-center shadow-sm">
+          <div className="rounded-xl bg-surface p-10 text-center shadow-sm">
             <p className="text-5xl" aria-hidden="true">🔍</p>
-            <p className="mt-3 text-htz-navy/70">No toys match. Try a different word or clear the filters.</p>
+            <p className="mt-3 text-ink/70">No toys match. Try a different word or clear the filters.</p>
             <button
               type="button"
               onClick={() => update({ q: "", category: "", price: "", inStock: false })}
@@ -239,7 +239,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
             aria-label="Close filters"
             onClick={() => setFiltersOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col bg-white shadow-2xl">
+          <div className="absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col bg-surface shadow-2xl">
             <div className="flex items-center justify-between bg-htz-navy px-5 py-4 text-white">
               <span className="font-display text-lg font-bold">Filters</span>
               <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Close filters" className="text-2xl">
@@ -247,7 +247,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-5">{filterPanel("drawer")}</div>
-            <div className="border-t border-htz-navy/10 p-4">
+            <div className="border-t border-ink/10 p-4">
               <button
                 type="button"
                 onClick={() => setFiltersOpen(false)}

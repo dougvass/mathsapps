@@ -46,4 +46,6 @@ export type AccountView = {
   rewardCodes: RewardCode[];
   address: Address;
   hasPassword: boolean;
+  stockAlerts: string[];
+  spunWheel: boolean;
 };

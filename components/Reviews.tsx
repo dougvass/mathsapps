@@ -12,13 +12,13 @@ import {
 
 const INITIAL_SHOWN = 6;
 const inputClass =
-  "w-full rounded-lg border border-htz-navy/20 bg-white px-3 py-2 focus:border-htz-orange focus:outline-none";
+  "w-full rounded-lg border border-ink/20 bg-surface px-3 py-2 focus:border-htz-orange focus:outline-none";
 
 export function Stars({ rating }: { rating: number }) {
   return (
     <p className="text-lg tracking-wide" aria-label={`${rating} out of 5 stars`}>
       <span className="text-htz-orange">{"★".repeat(rating)}</span>
-      <span className="text-htz-navy/15">{"★".repeat(5 - rating)}</span>
+      <span className="text-ink/15">{"★".repeat(5 - rating)}</span>
     </p>
   );
 }
@@ -68,13 +68,13 @@ export function ReviewForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto mb-10 max-w-xl rounded-3xl bg-white p-6 shadow-md">
-      <h3 className="font-display text-xl font-bold text-htz-navy">
+    <form onSubmit={handleSubmit} className="mx-auto mb-10 max-w-xl rounded-3xl bg-surface p-6 shadow-md">
+      <h3 className="font-display text-xl font-bold text-ink">
         {productName ? `Review ${productName}` : "Write a review"}
       </h3>
 
       <fieldset className="mt-4">
-        <legend className="text-sm font-semibold text-htz-navy">Your rating</legend>
+        <legend className="text-sm font-semibold text-ink">Your rating</legend>
         <div className="mt-1 flex gap-1">
           {[1, 2, 3, 4, 5].map((stars) => (
             <button
@@ -83,7 +83,7 @@ export function ReviewForm({
               onClick={() => setRating(stars)}
               aria-label={`${stars} star${stars > 1 ? "s" : ""}`}
               aria-pressed={rating === stars}
-              className={`text-3xl transition-transform hover:scale-110 ${stars <= rating ? "text-htz-orange" : "text-htz-navy/20"}`}
+              className={`text-3xl transition-transform hover:scale-110 ${stars <= rating ? "text-htz-orange" : "text-ink/20"}`}
             >
               ★
             </button>
@@ -92,7 +92,7 @@ export function ReviewForm({
       </fieldset>
 
       <label className="mt-4 flex flex-col gap-1">
-        <span className="text-sm font-semibold text-htz-navy">Your first name</span>
+        <span className="text-sm font-semibold text-ink">Your first name</span>
         <input
           type="text"
           required
@@ -105,9 +105,9 @@ export function ReviewForm({
       </label>
 
       <label className="mt-4 flex flex-col gap-1">
-        <span className="text-sm font-semibold text-htz-navy">
+        <span className="text-sm font-semibold text-ink">
           Your review{" "}
-          <span className="font-normal text-htz-navy/50">
+          <span className="font-normal text-ink/50">
             ({text.length}/{REVIEW_TEXT_MAX})
           </span>
         </span>
@@ -152,17 +152,17 @@ export function ReviewCard({ review, showProduct = false }: { review: Review; sh
   const { products } = useShop();
   const product = showProduct && review.productId ? products.find((p) => p.id === review.productId) : null;
   return (
-    <figure className="flex h-full flex-col gap-3 rounded-2xl bg-white p-6 shadow-sm">
+    <figure className="flex h-full flex-col gap-3 rounded-2xl bg-surface p-6 shadow-sm">
       <Stars rating={review.rating} />
       {product && (
-        <Link href={`/products/${product.id}`} className="text-sm font-semibold text-htz-teal hover:text-htz-orange hover:underline">
+        <Link href={`/products/${product.id}`} className="text-sm font-semibold text-accent hover:text-htz-orange hover:underline">
           {product.name}
         </Link>
       )}
-      <blockquote className="flex-1 break-words text-htz-navy/80">&ldquo;{review.text}&rdquo;</blockquote>
+      <blockquote className="flex-1 break-words text-ink/80">&ldquo;{review.text}&rdquo;</blockquote>
       <figcaption className="flex items-baseline justify-between gap-2">
-        <span className="font-display font-semibold text-htz-navy">– {review.name}</span>
-        <span className="text-xs text-htz-navy/50">{formatDate(review.createdAt)}</span>
+        <span className="font-display font-semibold text-ink">– {review.name}</span>
+        <span className="text-xs text-ink/50">{formatDate(review.createdAt)}</span>
       </figcaption>
     </figure>
   );
@@ -181,19 +181,19 @@ export default function Reviews({ reviews: initialReviews }: { reviews: Review[]
   return (
     <section id="reviews" className="mx-auto max-w-7xl scroll-mt-36 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8 text-center">
-        <h2 className="font-display text-3xl font-bold text-htz-navy sm:text-4xl">
+        <h2 className="font-display text-3xl font-bold text-ink sm:text-4xl">
           What customers say
         </h2>
         {reviews.length > 0 ? (
-          <p className="mt-2 text-htz-navy/70">
+          <p className="mt-2 text-ink/70">
             <span className="text-htz-orange">★</span> {average.toFixed(1)} out of 5 from{" "}
             {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
           </p>
         ) : (
-          <p className="mt-2 text-htz-navy/70">No reviews yet – be the first!</p>
+          <p className="mt-2 text-ink/70">No reviews yet – be the first!</p>
         )}
         {thanks ? (
-          <p className="mt-4 font-semibold text-htz-teal" role="status">
+          <p className="mt-4 font-semibold text-accent" role="status">
             Thanks for your review! 🎉
           </p>
         ) : (
@@ -201,7 +201,7 @@ export default function Reviews({ reviews: initialReviews }: { reviews: Review[]
             <button
               type="button"
               onClick={() => setFormOpen(true)}
-              className="mt-4 rounded-full border-2 border-htz-navy/15 bg-white px-6 py-2 font-display font-semibold text-htz-navy transition-colors hover:border-htz-orange hover:text-htz-orange"
+              className="mt-4 rounded-full border-2 border-ink/15 bg-surface px-6 py-2 font-display font-semibold text-ink transition-colors hover:border-htz-orange hover:text-htz-orange"
             >
               ✍️ Write a review
             </button>

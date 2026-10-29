@@ -29,11 +29,40 @@ function detectExt(bytes: Uint8Array): Ext | null {
   return null;
 }
 
-export async function saveImage(bytes: Uint8Array): Promise<string> {
-  const ext = detectExt(bytes);
-  if (!ext) {
+// Shrinks big photos and turns them into WebP so pages load faster.
+// If that fails for any reason, the original is kept.
+async function optimise(bytes: Uint8Array): Promise<Uint8Array> {
+  try {
+    const sharp = (await import("sharp")).default;
+    const output = await sharp(bytes)
+      .rotate()
+      .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer();
+    return output.byteLength < bytes.byteLength ? new Uint8Array(output) : bytes;
+  } catch (error) {
+    console.error("Optimising image failed:", error);
+    return bytes;
+  }
+}
+
+// A smaller copy for tiles and thumbnails (null if it can't be made).
+export async function resizeImage(source: Buffer, width: number): Promise<Buffer | null> {
+  try {
+    const sharp = (await import("sharp")).default;
+    return await sharp(source).rotate().resize({ width, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer();
+  } catch (error) {
+    console.error("Resizing image failed:", error);
+    return null;
+  }
+}
+
+export async function saveImage(original: Uint8Array): Promise<string> {
+  if (!detectExt(original)) {
     throw new Error("Please upload a JPEG, PNG or WebP image.");
   }
+  const bytes = await optimise(original);
+  const ext = detectExt(bytes)!;
 
   const name = `${crypto.randomUUID()}.${ext}`;
 

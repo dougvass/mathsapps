@@ -16,11 +16,19 @@ export type LineKey = {
   color: string;
   size: string;
   customText: string;
+  // An uploaded file's id (Print Your Own) or a mystery bag's wishes.
+  extra?: string;
 };
 
-export type CartItem = LineKey & { quantity: number };
+export type CartItem = LineKey & {
+  quantity: number;
+  // Shown under the name, e.g. the uploaded file's name.
+  label?: string;
+  // Price for this line when it isn't the product's usual price (file prints).
+  unitCents?: number;
+};
 
-export type CartLine = CartItem & { product: Product };
+export type CartLine = CartItem & { product: Product; unitCents: number };
 
 type CartContextValue = {
   items: CartItem[];
@@ -31,7 +39,7 @@ type CartContextValue = {
   lastAdded: { key: LineKey; quantity: number; at: number } | null;
   dismissAdded: () => void;
   // Returns how many were actually added (limited by stock).
-  addItem: (key: LineKey, quantity?: number) => number;
+  addItem: (key: LineKey, quantity?: number, details?: { label?: string; unitCents?: number }) => number;
   removeItem: (key: LineKey) => void;
   setQuantity: (key: LineKey, quantity: number) => void;
   canAddMore: (productId: string) => boolean;
@@ -43,7 +51,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "htz-cart-v2";
 
 export function lineId(key: LineKey): string {
-  return [key.productId, key.color, key.size, key.customText].join("::");
+  return [key.productId, key.color, key.size, key.customText, key.extra ?? ""].join("::");
 }
 
 function sameLine(a: LineKey, b: LineKey): boolean {
@@ -131,7 +139,7 @@ export function CartProvider({
   const [lastAdded, setLastAdded] = useState<CartContextValue["lastAdded"]>(null);
 
   const addItem = useCallback(
-    (key: LineKey, quantity = 1) => {
+    (key: LineKey, quantity = 1, details: { label?: string; unitCents?: number } = {}) => {
       const allowed = Math.min(quantity, remainingStock(getSnapshot(), products, key.productId));
       if (allowed < 1) return 0;
       setCartItems((prev) => {
@@ -141,7 +149,7 @@ export function CartProvider({
             sameLine(item, key) ? { ...item, quantity: item.quantity + allowed } : item
           );
         }
-        return [...prev, { ...key, quantity: allowed }];
+        return [...prev, { ...key, ...details, quantity: allowed }];
       });
       setLastAdded({ key, quantity: allowed, at: Date.now() });
       return allowed;
@@ -180,7 +188,7 @@ export function CartProvider({
       .map((item) => {
         const product = products.find((p) => p.id === item.productId);
         if (!product) return null;
-        return { ...item, product };
+        return { ...item, product, unitCents: item.unitCents ?? Math.round(product.price * 100) };
       })
       .filter((line): line is CartLine => line !== null);
   }, [items, products]);
@@ -191,7 +199,7 @@ export function CartProvider({
   );
 
   const totalPrice = useMemo(
-    () => lines.reduce((sum, line) => sum + line.quantity * line.product.price, 0),
+    () => lines.reduce((sum, line) => sum + line.quantity * line.unitCents, 0) / 100,
     [lines]
   );
 

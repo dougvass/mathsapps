@@ -21,7 +21,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={jsonLdScript(homeJsonLd(products, config.socialLinks))}
       />
       <HomeCarousel heroImage={config.heroImage} text={config.homeText} banner={config.banner} />
-      <HomeRows />
+      <HomeRows toyOfWeek={config.toyOfWeek} />
       <Reviews reviews={reviews} />
       <About text={config.homeText} />
       <FaqSection faqs={config.faqs} />

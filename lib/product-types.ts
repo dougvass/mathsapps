@@ -48,7 +48,17 @@ export type Product = {
   chooseColor: boolean;
   needsCustomText: boolean;
   stock: StockLevel;
+  // Price before a sale (0 = not on sale). Shown crossed out.
+  wasPrice: number;
 };
+
+// Built-in products with their own order pages.
+export const MYSTERY_BAG_ID = "mystery-bag";
+export const FILE_PRINT_ID = "print-your-file";
+export const SPECIAL_PRODUCT_IDS = [MYSTERY_BAG_ID, FILE_PRINT_ID];
+
+export type ToyOfWeek = { productId: string; blurb: string };
+export type HolidayMode = { enabled: boolean; until: string; message: string };
 
 export function productPhotos(product: Product): string[] {
   return [product.image, ...product.gallery].filter(Boolean);
@@ -107,6 +117,10 @@ export type AdminOrder = {
   totalCents: number;
   discountCents: number;
   postedAt: string | null;
+  giftWrap: boolean;
+  giftMessage: string;
+  // Uploaded 3D files to print for this order.
+  printFiles: { id: string; name: string }[];
 };
 
 export type DiscountCode = {
@@ -141,6 +155,12 @@ export type StoreData = {
   adminPasswordHash: string | null;
   // Stripe checkout sessions whose items have already been taken off stock.
   stockAppliedSessions: string[];
+  toyOfWeek: ToyOfWeek;
+  holiday: HolidayMode;
+  // How many of each product have sold (counted by the Stripe webhook).
+  soldCounts: Record<string, number>;
+  // Set once the mystery bag and file printing products have been added.
+  specialProductsAdded: boolean;
 };
 
 export type HomeText = {

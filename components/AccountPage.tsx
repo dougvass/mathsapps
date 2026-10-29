@@ -21,8 +21,8 @@ import ShareButton from "./ShareButton";
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 const inputClass =
-  "w-full rounded-lg border border-htz-navy/20 bg-white px-3 py-2 text-sm focus:border-htz-orange focus:outline-none";
-const card = "rounded-2xl bg-white p-5 shadow-sm sm:p-6";
+  "w-full rounded-lg border border-ink/20 bg-surface px-3 py-2 text-sm focus:border-htz-orange focus:outline-none";
+const card = "rounded-2xl bg-surface p-5 shadow-sm sm:p-6";
 
 const ERRORS: Record<string, string> = {
   signin: "Sign-in didn't finish. Please try again.",
@@ -36,13 +36,13 @@ function money(cents: number) {
 
 function GoogleButton({ enabled }: { enabled: boolean }) {
   if (!enabled) {
-    return <p className="rounded-xl bg-htz-cream p-4 text-sm text-htz-navy/70">Sign-in is coming soon! You can still shop as normal.</p>;
+    return <p className="rounded-xl bg-surface-2 p-4 text-sm text-ink/70">Sign-in is coming soon! You can still shop as normal.</p>;
   }
   return (
     // A plain link: sign-in leaves the site for Google and comes back.
     <a
       href="/api/auth/google?next=/account"
-      className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-htz-navy/15 bg-white px-6 py-3 font-semibold text-htz-navy shadow-sm transition-transform hover:scale-[1.02] hover:border-htz-navy/30"
+      className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-ink/15 bg-surface px-6 py-3 font-semibold text-ink shadow-sm transition-transform hover:scale-[1.02] hover:border-ink/30"
     >
       <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
         <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z" />
@@ -98,7 +98,7 @@ function EmailForm({ onDone }: { onDone: () => Promise<void> }) {
         setError(null);
       }}
       aria-pressed={mode === value}
-      className={`flex-1 rounded-full py-2.5 text-base font-bold transition-colors ${mode === value ? "bg-htz-navy text-white" : "text-htz-navy/60 hover:text-htz-navy"}`}
+      className={`flex-1 rounded-full py-2.5 text-base font-bold transition-colors ${mode === value ? "bg-htz-navy text-white" : "text-ink/60 hover:text-ink"}`}
     >
       {label}
     </button>
@@ -106,22 +106,22 @@ function EmailForm({ onDone }: { onDone: () => Promise<void> }) {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-3">
-      <div className="flex rounded-full bg-htz-navy/5 p-1">
+      <div className="flex rounded-full bg-ink/5 p-1">
         {tab("signin", "Sign in")}
         {tab("signup", "Create account")}
       </div>
       {mode === "signup" && (
-        <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
           First name
           <input className={`${inputClass} py-3 text-base`} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" maxLength={40} required />
         </label>
       )}
-      <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+      <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
         Email
         <input className={`${inputClass} py-3 text-base`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
       </label>
-      <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
-        Password {mode === "signup" && <span className="font-normal text-htz-navy/50">(at least 8 characters)</span>}
+      <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
+        Password {mode === "signup" && <span className="font-normal text-ink/50">(at least 8 characters)</span>}
         <input
           className={`${inputClass} py-3 text-base`}
           type="password"
@@ -151,7 +151,7 @@ function EmailForm({ onDone }: { onDone: () => Promise<void> }) {
         {busy ? "Please wait…" : mode === "signup" ? `Create account & get ${SIGNUP_POINTS} points` : "Sign in to my account"}
       </button>
       {mode === "signin" && (
-        <p className="text-xs text-htz-navy/60">
+        <p className="text-xs text-ink/60">
           Forgot your password? Email <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a> and we&apos;ll send you a new one.
         </p>
       )}
@@ -164,19 +164,19 @@ function SignedOut({ googleEnabled, error }: { googleEnabled: boolean; error: st
   return (
     <div className="mx-auto grid max-w-5xl gap-6 px-4 py-10 md:grid-cols-2">
       <div className={`${card} flex flex-col gap-4`}>
-        <h1 className="font-display text-3xl font-bold text-htz-navy">Sign in & earn rewards</h1>
-        <p className="text-htz-navy/70">
+        <h1 className="font-display text-3xl font-bold text-ink">Sign in & earn rewards</h1>
+        <p className="text-ink/70">
           Collect points on every order and swap {REDEEM_POINTS} points for {money(REDEEM_VALUE_CENTS)} off.
         </p>
         {error && ERRORS[error] && <p className="text-sm font-semibold text-htz-pink">{ERRORS[error]}</p>}
         <EmailForm onDone={refresh} />
         {googleEnabled && (
           <>
-            <p className="text-center text-xs font-semibold uppercase tracking-widest text-htz-navy/40">or</p>
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-ink/40">or</p>
             <GoogleButton enabled />
           </>
         )}
-        <p className="text-xs text-htz-navy/50">
+        <p className="text-xs text-ink/50">
           No account needed to shop – signing in is optional. Your password is stored scrambled, so nobody can read it. See our{" "}
           <Link href="/privacy" className="underline">Privacy Policy</Link>.
         </p>
@@ -223,7 +223,7 @@ function PasswordCard() {
 
   return (
     <section className={card}>
-      <h2 className="font-display text-xl font-bold text-htz-navy">🔑 Change password</h2>
+      <h2 className="font-display text-xl font-bold text-ink">🔑 Change password</h2>
       <form onSubmit={save} className="mt-3 flex flex-col gap-3">
         <input className={inputClass} type="password" placeholder="Current password" aria-label="Current password" value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" required />
         <input className={inputClass} type="password" placeholder="New password (8+ characters)" aria-label="New password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" minLength={8} required />
@@ -312,8 +312,8 @@ function BirthdayCard({ account, onChange }: { account: AccountView; onChange: (
   if (account.birthday) {
     const [m, d] = account.birthday.split("-").map(Number);
     return (
-      <p className="text-sm text-htz-navy/70">
-        🎂 Birthday: <span className="font-semibold text-htz-navy">{`${d} ${MONTHS[m - 1]}`}</span> – we&apos;ll add {BIRTHDAY_POINTS} points each year.
+      <p className="text-sm text-ink/70">
+        🎂 Birthday: <span className="font-semibold text-ink">{`${d} ${MONTHS[m - 1]}`}</span> – we&apos;ll add {BIRTHDAY_POINTS} points each year.
       </p>
     );
   }
@@ -333,7 +333,7 @@ function BirthdayCard({ account, onChange }: { account: AccountView; onChange: (
 
   return (
     <form onSubmit={save} className="flex flex-wrap items-end gap-2">
-      <p className="w-full text-sm font-semibold text-htz-navy">🎂 Add your birthday for {BIRTHDAY_POINTS} points every year</p>
+      <p className="w-full text-sm font-semibold text-ink">🎂 Add your birthday for {BIRTHDAY_POINTS} points every year</p>
       <select value={day} onChange={(e) => setDay(e.target.value)} aria-label="Birthday day" className={`${inputClass} w-24`} required>
         <option value="">Day</option>
         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
@@ -381,27 +381,27 @@ function AddressCard({ address }: { address: Address }) {
 
   return (
     <section className={card}>
-      <h2 className="font-display text-xl font-bold text-htz-navy">📦 Delivery address</h2>
-      <p className="text-sm text-htz-navy/60">Filled in for you at checkout. It also updates when you use a new address.</p>
+      <h2 className="font-display text-xl font-bold text-ink">📦 Delivery address</h2>
+      <p className="text-sm text-ink/60">Filled in for you at checkout. It also updates when you use a new address.</p>
       <form onSubmit={save} className="mt-4 grid grid-cols-2 gap-3">
-        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-ink">
           Name
           <input className={inputClass} value={form.name} onChange={set("name")} autoComplete="name" required />
         </label>
-        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-ink">
           Street address
           <input className={inputClass} value={form.line1} onChange={set("line1")} autoComplete="address-line1" required />
         </label>
-        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-ink">
           Unit, apartment (optional)
           <input className={inputClass} value={form.line2} onChange={set("line2")} autoComplete="address-line2" />
         </label>
-        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-htz-navy sm:col-span-1">
+        <label className="col-span-2 flex flex-col gap-1 text-sm font-semibold text-ink sm:col-span-1">
           Suburb
           <input className={inputClass} value={form.city} onChange={set("city")} autoComplete="address-level2" required />
         </label>
         <div className="col-span-2 grid grid-cols-2 gap-3 sm:col-span-1">
-          <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+          <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
             State
             <select className={inputClass} value={form.state} onChange={set("state")} required>
               <option value="">–</option>
@@ -410,7 +410,7 @@ function AddressCard({ address }: { address: Address }) {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+          <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
             Postcode
             <input className={inputClass} value={form.postcode} onChange={set("postcode")} inputMode="numeric" maxLength={4} autoComplete="postal-code" required />
           </label>
@@ -423,6 +423,36 @@ function AddressCard({ address }: { address: Address }) {
           {state === "error" && <span className="text-sm font-semibold text-htz-pink">{error}</span>}
         </div>
       </form>
+    </section>
+  );
+}
+
+function StockAlertsCard({ alerts }: { alerts: string[] }) {
+  const { products } = useShop();
+  const items = alerts
+    .map((id) => products.find((p) => p.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  if (items.length === 0) return null;
+  return (
+    <section className={card}>
+      <h2 className="font-display text-xl font-bold text-ink">🔔 Toys you&apos;re waiting for</h2>
+      <ul className="mt-3 flex flex-col gap-2">
+        {items.map((product) => {
+          const back = product.stock !== "out-of-stock";
+          return (
+            <li key={product.id} className={`flex items-center justify-between gap-3 rounded-xl p-3 ${back ? "bg-green-50" : "bg-surface-2/60"}`}>
+              <span className="font-semibold text-ink">{product.name}</span>
+              {back ? (
+                <Link href={`/products/${product.id}`} className="rounded-full bg-htz-lime px-4 py-1.5 text-sm font-bold text-htz-navy shadow">
+                  🎉 Back in stock – buy now
+                </Link>
+              ) : (
+                <span className="text-sm text-ink/60">Still out of stock</span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
@@ -442,11 +472,11 @@ function SignedIn({ account }: { account: AccountView }) {
             <img src={account.picture} alt="" referrerPolicy="no-referrer" className="h-12 w-12 rounded-full" />
           )}
           <div>
-            <h1 className="font-display text-2xl font-bold text-htz-navy">Hi, {account.name.split(" ")[0]}!</h1>
-            <p className="text-sm text-htz-navy/60">{account.email}</p>
+            <h1 className="font-display text-2xl font-bold text-ink">Hi, {account.name.split(" ")[0]}!</h1>
+            <p className="text-sm text-ink/60">{account.email}</p>
           </div>
         </div>
-        <button type="button" onClick={signOut} className="rounded-full border border-htz-navy/20 bg-white px-4 py-2 text-sm font-semibold text-htz-navy hover:border-htz-orange">
+        <button type="button" onClick={signOut} className="rounded-full border border-ink/20 bg-surface px-4 py-2 text-sm font-semibold text-ink hover:border-htz-orange">
           Sign out
         </button>
       </div>
@@ -455,8 +485,8 @@ function SignedIn({ account }: { account: AccountView }) {
         <PointsCard account={account} onChange={refresh} />
 
         <section className={`${card} flex flex-col gap-4`}>
-          <h2 className="font-display text-xl font-bold text-htz-navy">Ways to earn</h2>
-          <ul className="flex flex-col gap-2 text-sm text-htz-navy/80">
+          <h2 className="font-display text-xl font-bold text-ink">Ways to earn</h2>
+          <ul className="flex flex-col gap-2 text-sm text-ink/80">
             <li>🛍️ {POINTS_PER_DOLLAR} point for every $1 you spend</li>
             <li>
               ✍️ {account.reviewBonusUsed ? <span className="line-through">{`${REVIEW_POINTS} points for your first review`}</span> : `${REVIEW_POINTS} points for your first review`}
@@ -464,9 +494,9 @@ function SignedIn({ account }: { account: AccountView }) {
             </li>
           </ul>
           <BirthdayCard account={account} onChange={refresh} />
-          <div className="rounded-xl bg-htz-cream p-3">
-            <p className="text-sm font-semibold text-htz-navy">🤝 Invite friends – get {REFERRAL_POINTS} points when they make their first order</p>
-            <p className="mt-1 break-all font-mono text-xs text-htz-navy/70">{referralLink}</p>
+          <div className="rounded-xl bg-surface-2 p-3">
+            <p className="text-sm font-semibold text-ink">🤝 Invite friends – get {REFERRAL_POINTS} points when they make their first order</p>
+            <p className="mt-1 break-all font-mono text-xs text-ink/70">{referralLink}</p>
             <div className="mt-2">
               <ShareButton title="Check out HugosToyz!" url={referralLink} />
             </div>
@@ -475,21 +505,21 @@ function SignedIn({ account }: { account: AccountView }) {
       </div>
 
       <section className={card}>
-        <h2 className="font-display text-xl font-bold text-htz-navy">Your orders</h2>
+        <h2 className="font-display text-xl font-bold text-ink">Your orders</h2>
         {account.orders.length === 0 ? (
-          <p className="mt-2 text-sm text-htz-navy/60">
+          <p className="mt-2 text-sm text-ink/60">
             No orders yet. <Link href="/shop" className="font-semibold text-htz-orange hover:underline">Start shopping</Link>
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-htz-navy/10">
+          <ul className="mt-3 divide-y divide-ink/10">
             {account.orders.map((order) => (
               <li key={order.sessionId} className="flex flex-wrap items-start justify-between gap-2 py-3">
                 <div>
-                  <p className="text-sm font-semibold text-htz-navy">
+                  <p className="text-sm font-semibold text-ink">
                     {new Date(order.date).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })} · {money(order.totalCents)}
                   </p>
-                  <p className="text-sm text-htz-navy/70">{order.items.join(", ")}</p>
-                  <p className="text-xs text-htz-teal">+{order.pointsEarned} points</p>
+                  <p className="text-sm text-ink/70">{order.items.join(", ")}</p>
+                  <p className="text-xs text-accent">+{order.pointsEarned} points</p>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${order.posted ? "bg-green-100 text-green-800" : "bg-htz-orange/10 text-htz-orange"}`}>
                   {order.posted ? "📮 Posted" : "🖨️ Being made"}
@@ -500,12 +530,14 @@ function SignedIn({ account }: { account: AccountView }) {
         )}
       </section>
 
+      <StockAlertsCard alerts={account.stockAlerts} />
+
       <div className="grid gap-5 md:grid-cols-2">
         <AddressCard address={account.address} />
         <div className="flex flex-col gap-5">
           <section className={card}>
-            <h2 className="font-display text-xl font-bold text-htz-navy">♥ Wishlist</h2>
-            <p className="mt-1 text-sm text-htz-navy/70">
+            <h2 className="font-display text-xl font-bold text-ink">♥ Wishlist</h2>
+            <p className="mt-1 text-sm text-ink/70">
               {savedCount} saved – it follows you to any device you sign in on.
             </p>
             <Link href="/wishlist" className="mt-3 inline-block text-sm font-semibold text-htz-orange hover:underline">
@@ -513,11 +545,11 @@ function SignedIn({ account }: { account: AccountView }) {
             </Link>
           </section>
           <section className={card}>
-            <h2 className="font-display text-xl font-bold text-htz-navy">Points history</h2>
+            <h2 className="font-display text-xl font-bold text-ink">Points history</h2>
             <ul className="mt-2 flex flex-col gap-1 text-sm">
               {account.history.map((entry, i) => (
                 <li key={`${entry.at}-${i}`} className="flex justify-between gap-3">
-                  <span className="text-htz-navy/70">{entry.reason}</span>
+                  <span className="text-ink/70">{entry.reason}</span>
                   <span className={`font-semibold ${entry.points >= 0 ? "text-green-700" : "text-htz-pink"}`}>
                     {entry.points >= 0 ? `+${entry.points}` : entry.points}
                   </span>
@@ -534,7 +566,7 @@ function SignedIn({ account }: { account: AccountView }) {
 
 export default function AccountPage({ googleEnabled, error }: { googleEnabled: boolean; error: string }) {
   const { account, loading } = useAccount();
-  if (loading) return <p className="py-20 text-center text-htz-navy/60">Loading…</p>;
+  if (loading) return <p className="py-20 text-center text-ink/60">Loading…</p>;
   if (!account) return <SignedOut googleEnabled={googleEnabled} error={error} />;
   return <SignedIn account={account} />;
 }

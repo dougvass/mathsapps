@@ -55,6 +55,8 @@ export async function accountView(account: Account): Promise<AccountView> {
     rewardCodes: account.rewardCodes.slice(0, 10),
     address: addressFromCustomer(customer),
     hasPassword: Boolean(account.passwordHash),
+    stockAlerts: account.stockAlerts,
+    spunWheel: account.spunWheel,
   };
 }
 

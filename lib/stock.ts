@@ -5,7 +5,7 @@ const REMEMBERED_SESSIONS = 300;
 
 // Takes a paid order's items off stock, once per checkout session. Numbered
 // stock goes down (and becomes "out-of-stock" at zero); made-to-order and
-// out-of-stock items are left alone.
+// out-of-stock items are left alone. Also adds to each product's sold count.
 export async function applyOrderToStock(stripe: Stripe, sessionId: string): Promise<void> {
   const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
     limit: 100,
@@ -26,8 +26,11 @@ export async function applyOrderToStock(stripe: Stripe, sessionId: string): Prom
 
   await updateStore((store) => {
     if (store.stockAppliedSessions.includes(sessionId)) return store;
+    const soldCounts = { ...store.soldCounts };
+    for (const [productId, quantity] of sold) soldCounts[productId] = (soldCounts[productId] ?? 0) + quantity;
     return {
       ...store,
+      soldCounts,
       products: store.products.map((product) => {
         const quantity = sold.get(product.id);
         if (!quantity || typeof product.stock !== "number") return product;

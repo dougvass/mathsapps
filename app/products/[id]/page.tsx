@@ -15,6 +15,9 @@ import { jsonLdScript, productJsonLd } from "@/lib/structured-data";
 import ShopShell from "@/components/ShopShell";
 import ProductGallery from "@/components/ProductGallery";
 import BuyBox from "@/components/BuyBox";
+import PrintYourFile from "@/components/PrintYourFile";
+import MysteryBagBuilder from "@/components/MysteryBagBuilder";
+import { FILE_PRINT_ID, MYSTERY_BAG_ID } from "@/lib/product-types";
 import ProductBadgeTag from "@/components/ProductBadgeTag";
 import ProductRow from "@/components/ProductRow";
 import ProductReviews from "@/components/ProductReviews";
@@ -89,7 +92,7 @@ export default async function ProductPage({ params }: Props) {
 
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-3 py-5 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <nav className="text-sm text-htz-navy/60" aria-label="Breadcrumb">
+          <nav className="text-sm text-ink/60" aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-1">
               <li>
                 <Link href="/shop" className="hover:text-htz-orange hover:underline">
@@ -107,7 +110,7 @@ export default async function ProductPage({ params }: Props) {
                   </Link>
                 </li>
               )}
-              <li aria-current="page" className="text-htz-navy">
+              <li aria-current="page" className="text-ink">
                 {`› ${product.name}`}
               </li>
             </ol>
@@ -115,7 +118,7 @@ export default async function ProductPage({ params }: Props) {
           <ShareButton title={product.name} url={productUrl(product.id)} />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-10">
+        <div className="grid grid-cols-1 gap-6 rounded-2xl bg-surface p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-10">
           <div className="relative md:sticky md:top-36 md:self-start">
             <WishlistButton
               productId={product.id}
@@ -127,24 +130,30 @@ export default async function ProductPage({ params }: Props) {
 
           <div className="flex flex-col gap-3">
             <ProductBadgeTag badge={product.badge} className="self-start" />
-            <h1 className="font-display text-3xl font-bold leading-tight text-htz-navy sm:text-4xl">
+            <h1 className="font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
               {product.name}
             </h1>
             {rating ? (
-              <a href="#product-reviews" className="flex items-center gap-2 text-sm text-htz-teal hover:underline">
+              <a href="#product-reviews" className="flex items-center gap-2 text-sm text-accent hover:underline">
                 <Stars rating={rating.average} size="text-base" />
                 {`${rating.average.toFixed(1)} · ${rating.count} ${rating.count === 1 ? "review" : "reviews"}`}
               </a>
             ) : (
-              <a href="#product-reviews" className="text-sm text-htz-teal hover:underline">
+              <a href="#product-reviews" className="text-sm text-accent hover:underline">
                 Be the first to review this
               </a>
             )}
-            {product.description && <p className="text-lg text-htz-navy/80">{product.description}</p>}
-            <div className="rounded-2xl border border-htz-navy/10 p-4">
-              <BuyBox product={product} />
+            {product.description && <p className="text-lg text-ink/80">{product.description}</p>}
+            <div className="rounded-2xl border border-ink/10 p-4">
+              {product.id === FILE_PRINT_ID ? (
+                <PrintYourFile product={product} />
+              ) : product.id === MYSTERY_BAG_ID ? (
+                <MysteryBagBuilder product={product} />
+              ) : (
+                <BuyBox product={product} />
+              )}
             </div>
-            <ul className="flex flex-col gap-1.5 text-sm text-htz-navy/70">
+            <ul className="flex flex-col gap-1.5 text-sm text-ink/70">
               <li>🖨️ 3D printed in PLA and finished by hand in Australia.</li>
               <li>📦 Printed and posted within 3–5 business days.</li>
               <li>↩️ {returnsNote}</li>

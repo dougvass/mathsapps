@@ -27,12 +27,19 @@ export async function getActiveProducts(): Promise<Product[]> {
 
 // Everything the admin panel edits apart from products; never includes the
 // password hash or internal bookkeeping.
-export type StoreConfig = Omit<StoreData, "products" | "adminPasswordHash" | "stockAppliedSessions">;
+export type StoreConfig = Omit<
+  StoreData,
+  "products" | "adminPasswordHash" | "stockAppliedSessions" | "soldCounts" | "specialProductsAdded"
+>;
 
 function toConfig(store: StoreData): StoreConfig {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { products, adminPasswordHash, stockAppliedSessions, ...config } = store;
+  const { products, adminPasswordHash, stockAppliedSessions, soldCounts, specialProductsAdded, ...config } = store;
   return config;
+}
+
+export async function getSoldCounts(): Promise<Record<string, number>> {
+  return (await readStore()).soldCounts;
 }
 
 // Fingerprint of just what the admin edits, so a password change doesn't count

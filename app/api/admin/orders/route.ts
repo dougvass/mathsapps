@@ -10,6 +10,15 @@ function formatAddress(address: Stripe.Address | null | undefined): string {
     .join(", ");
 }
 
+// Checkout stores uploaded files as "id:name|id:name".
+function parsePrintFiles(value: string | undefined): { id: string; name: string }[] {
+  if (!value) return [];
+  return value.split("|").map((entry) => {
+    const [id, ...name] = entry.split(":");
+    return { id, name: name.join(":") };
+  });
+}
+
 function toOrder(session: Stripe.Checkout.Session): AdminOrder {
   const intent = typeof session.payment_intent === "object" ? session.payment_intent : null;
   const rate = session.shipping_cost?.shipping_rate;
@@ -30,6 +39,9 @@ function toOrder(session: Stripe.Checkout.Session): AdminOrder {
     totalCents: session.amount_total ?? 0,
     discountCents: session.total_details?.amount_discount ?? 0,
     postedAt: intent?.metadata?.posted_at || null,
+    giftWrap: session.metadata?.giftWrap === "yes",
+    giftMessage: session.metadata?.giftMessage ?? "",
+    printFiles: parsePrintFiles(session.metadata?.printFiles),
   };
 }
 
@@ -50,7 +62,7 @@ export async function GET() {
   try {
     const sessions = await stripe.checkout.sessions.list({
       status: "complete",
-      limit: 30,
+      limit: 100,
       expand: ["data.line_items", "data.payment_intent", "data.shipping_cost.shipping_rate"],
     });
     const orders = sessions.data

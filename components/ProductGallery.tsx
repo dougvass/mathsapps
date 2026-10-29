@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { Product } from "@/lib/product-types";
 import { productPhotos } from "@/lib/product-types";
-import ProductImage from "./ProductImage";
+import ProductImage, { sizedImage } from "./ProductImage";
 
 // Swipeable photo gallery (scroll-snap) with thumbnails to jump between photos.
 export default function ProductGallery({ product }: { product: Product }) {
@@ -14,7 +14,7 @@ export default function ProductGallery({ product }: { product: Product }) {
   if (photos.length === 0) {
     return (
       <div className="aspect-square overflow-hidden rounded-3xl shadow-md">
-        <ProductImage product={product} />
+        <ProductImage product={product} width={960} eager />
       </div>
     );
   }
@@ -36,13 +36,13 @@ export default function ProductGallery({ product }: { product: Product }) {
       <div
         ref={trackRef}
         onScroll={handleScroll}
-        className="flex aspect-square snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-3xl bg-white shadow-md [scrollbar-width:none]"
+        className="flex aspect-square snap-x snap-mandatory overflow-x-auto overflow-y-hidden rounded-3xl bg-surface shadow-md [scrollbar-width:none]"
       >
         {photos.map((photo, index) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={photo}
-            src={photo}
+            src={sizedImage(photo, 960)}
             alt={`${product.name}${photos.length > 1 ? ` – photo ${index + 1}` : ""}`}
             className="h-full w-full shrink-0 snap-center object-cover"
           />
@@ -62,7 +62,7 @@ export default function ProductGallery({ product }: { product: Product }) {
               }`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo} alt="" className="h-full w-full object-cover" />
+              <img src={sizedImage(photo, 320)} alt="" loading="lazy" className="h-full w-full object-cover" />
             </button>
           ))}
         </div>

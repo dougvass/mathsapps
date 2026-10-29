@@ -23,18 +23,18 @@ export default function CartToast() {
   return (
     <div
       role="status"
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-white p-3 shadow-2xl ring-1 ring-htz-navy/10 sm:inset-x-auto sm:right-4 sm:top-24 sm:bottom-auto"
+      className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-surface p-3 shadow-2xl ring-1 ring-ink/10 sm:inset-x-auto sm:right-4 sm:top-24 sm:bottom-auto"
     >
       <span className="h-14 w-14 shrink-0 overflow-hidden rounded-xl">
-        <ProductImage product={product} />
+        <ProductImage product={product} width={320} />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-bold text-green-700">✓ Added to cart</p>
-        <p className="truncate text-sm text-htz-navy">
+        <p className="truncate text-sm text-ink">
           {lastAdded.quantity > 1 ? `${lastAdded.quantity} × ` : ""}
           {product.name}
         </p>
-        <p className="text-xs text-htz-navy/60">
+        <p className="text-xs text-ink/60">
           {totalItems} {totalItems === 1 ? "item" : "items"} in your cart
         </p>
       </div>
@@ -46,7 +46,7 @@ export default function CartToast() {
         >
           View cart
         </Link>
-        <button type="button" onClick={dismissAdded} className="text-xs text-htz-navy/50 hover:underline">
+        <button type="button" onClick={dismissAdded} className="text-xs text-ink/50 hover:underline">
           Keep shopping
         </button>
       </div>

@@ -2,7 +2,15 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
-import type { BannerSettings, HomeText, SocialLinks, StoreData } from "./product-types";
+import {
+  FILE_PRINT_ID,
+  MYSTERY_BAG_ID,
+  type BannerSettings,
+  type HomeText,
+  type Product,
+  type SocialLinks,
+  type StoreData,
+} from "./product-types";
 import { DEFAULT_FAQS } from "./default-faqs";
 import { NON_RETURNABLE_CATEGORY } from "./site";
 
@@ -43,16 +51,56 @@ export class StoreConflictError extends Error {
   }
 }
 
+const SPECIAL_PRODUCTS: Product[] = [
+  {
+    id: MYSTERY_BAG_ID,
+    name: "Mystery Bag",
+    category: "fidgets",
+    price: 20,
+    description: "A surprise bag of 3–5 of our toys, picked by hand to match what you like.",
+    emoji: "🎁",
+    image: "",
+    gallery: [],
+    badge: "new",
+    active: true,
+    chooseColor: false,
+    needsCustomText: false,
+    stock: "made-to-order",
+    wasPrice: 0,
+  },
+  {
+    id: FILE_PRINT_ID,
+    name: "Print Your Own 3D File",
+    category: NON_RETURNABLE_CATEGORY,
+    price: 8,
+    description: "Upload an STL file and get an instant price. We print it in PLA and post it to you.",
+    emoji: "🖨️",
+    image: "",
+    gallery: [],
+    badge: "new",
+    active: true,
+    chooseColor: true,
+    needsCustomText: false,
+    stock: "made-to-order",
+    wasPrice: 0,
+  },
+];
+
 // Data saved before a field existed won't have it, so fill in defaults.
 function withDefaults(data: StoreData): StoreData {
+  // The special products are added once; after that the admin can edit or remove them.
+  const products = data.specialProductsAdded
+    ? data.products
+    : [...data.products, ...SPECIAL_PRODUCTS.filter((p) => !data.products.some((existing) => existing.id === p.id))];
   return {
     ...data,
-    products: data.products.map((product) => ({
+    products: products.map((product) => ({
       ...product,
       stock: product.stock ?? "made-to-order",
       gallery: product.gallery ?? [],
       badge: product.badge ?? "",
       needsCustomText: product.needsCustomText ?? product.category === NON_RETURNABLE_CATEGORY,
+      wasPrice: product.wasPrice ?? 0,
     })),
     banner: { ...DEFAULT_BANNER, ...data.banner },
     heroImage: data.heroImage ?? "",
@@ -60,6 +108,10 @@ function withDefaults(data: StoreData): StoreData {
     socialLinks: { ...DEFAULT_SOCIAL_LINKS, ...data.socialLinks },
     homeText: { ...DEFAULT_HOME_TEXT, ...data.homeText },
     stockAppliedSessions: data.stockAppliedSessions ?? [],
+    toyOfWeek: data.toyOfWeek ?? { productId: "", blurb: "" },
+    holiday: data.holiday ?? { enabled: false, until: "", message: "" },
+    soldCounts: data.soldCounts ?? {},
+    specialProductsAdded: true,
   };
 }
 

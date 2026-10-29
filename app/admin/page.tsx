@@ -8,16 +8,19 @@ import {
   type BannerSettings,
   type CategoryDef,
   type Faq,
+  type HolidayMode,
   type HomeText,
   type Product,
   type ProductBadge,
   type SizeOption,
   type SocialLinks,
   type StoreSettings,
+  type ToyOfWeek,
 } from "@/lib/product-types";
 import { DEFAULT_FAQS } from "@/lib/default-faqs";
 import ImageDropzone from "@/components/ImageDropzone";
 import DiscountCodes from "@/components/DiscountCodes";
+import { BulkPriceTool, HolidayEditor, SalesDashboard, ToyOfWeekEditor } from "@/components/AdminExtras";
 import QrCodeCard from "@/components/QrCodeCard";
 import StockEditor from "@/components/StockEditor";
 import OrdersPanel from "@/components/OrdersPanel";
@@ -60,13 +63,15 @@ export default function AdminPage() {
     aboutTitle: "",
     aboutText: "",
   });
+  const [toyOfWeek, setToyOfWeek] = useState<ToyOfWeek>({ productId: "", blurb: "" });
+  const [holiday, setHoliday] = useState<HolidayMode>({ enabled: false, until: "", message: "" });
   // Version of the shop data this page was loaded at; saving checks it.
   const [version, setVersion] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [productFilter, setProductFilter] = useState("");
 
-  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText };
+  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText, toyOfWeek, holiday };
   const snapshot = JSON.stringify(editable);
   const dirty = status === "authed" && savedSnapshot !== "" && snapshot !== savedSnapshot;
 
@@ -120,6 +125,8 @@ export default function AdminPage() {
       setFaqs(data.faqs);
       setSocialLinks(data.socialLinks);
       setHomeText(data.homeText);
+      setToyOfWeek(data.toyOfWeek);
+      setHoliday(data.holiday);
       setVersion(data.version);
       setSavedSnapshot(
         JSON.stringify({
@@ -133,6 +140,8 @@ export default function AdminPage() {
           faqs: data.faqs,
           socialLinks: data.socialLinks,
           homeText: data.homeText,
+          toyOfWeek: data.toyOfWeek,
+          holiday: data.holiday,
         })
       );
       setSaveState("idle");
@@ -190,6 +199,7 @@ export default function AdminPage() {
       gallery: [],
       badge: "",
       stock: "made-to-order",
+      wasPrice: 0,
     };
     setProducts((prev) => [...prev, newProduct]);
     openAndScrollTo(newProduct.id);
@@ -303,6 +313,8 @@ export default function AdminPage() {
         faqs,
         socialLinks,
         homeText,
+        toyOfWeek,
+        holiday,
         version,
       }),
     });
@@ -437,9 +449,14 @@ export default function AdminPage() {
           </div>
         </div>
 
+        <SalesDashboard products={products} />
+
         <OrdersPanel />
 
         <div className="mt-6 flex flex-col gap-4">
+          <HolidayEditor holiday={holiday} onChange={setHoliday} />
+          <ToyOfWeekEditor value={toyOfWeek} products={products} onChange={setToyOfWeek} />
+          <BulkPriceTool products={products} categories={categories} onChange={setProducts} />
           <HeroPhotoSection heroImage={heroImage} onChange={setHeroImage} />
           <HomeTextEditor text={homeText} onChange={setHomeText} />
 
@@ -686,7 +703,7 @@ export default function AdminPage() {
                   className="flex min-w-0 flex-1 items-center gap-3 text-left"
                 >
                   <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg">
-                    <ProductImage product={product} />
+                    <ProductImage product={product} width={320} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-htz-navy">
@@ -791,6 +808,20 @@ export default function AdminPage() {
                     onChange={(e) =>
                       updateProduct(product.id, { price: Number(e.target.value) })
                     }
+                    className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
+                  />
+                </label>
+
+                <label className="flex flex-col gap-1">
+                  <span className="text-sm font-semibold text-htz-navy">
+                    Was price <span className="font-normal text-htz-navy/50">(0 = not on sale)</span>
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={product.wasPrice}
+                    onChange={(e) => updateProduct(product.id, { wasPrice: Number(e.target.value) })}
                     className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
                   />
                 </label>

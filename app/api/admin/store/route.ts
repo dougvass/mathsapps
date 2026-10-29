@@ -74,6 +74,20 @@ function validateExtras(body: StorePayload): string | null {
     }
   }
 
+  const { toyOfWeek, holiday } = body;
+  if (!toyOfWeek || typeof toyOfWeek.productId !== "string" || typeof toyOfWeek.blurb !== "string") {
+    return "Invalid Toy of the Week.";
+  }
+  if (
+    !holiday ||
+    typeof holiday.enabled !== "boolean" ||
+    typeof holiday.message !== "string" ||
+    typeof holiday.until !== "string" ||
+    (holiday.until !== "" && !/^\d{4}-\d{2}-\d{2}$/.test(holiday.until))
+  ) {
+    return "Invalid holiday mode settings.";
+  }
+
   if (!socialLinks || typeof socialLinks !== "object") return "Invalid social links.";
   for (const network of SOCIAL_NETWORKS) {
     if (!isHttpsUrlOrEmpty(socialLinks[network])) {
@@ -136,7 +150,10 @@ export async function PUT(request: Request) {
       typeof product.chooseColor !== "boolean" ||
       !isValidStock(product.stock) ||
       typeof product.category !== "string" ||
-      !product.category
+      !product.category ||
+      typeof product.wasPrice !== "number" ||
+      !Number.isFinite(product.wasPrice) ||
+      product.wasPrice < 0
     ) {
       return NextResponse.json({ error: "Invalid product data." }, { status: 400 });
     }
@@ -203,6 +220,12 @@ export async function PUT(request: Request) {
         answer: answer.trim(),
       })),
       socialLinks: body.socialLinks!,
+      toyOfWeek: { productId: body.toyOfWeek!.productId, blurb: body.toyOfWeek!.blurb.trim().slice(0, 200) },
+      holiday: {
+        enabled: body.holiday!.enabled,
+        until: body.holiday!.until,
+        message: body.holiday!.message.trim().slice(0, 200),
+      },
       homeText: {
         heroHeadline: body.homeText!.heroHeadline.trim(),
         heroHighlight: body.homeText!.heroHighlight.trim(),

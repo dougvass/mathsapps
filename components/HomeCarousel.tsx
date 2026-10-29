@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { sizedImage } from "./ProductImage";
 import type { BannerSettings, HomeText } from "@/lib/product-types";
 
 type Slide = { key: string; label: string; content: React.ReactNode };
@@ -50,7 +51,7 @@ export default function HomeCarousel({
             {heroImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={heroImage}
+                src={sizedImage(heroImage, 640)}
                 alt="3D printed fidget toys by HugosToyz"
                 className="aspect-square w-64 rounded-[2rem] object-cover shadow-2xl ring-4 ring-htz-pink/40 lg:w-72"
               />

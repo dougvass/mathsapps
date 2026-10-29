@@ -24,19 +24,27 @@ export function saveDiscount(discount: AppliedDiscount | null) {
 
 export type CheckoutResult = { url: string } | { error: string; discountError: boolean };
 
+export type GiftOptions = { wrap: boolean; message: string };
+
 // Asks the server for a Stripe payment page for these items.
-export async function startCheckout(items: CartItem[], discountCode?: string): Promise<CheckoutResult> {
+export async function startCheckout(
+  items: CartItem[],
+  discountCode?: string,
+  gift?: GiftOptions
+): Promise<CheckoutResult> {
   try {
     const response = await fetch("/api/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         discountCode,
-        items: items.map(({ productId, color, size, customText, quantity }) => ({
+        gift,
+        items: items.map(({ productId, color, size, customText, extra, quantity }) => ({
           productId,
           color,
           size,
           customText,
+          extra,
           quantity,
         })),
       }),

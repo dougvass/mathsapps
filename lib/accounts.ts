@@ -31,6 +31,10 @@ export type Account = {
   rewardCodes: RewardCode[];
   // Only for email sign-in accounts (scrypt "salt:hash").
   passwordHash: string;
+  // Out-of-stock products the shopper wants to hear about.
+  stockAlerts: string[];
+  // Spin-the-wheel is once per account.
+  spunWheel: boolean;
 };
 
 type Accounts = Record<string, Account>;
@@ -62,6 +66,8 @@ function normalise(raw: unknown): Accounts {
       orders: value.orders ?? [],
       rewardCodes: value.rewardCodes ?? [],
       passwordHash: value.passwordHash ?? "",
+      stockAlerts: value.stockAlerts ?? [],
+      spunWheel: value.spunWheel ?? false,
     };
   }
   return accounts;
@@ -140,6 +146,8 @@ function newAccount(
     orders: [],
     rewardCodes: [],
     passwordHash: details.passwordHash,
+    stockAlerts: [],
+    spunWheel: false,
   };
   return addPoints(account, SIGNUP_POINTS, "Welcome bonus");
 }

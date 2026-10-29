@@ -75,7 +75,7 @@ export default function SearchBar({ initialQuery = "" }: { initialQuery?: string
         aria-autocomplete="list"
         aria-expanded={open && suggestions.length > 0}
         aria-controls="search-suggestions"
-        className="h-11 w-full rounded-full border-2 border-transparent bg-white pl-4 pr-14 text-htz-navy placeholder:text-htz-navy/40 focus:border-htz-orange focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+        className="h-11 w-full rounded-full border-2 border-transparent bg-surface pl-4 pr-14 text-ink placeholder:text-ink/40 focus:border-htz-orange focus:outline-none [&::-webkit-search-cancel-button]:hidden"
       />
       <button
         type="submit"
@@ -92,7 +92,7 @@ export default function SearchBar({ initialQuery = "" }: { initialQuery?: string
         <ul
           id="search-suggestions"
           role="listbox"
-          className="absolute left-0 right-0 top-12 z-50 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-htz-navy/10"
+          className="absolute left-0 right-0 top-12 z-50 overflow-hidden rounded-2xl bg-surface shadow-xl ring-1 ring-ink/10"
         >
           {suggestions.map((product, index) => (
             <li key={product.id} role="option" aria-selected={index === active}>
@@ -103,12 +103,12 @@ export default function SearchBar({ initialQuery = "" }: { initialQuery?: string
                   setOpen(false);
                   router.push(`/products/${product.id}`);
                 }}
-                className={`flex w-full items-center gap-3 px-3 py-2 text-left ${index === active ? "bg-htz-cream" : ""}`}
+                className={`flex w-full items-center gap-3 px-3 py-2 text-left ${index === active ? "bg-surface-2" : ""}`}
               >
                 <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                  <ProductImage product={product} />
+                  <ProductImage product={product} width={320} />
                 </span>
-                <span className="min-w-0 flex-1 truncate text-sm text-htz-navy">{product.name}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-ink">{product.name}</span>
                 <span className="text-sm font-semibold text-htz-orange">${product.price.toFixed(2)}</span>
               </button>
             </li>
@@ -117,7 +117,7 @@ export default function SearchBar({ initialQuery = "" }: { initialQuery?: string
             <button
               type="button"
               onClick={goToResults}
-              className="w-full border-t border-htz-navy/10 px-3 py-2 text-left text-sm font-semibold text-htz-orange hover:bg-htz-cream"
+              className="w-full border-t border-ink/10 px-3 py-2 text-left text-sm font-semibold text-htz-orange hover:bg-surface-2"
             >
               See all results for “{query.trim()}”
             </button>

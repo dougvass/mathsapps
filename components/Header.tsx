@@ -111,26 +111,26 @@ export default function Header() {
       </div>
 
       {/* Category strip */}
-      <nav aria-label="Categories" className="border-b border-htz-navy/10 bg-white">
-        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 py-2 text-base font-semibold text-htz-navy [scrollbar-width:none] sm:px-6 lg:px-8">
-          <Link href="/shop" className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-htz-navy/5">
+      <nav aria-label="Categories" className="border-b border-ink/10 bg-surface">
+        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 py-2 text-base font-semibold text-ink [scrollbar-width:none] sm:px-6 lg:px-8">
+          <Link href="/shop" className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-ink/5">
             All toys
           </Link>
           {shownCategories.map((category) => (
             <Link
               key={category.value}
               href={`/shop?category=${encodeURIComponent(category.value)}`}
-              className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-htz-navy/5"
+              className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-ink/5"
             >
               {category.label}
             </Link>
           ))}
-          <span className="mx-1 hidden w-px shrink-0 bg-htz-navy/10 sm:block" aria-hidden="true" />
+          <span className="mx-1 hidden w-px shrink-0 bg-ink/10 sm:block" aria-hidden="true" />
           {PAGE_LINKS.filter((link) => signInEnabled || link.href !== "/account").map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="hidden shrink-0 rounded-full px-3 py-1 text-htz-navy/70 transition-colors hover:bg-htz-navy/5 sm:block"
+              className="hidden shrink-0 rounded-full px-3 py-1 text-ink/70 transition-colors hover:bg-ink/5 sm:block"
             >
               {link.label}
             </Link>

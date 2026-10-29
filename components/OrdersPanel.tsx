@@ -7,6 +7,40 @@ function money(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+// Opens a simple packing slip in a new window and prints it.
+function printSlip(order: AdminOrder) {
+  const win = window.open("", "_blank", "width=600,height=800");
+  if (!win) {
+    window.alert("Please allow pop-ups to print packing slips.");
+    return;
+  }
+  const date = new Date(order.createdAt * 1000).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
+  const items = order.items
+    .map((item) => `<tr><td class="q">${item.quantity} ×</td><td>${escapeHtml(item.description)}</td><td class="tick">☐</td></tr>`)
+    .join("");
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Packing slip</title><style>
+    body{font-family:system-ui,sans-serif;color:#0b2b3a;padding:32px;max-width:560px;margin:auto}
+    h1{font-size:28px;margin:0}h1 span{color:#7aa312}.muted{color:#5b6b73;font-size:13px}
+    .box{border:2px solid #0b2b3a;border-radius:12px;padding:14px;margin:18px 0;font-size:16px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}td{padding:8px 4px;border-bottom:1px solid #ddd;font-size:15px}
+    .q{width:48px;font-weight:bold}.tick{width:24px;font-size:20px}.gift{background:#fff3e8;border-radius:12px;padding:12px;margin-top:16px}
+    .thanks{margin-top:28px;text-align:center;font-size:18px}
+  </style></head><body>
+    <h1>Hugos<span>Toyz</span></h1><p class="muted">Order from ${escapeHtml(date)}</p>
+    <div class="box"><strong>${escapeHtml(order.shippingName || order.customerName)}</strong><br>${escapeHtml(order.address || "Local pickup")}</div>
+    <p class="muted">${escapeHtml(order.shippingMethod)}</p>
+    <table>${items}</table>
+    ${order.giftWrap ? `<div class="gift"><strong>🎁 Gift wrap</strong>${order.giftMessage ? `<br>Message: “${escapeHtml(order.giftMessage)}”` : ""}</div>` : ""}
+    <p class="thanks">Thank you for shopping with HugosToyz! 💚<br><span class="muted">hugostoyz.vercel.app</span></p>
+    <script>window.onload=()=>window.print()</script>
+  </body></html>`);
+  win.document.close();
+}
+
 function OrderCard({
   order,
   onPostedChange,
@@ -45,6 +79,26 @@ function OrderCard({
           </li>
         ))}
       </ul>
+      {order.giftWrap && (
+        <p className="mt-2 rounded-lg bg-htz-orange/10 px-3 py-2 text-sm text-htz-navy">
+          🎁 <strong>Gift wrap</strong>
+          {order.giftMessage && ` – message: “${order.giftMessage}”`}
+        </p>
+      )}
+      {order.printFiles.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {order.printFiles.map((file) => (
+            <li key={file.id}>
+              <a
+                href={`/api/admin/print-files/${file.id}`}
+                className="inline-block rounded-full bg-htz-teal px-3 py-1 text-xs font-bold text-white hover:underline"
+              >
+                ⬇️ Download {file.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
       <p className="mt-2 text-xs text-htz-navy/70">
         {order.shippingMethod && <span className="font-semibold">{order.shippingMethod}</span>}
         {order.address && <> · {order.address}</>}
@@ -56,6 +110,13 @@ function OrderCard({
           </a>
         </p>
       )}
+      <button
+        type="button"
+        onClick={() => printSlip(order)}
+        className="mt-3 rounded-full border border-htz-navy/20 px-3 py-1 text-xs font-semibold text-htz-navy hover:border-htz-orange"
+      >
+        🖨️ Packing slip
+      </button>
       {order.paymentIntentId && (
         <div className="mt-3 flex items-center gap-3">
           {order.postedAt ? (
@@ -145,7 +206,7 @@ export default function OrdersPanel() {
         </button>
       </div>
       <p className="mt-1 text-sm text-htz-navy/60">
-        Your 30 most recent paid orders from Stripe, including colours, sizes and any custom text.
+        Your 100 most recent paid orders from Stripe, including colours, sizes and any custom text.
       </p>
 
       {error && <p className="mt-3 text-sm text-htz-pink">{error}</p>}

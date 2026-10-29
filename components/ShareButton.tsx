@@ -24,7 +24,7 @@ export default function ShareButton({ title, url }: { title: string; url: string
     <button
       type="button"
       onClick={share}
-      className="inline-flex items-center gap-1 rounded-full border border-htz-navy/15 bg-white px-3 py-1 text-sm font-semibold text-htz-navy hover:border-htz-orange"
+      className="inline-flex items-center gap-1 rounded-full border border-ink/15 bg-surface px-3 py-1 text-sm font-semibold text-ink hover:border-htz-orange"
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
