@@ -25,7 +25,7 @@ export default function ShopShell({
       <AccountProvider>
         <CartProvider products={shop.products}>
           <Header />
-          <main className="min-h-[60vh] bg-[#f4f5f7]">{children}</main>
+          <main className="min-h-[60vh] bg-gradient-to-b from-[#fff8ec] via-[#fdf2f8] to-[#ecfeff]">{children}</main>
           <Footer socialLinks={socialLinks} />
           <CartToast />
           <BackToTop />

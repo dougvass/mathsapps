@@ -221,7 +221,7 @@ export default function ShopBrowser({ initial }: { initial: ShopFilters }) {
             </button>
           </div>
         ) : (
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {visible.map((product) => (
               <li key={product.id}>
                 <ProductTile product={product} />

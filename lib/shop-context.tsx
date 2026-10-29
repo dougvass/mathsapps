@@ -9,6 +9,7 @@ export type ShopData = {
   colors: string[];
   sizeOptions: SizeOption[];
   ratings: Record<string, Rating>;
+  signInEnabled: boolean;
 };
 
 const ShopContext = createContext<ShopData | null>(null);

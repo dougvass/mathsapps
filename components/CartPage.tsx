@@ -7,6 +7,7 @@ import { discountCents, type AppliedDiscount } from "@/lib/discount-lookup";
 import { loadSavedDiscount, saveDiscount, startCheckout } from "@/lib/checkout-client";
 import { FREE_SHIPPING_THRESHOLD_AUD_CENTS } from "@/lib/site";
 import { useAccount } from "@/lib/account-context";
+import { useShop } from "@/lib/shop-context";
 import { POINTS_PER_DOLLAR } from "@/lib/rewards-rules";
 import ProductImage from "./ProductImage";
 
@@ -17,6 +18,7 @@ function money(cents: number): string {
 export default function CartPage() {
   const { lines, setQuantity, removeItem, canAddMore, totalItems, totalPrice } = useCart();
   const { account } = useAccount();
+  const { signInEnabled } = useShop();
   const [checkingOut, setCheckingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -262,7 +264,7 @@ export default function CartPage() {
               🎁 You&apos;ll earn <strong>{Math.floor((itemsTotalCents / 100) * POINTS_PER_DOLLAR)} points</strong> on this order
             </p>
           ) : (
-            <Link href="/account" className="rounded-xl bg-htz-lime/20 p-2 text-center text-sm text-htz-navy hover:underline">
+            signInEnabled && <Link href="/account" className="rounded-xl bg-htz-lime/20 p-2 text-center text-sm text-htz-navy hover:underline">
               🎁 Sign in to earn <strong>{Math.floor((itemsTotalCents / 100) * POINTS_PER_DOLLAR)} points</strong> on this order
             </Link>
           )}

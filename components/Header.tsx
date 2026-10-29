@@ -27,7 +27,7 @@ function CountBubble({ count }: { count: number }) {
 export default function Header() {
   const { totalItems } = useCart();
   const { ids: wishlist } = useWishlist();
-  const { products, categories } = useShop();
+  const { products, categories, signInEnabled } = useShop();
   const { account } = useAccount();
   const firstName = account?.name.split(" ")[0];
   const [menuOpen, setMenuOpen] = useState(false);
@@ -60,6 +60,7 @@ export default function Header() {
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2">
+            {signInEnabled && (
             <Link
               href="/account"
               onClick={close}
@@ -72,6 +73,7 @@ export default function Header() {
                 <span className="text-sm font-bold">{account ? `${account.points} points` : "Account & Rewards"}</span>
               </span>
             </Link>
+            )}
             <Link
               href="/wishlist"
               onClick={close}
@@ -124,7 +126,7 @@ export default function Header() {
             </Link>
           ))}
           <span className="mx-1 hidden w-px shrink-0 bg-htz-navy/10 sm:block" aria-hidden="true" />
-          {PAGE_LINKS.map((link) => (
+          {PAGE_LINKS.filter((link) => signInEnabled || link.href !== "/account").map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -140,7 +142,9 @@ export default function Header() {
         <nav id="mobile-menu" className="max-h-[70vh] overflow-y-auto bg-htz-navy px-4 pb-4 sm:hidden">
           {[
             { href: "/shop", label: "Shop all toys" },
-            { href: "/account", label: account ? `My account · ${account.points} points` : "Sign in & earn points" },
+            ...(signInEnabled
+              ? [{ href: "/account", label: account ? `My account · ${account.points} points` : "Sign in & earn points" }]
+              : []),
             { href: "/wishlist", label: "Wishlist ♡" },
             ...PAGE_LINKS.filter((link) => link.href !== "/account"),
           ].map((link) => (

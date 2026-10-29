@@ -2,6 +2,7 @@ import { cache } from "react";
 import { getActiveProducts, getStoreConfig } from "./products";
 import { getReviews } from "./reviews";
 import { ratingsByProduct } from "./ratings";
+import { googleConfigured } from "./user-session";
 
 // Everything a shop page needs, read once per request.
 export const loadShopData = cache(async () => {
@@ -20,6 +21,8 @@ export const loadShopData = cache(async () => {
       colors: config.colors,
       sizeOptions: config.sizeOptions,
       ratings: ratingsByProduct(reviews),
+      // Accounts and rewards only show once Google sign-in is set up.
+      signInEnabled: googleConfigured(),
     },
   };
 });
