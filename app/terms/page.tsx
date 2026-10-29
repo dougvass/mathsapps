@@ -52,8 +52,7 @@ export default function TermsPage() {
 
       <h2>Custom orders</h2>
       <p>
-        For personalised items, we print the name or text exactly as you type it (up to{" "}
-        {MAX_CUSTOM_TEXT_LENGTH} characters), so please check the spelling. We may refuse text that
+        {`For personalised items, we print the name or text exactly as you type it (up to ${MAX_CUSTOM_TEXT_LENGTH} characters), so please check the spelling.`} We may refuse text that
         is offensive or that we don&apos;t have the right to print, and refund you instead.
       </p>
 
@@ -90,16 +89,17 @@ export default function TermsPage() {
       <h2>Returns and refunds</h2>
       <ul>
         <li>
-          <strong>Changed your mind?</strong> Return unused items within{" "}
-          {CHANGE_OF_MIND_RETURN_DAYS} days for a refund. You pay the return postage.
+          <strong>Changed your mind?</strong>{" "}
+          {`Return unused items within ${CHANGE_OF_MIND_RETURN_DAYS} days for a refund. You pay the return postage.`}
         </li>
         <li>
-          <strong>Faulty item?</strong> Let us know within {FAULTY_ITEM_REPORT_DAYS} days and
-          we&apos;ll repair, replace or refund it.
+          <strong>Faulty item?</strong>{" "}
+          {`Let us know within ${FAULTY_ITEM_REPORT_DAYS} days and we'll repair, replace or refund it.`}
         </li>
         <li>
-          <strong>Custom items</strong> (Design Your Own) are made just for you, so they can&apos;t
-          be returned for a change of mind.
+          <strong>Custom items</strong>{" "}
+          (Design Your Own) are made just for you, so they can&apos;t be returned for a change of
+          mind.
         </li>
         <li>
           Nothing in these terms limits your rights under the Australian Consumer Law, including
