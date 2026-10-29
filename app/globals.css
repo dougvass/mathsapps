@@ -57,6 +57,13 @@
   }
 }
 
+/* Slightly bigger text and buttons on phones. */
+@media (max-width: 640px) {
+  html {
+    font-size: 106.25%;
+  }
+}
+
 body {
   background: var(--color-htz-cream);
   color: var(--color-htz-navy);

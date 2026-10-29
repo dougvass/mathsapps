@@ -17,8 +17,14 @@ export function googleConfigured(): boolean {
   return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
 
+// ADMIN_PASSWORD is always set on the live site; the "htz-user:" label below
+// keeps shopper sessions separate from admin sessions.
 function secret(): string | null {
-  return process.env.AUTH_SECRET || process.env.GOOGLE_CLIENT_SECRET || null;
+  return process.env.AUTH_SECRET || process.env.ADMIN_PASSWORD || null;
+}
+
+export function signInConfigured(): boolean {
+  return secret() !== null;
 }
 
 function sign(value: string, key: string): string {

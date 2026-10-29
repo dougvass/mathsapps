@@ -86,7 +86,7 @@ export default function Header() {
             <Link
               href="/cart"
               onClick={close}
-              className="relative flex items-center gap-1.5 rounded-full bg-htz-lime px-4 py-2 text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"
+              className="relative flex items-center gap-1.5 rounded-full bg-htz-lime px-4 py-2.5 text-base font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="9" cy="20" r="1.5" />
@@ -112,15 +112,15 @@ export default function Header() {
 
       {/* Category strip */}
       <nav aria-label="Categories" className="border-b border-htz-navy/10 bg-white">
-        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 py-1.5 text-sm font-semibold text-htz-navy [scrollbar-width:none] sm:px-6 lg:px-8">
-          <Link href="/shop" className="shrink-0 rounded-full px-3 py-1 transition-colors hover:bg-htz-navy/5">
+        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 py-2 text-base font-semibold text-htz-navy [scrollbar-width:none] sm:px-6 lg:px-8">
+          <Link href="/shop" className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-htz-navy/5">
             All toys
           </Link>
           {shownCategories.map((category) => (
             <Link
               key={category.value}
               href={`/shop?category=${encodeURIComponent(category.value)}`}
-              className="shrink-0 rounded-full px-3 py-1 transition-colors hover:bg-htz-navy/5"
+              className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-htz-navy/5"
             >
               {category.label}
             </Link>

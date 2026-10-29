@@ -23,7 +23,7 @@ export function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
-function verifyPasswordHash(password: string, stored: string): boolean {
+export function verifyPasswordHash(password: string, stored: string): boolean {
   const [salt, hash] = stored.split(":");
   if (!salt || !hash) return false;
   const candidate = crypto.scryptSync(password, salt, SCRYPT_KEYLEN).toString("hex");

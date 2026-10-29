@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/auth";
-import { adjustPoints, listAccounts } from "@/lib/accounts";
+import crypto from "crypto";
+import { adjustPoints, listAccounts, setPasswordHash } from "@/lib/accounts";
+import { hashPassword } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,7 @@ export async function GET() {
       points: a.points,
       orders: a.orders.length,
       createdAt: a.createdAt,
+      hasPassword: Boolean(a.passwordHash),
     })),
   });
 }
@@ -22,11 +25,22 @@ export async function GET() {
 // Add or take away points by hand (e.g. a thank-you, or fixing a mistake).
 export async function PATCH(request: Request) {
   if (!(await isAdminRequest())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  let body: { id?: string; points?: number; reason?: string };
+  let body: { id?: string; points?: number; reason?: string; resetPassword?: boolean };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  // Forgotten password: make a temporary one for the admin to pass on.
+  if (body.resetPassword) {
+    if (!body.id?.startsWith("email-")) {
+      return NextResponse.json({ error: "Only email accounts have passwords." }, { status: 400 });
+    }
+    const temporary = `htz-${crypto.randomBytes(5).toString("hex")}`;
+    const account = await setPasswordHash(body.id, hashPassword(temporary));
+    if (!account) return NextResponse.json({ error: "Member not found." }, { status: 404 });
+    return NextResponse.json({ temporaryPassword: temporary });
   }
   const points = Math.trunc(Number(body.points));
   if (!body.id || !points || Math.abs(points) > 10000) {

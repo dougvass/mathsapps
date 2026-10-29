@@ -45,4 +45,5 @@ export type AccountView = {
   orders: (AccountOrder & { posted: boolean })[];
   rewardCodes: RewardCode[];
   address: Address;
+  hasPassword: boolean;
 };

@@ -35,8 +35,10 @@ export default function PrivacyPage() {
           internet (IP) address to stop spam; it isn&apos;t published or stored with your review.
         </li>
         <li>
-          <strong>Accounts and rewards (optional).</strong> If you sign in with Google, Google tells
-          us your name, email address and profile photo. We use these to run your account and keep
+          <strong>Accounts and rewards (optional).</strong> If you create an account, we keep your
+          first name, email address and password (stored scrambled, so nobody – including us – can
+          read it). If you sign in with Google instead, Google tells us your name, email address and
+          profile photo. We use these to run your account and keep
           your reward points, order history, wishlist, birthday (day and month only, if you add it)
           and saved delivery address. You can shop without an account.
         </li>

@@ -6,8 +6,8 @@ import { useShop } from "@/lib/shop-context";
 import type { Product } from "@/lib/product-types";
 import ProductRow from "./ProductRow";
 
-// Remembers this product as viewed and shows the others looked at before it.
-export default function RecentlyViewed({ currentId }: { currentId: string }) {
+// Remembers this product as viewed and (unless hidden) shows the others looked at before it.
+export default function RecentlyViewed({ currentId, hidden = false }: { currentId: string; hidden?: boolean }) {
   const { products } = useShop();
   const { ids, record } = useRecentlyViewed();
 
@@ -18,5 +18,6 @@ export default function RecentlyViewed({ currentId }: { currentId: string }) {
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is Product => Boolean(p));
 
+  if (hidden) return null;
   return <ProductRow title="👀 Your recently viewed" products={recent} />;
 }

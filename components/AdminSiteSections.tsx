@@ -301,7 +301,15 @@ export function HomeTextEditor({
   );
 }
 
-type Member = { id: string; name: string; email: string; points: number; orders: number; createdAt: string };
+type Member = {
+  id: string;
+  name: string;
+  email: string;
+  points: number;
+  orders: number;
+  createdAt: string;
+  hasPassword: boolean;
+};
 
 // Shoppers who signed in, with their reward points.
 export function RewardsMembers() {
@@ -341,6 +349,24 @@ export function RewardsMembers() {
     setMembers((prev) => prev?.map((m) => (m.id === member.id ? { ...m, points: data.points } : m)) ?? null);
   }
 
+  async function resetPassword(member: Member) {
+    if (!window.confirm(`Make a new temporary password for ${member.name} (${member.email})? Their old password will stop working.`)) return;
+    const response = await fetch("/api/admin/accounts", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: member.id, resetPassword: true }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      window.alert(data.error ?? "Couldn't reset the password.");
+      return;
+    }
+    window.prompt(
+      `Send ${member.name} this temporary password. They should change it on their account page after signing in:`,
+      data.temporaryPassword
+    );
+  }
+
   return (
     <div className={`mt-6 ${cardClass}`}>
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between text-left">
@@ -370,6 +396,11 @@ export function RewardsMembers() {
                   <button type="button" onClick={() => adjust(member)} className={smallButtonClass}>
                     ± Points
                   </button>
+                  {member.hasPassword && (
+                    <button type="button" onClick={() => resetPassword(member)} className={`${linkButtonClass} text-htz-teal`}>
+                      Reset password
+                    </button>
+                  )}
                 </div>
               </li>
             ))}

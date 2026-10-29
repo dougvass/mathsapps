@@ -54,6 +54,7 @@ export async function accountView(account: Account): Promise<AccountView> {
     orders: recent.map((order, i) => ({ ...order, posted: posted[i] })),
     rewardCodes: account.rewardCodes.slice(0, 10),
     address: addressFromCustomer(customer),
+    hasPassword: Boolean(account.passwordHash),
   };
 }
 

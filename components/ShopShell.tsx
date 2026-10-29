@@ -8,6 +8,7 @@ import Footer from "./Footer";
 import CartToast from "./CartToast";
 import BackToTop from "./BackToTop";
 import ReferralCatcher from "./ReferralCatcher";
+import DealsStrip from "./DealsStrip";
 import { AccountProvider } from "@/lib/account-context";
 
 // Shop data, cart, header, footer and pop-ups shared by every shop page.
@@ -24,6 +25,7 @@ export default function ShopShell({
     <ShopDataProvider data={shop}>
       <AccountProvider>
         <CartProvider products={shop.products}>
+          <DealsStrip />
           <Header />
           <main className="min-h-[60vh] bg-gradient-to-b from-[#fff8ec] via-[#fdf2f8] to-[#ecfeff]">{children}</main>
           <Footer socialLinks={socialLinks} />

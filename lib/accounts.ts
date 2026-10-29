@@ -29,6 +29,8 @@ export type Account = {
   stripeCustomerId: string;
   orders: AccountOrder[];
   rewardCodes: RewardCode[];
+  // Only for email sign-in accounts (scrypt "salt:hash").
+  passwordHash: string;
 };
 
 type Accounts = Record<string, Account>;
@@ -59,6 +61,7 @@ function normalise(raw: unknown): Accounts {
       stripeCustomerId: value.stripeCustomerId ?? "",
       orders: value.orders ?? [],
       rewardCodes: value.rewardCodes ?? [],
+      passwordHash: value.passwordHash ?? "",
     };
   }
   return accounts;
@@ -111,6 +114,36 @@ function newReferralCode(accounts: Accounts): string {
   return code;
 }
 
+function newAccount(
+  accounts: Accounts,
+  details: { id: string; email: string; name: string; picture: string; referralCode: string; passwordHash: string }
+): Account {
+  const referrer = Object.values(accounts).find(
+    (a) => details.referralCode && a.referralCode === details.referralCode.toUpperCase()
+  );
+  const account: Account = {
+    id: details.id,
+    email: details.email,
+    name: details.name,
+    picture: details.picture,
+    createdAt: new Date().toISOString(),
+    points: 0,
+    history: [],
+    birthday: "",
+    lastBirthdayYear: 0,
+    reviewBonusUsed: false,
+    referralCode: newReferralCode(accounts),
+    referredBy: referrer?.id ?? "",
+    referralRewarded: false,
+    wishlist: [],
+    stripeCustomerId: "",
+    orders: [],
+    rewardCodes: [],
+    passwordHash: details.passwordHash,
+  };
+  return addPoints(account, SIGNUP_POINTS, "Welcome bonus");
+}
+
 // Finds or creates the account for a Google sign-in.
 export async function signInAccount(profile: {
   id: string;
@@ -125,32 +158,39 @@ export async function signInAccount(profile: {
       const updated = { ...existing, email: profile.email, name: profile.name, picture: profile.picture };
       return { data: { ...accounts, [profile.id]: updated }, result: updated };
     }
-    const referrer = Object.values(accounts).find(
-      (a) => profile.referralCode && a.referralCode === profile.referralCode.toUpperCase()
-    );
-    let account: Account = {
-      id: profile.id,
-      email: profile.email,
-      name: profile.name,
-      picture: profile.picture,
-      createdAt: new Date().toISOString(),
-      points: 0,
-      history: [],
-      birthday: "",
-      lastBirthdayYear: 0,
-      reviewBonusUsed: false,
-      referralCode: newReferralCode(accounts),
-      referredBy: referrer?.id ?? "",
-      referralRewarded: false,
-      wishlist: [],
-      stripeCustomerId: "",
-      orders: [],
-      rewardCodes: [],
-    };
-    account = addPoints(account, SIGNUP_POINTS, "Welcome bonus");
+    const account = newAccount(accounts, { ...profile, passwordHash: "" });
     return { data: { ...accounts, [account.id]: account }, result: account };
   });
   return result!;
+}
+
+export function normaliseEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+// Email accounts get an id from their email, so each email can only sign up once.
+export function emailAccountId(email: string): string {
+  return `email-${crypto.createHash("sha256").update(normaliseEmail(email)).digest("hex").slice(0, 24)}`;
+}
+
+// Creates an email + password account; null if that email already has one.
+export async function createEmailAccount(details: {
+  email: string;
+  name: string;
+  passwordHash: string;
+  referralCode: string;
+}): Promise<Account | null> {
+  const id = emailAccountId(details.email);
+  const result = await file.update<Account | null>((accounts) => {
+    if (accounts[id]) return { data: accounts, result: null };
+    const account = newAccount(accounts, { ...details, id, email: normaliseEmail(details.email), picture: "" });
+    return { data: { ...accounts, [id]: account }, result: account };
+  });
+  return result ?? null;
+}
+
+export async function setPasswordHash(id: string, passwordHash: string): Promise<Account | null> {
+  return updateAccount(id, (account) => (account.id.startsWith("email-") ? { ...account, passwordHash } : null));
 }
 
 function todayInAustralia(): { year: number; monthDay: string } {

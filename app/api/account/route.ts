@@ -3,6 +3,9 @@ import { claimBirthdayPoints, cleanWishlist, getAccount, updateAccount } from "@
 import { accountView, ensureStripeCustomer, stripeClient } from "@/lib/account-view";
 import { currentAccountId } from "@/lib/user-session";
 import type { Address } from "@/lib/rewards-rules";
+import { hashPassword, verifyPasswordHash } from "@/lib/auth";
+import { passwordProblem } from "@/lib/password-rules";
+import { setPasswordHash } from "@/lib/accounts";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +51,23 @@ export async function PATCH(request: Request) {
   const id = await currentAccountId();
   if (!id) return NextResponse.json({ error: "Please sign in." }, { status: 401 });
 
-  let body: { birthday?: unknown; wishlist?: unknown; address?: unknown };
+  let body: { birthday?: unknown; wishlist?: unknown; address?: unknown; currentPassword?: unknown; newPassword?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
+
+  if (body.newPassword !== undefined) {
+    const current = await getAccount(id);
+    if (!current?.passwordHash) return NextResponse.json({ error: "This account doesn't use a password." }, { status: 400 });
+    if (typeof body.currentPassword !== "string" || !verifyPasswordHash(body.currentPassword, current.passwordHash)) {
+      return NextResponse.json({ error: "Your current password isn't right." }, { status: 400 });
+    }
+    const problem = passwordProblem(body.newPassword);
+    if (problem) return NextResponse.json({ error: problem }, { status: 400 });
+    await setPasswordHash(id, hashPassword(body.newPassword as string));
+    return NextResponse.json({ ok: true });
   }
 
   if (body.birthday !== undefined && !validBirthday(body.birthday)) {

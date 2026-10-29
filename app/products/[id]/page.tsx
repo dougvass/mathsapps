@@ -75,7 +75,6 @@ export default async function ProductPage({ params }: Props) {
   const productReviews = reviews.filter((r) => r.productId === product.id);
   const rating = shop.ratings[product.id];
   const related = products.filter((p) => p.category === product.category && p.id !== product.id);
-  const others = products.filter((p) => p.category !== product.category);
   const returnsNote =
     product.category === NON_RETURNABLE_CATEGORY
       ? "Made just for you, so no change-of-mind returns."
@@ -116,8 +115,8 @@ export default async function ProductPage({ params }: Props) {
           <ShareButton title={product.name} url={productUrl(product.id)} />
         </div>
 
-        <div className="grid grid-cols-1 gap-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 lg:grid-cols-[1.1fr_1fr_320px]">
-          <div className="relative">
+        <div className="grid grid-cols-1 gap-6 rounded-2xl bg-white p-4 shadow-sm sm:p-6 md:grid-cols-2 md:gap-10">
+          <div className="relative md:sticky md:top-36 md:self-start">
             <WishlistButton
               productId={product.id}
               productName={product.name}
@@ -128,7 +127,7 @@ export default async function ProductPage({ params }: Props) {
 
           <div className="flex flex-col gap-3">
             <ProductBadgeTag badge={product.badge} className="self-start" />
-            <h1 className="font-display text-2xl font-bold leading-tight text-htz-navy sm:text-3xl">
+            <h1 className="font-display text-3xl font-bold leading-tight text-htz-navy sm:text-4xl">
               {product.name}
             </h1>
             {rating ? (
@@ -141,19 +140,16 @@ export default async function ProductPage({ params }: Props) {
                 Be the first to review this
               </a>
             )}
-            <hr className="border-htz-navy/10" />
-            {product.description && <p className="text-htz-navy/80">{product.description}</p>}
-            <h2 className="mt-2 font-display text-lg font-bold text-htz-navy">About this toy</h2>
-            <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-htz-navy/80">
-              <li>3D printed in PLA and finished by hand in Australia.</li>
-              <li>Printed and posted within 3–5 business days.</li>
-              <li>{returnsNote}</li>
-              <li>Not suitable for children under 3 – small parts.</li>
+            {product.description && <p className="text-lg text-htz-navy/80">{product.description}</p>}
+            <div className="rounded-2xl border border-htz-navy/10 p-4">
+              <BuyBox product={product} />
+            </div>
+            <ul className="flex flex-col gap-1.5 text-sm text-htz-navy/70">
+              <li>🖨️ 3D printed in PLA and finished by hand in Australia.</li>
+              <li>📦 Printed and posted within 3–5 business days.</li>
+              <li>↩️ {returnsNote}</li>
+              <li>⚠️ Not suitable for children under 3 – small parts.</li>
             </ul>
-          </div>
-
-          <div className="self-start rounded-2xl border border-htz-navy/10 p-4 md:col-span-2 lg:col-span-1 lg:sticky lg:top-36">
-            <BuyBox product={product} />
           </div>
         </div>
 
@@ -163,8 +159,7 @@ export default async function ProductPage({ params }: Props) {
           seeAllHref={category ? `/shop?category=${encodeURIComponent(category.value)}` : "/shop"}
         />
         <ProductReviews productId={product.id} productName={product.name} reviews={productReviews} />
-        <RecentlyViewed currentId={product.id} />
-        <ProductRow title="You might also like" products={others} seeAllHref="/shop" />
+        <RecentlyViewed currentId={product.id} hidden />
       </div>
     </ShopShell>
   );

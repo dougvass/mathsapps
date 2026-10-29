@@ -15,7 +15,7 @@ import {
   type AccountView,
   type Address,
 } from "@/lib/rewards-rules";
-import { SITE_URL } from "@/lib/site";
+import { CONTACT_EMAIL, SITE_URL } from "@/lib/site";
 import ShareButton from "./ShareButton";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -63,22 +63,125 @@ const EARN = [
   { icon: "🤝", text: `${REFERRAL_POINTS} points when a friend you invite makes their first order` },
 ];
 
+function EmailForm({ onDone }: { onDone: () => Promise<void> }) {
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [website, setWebsite] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    const response = await fetch(mode === "signup" ? "/api/auth/signup" : "/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(mode === "signup" ? { name, email, password, website } : { email, password }),
+    }).catch(() => null);
+    const data = await response?.json().catch(() => ({}));
+    if (response?.ok) {
+      await onDone();
+      return;
+    }
+    setError(data?.error ?? "Something went wrong. Please try again.");
+    setBusy(false);
+  }
+
+  const tab = (value: "signin" | "signup", label: string) => (
+    <button
+      type="button"
+      onClick={() => {
+        setMode(value);
+        setError(null);
+      }}
+      aria-pressed={mode === value}
+      className={`flex-1 rounded-full py-2.5 text-base font-bold transition-colors ${mode === value ? "bg-htz-navy text-white" : "text-htz-navy/60 hover:text-htz-navy"}`}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-3">
+      <div className="flex rounded-full bg-htz-navy/5 p-1">
+        {tab("signin", "Sign in")}
+        {tab("signup", "Create account")}
+      </div>
+      {mode === "signup" && (
+        <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+          First name
+          <input className={`${inputClass} py-3 text-base`} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" maxLength={40} required />
+        </label>
+      )}
+      <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        Email
+        <input className={`${inputClass} py-3 text-base`} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        Password {mode === "signup" && <span className="font-normal text-htz-navy/50">(at least 8 characters)</span>}
+        <input
+          className={`${inputClass} py-3 text-base`}
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete={mode === "signup" ? "new-password" : "current-password"}
+          minLength={mode === "signup" ? 8 : undefined}
+          required
+        />
+      </label>
+      {/* Hidden from people; bots that fill it in are ignored. */}
+      <input
+        type="text"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute -left-[9999px] h-0 w-0 opacity-0"
+      />
+      {error && <p className="text-sm font-semibold text-htz-pink" role="alert">{error}</p>}
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-full bg-htz-lime py-3.5 font-display text-lg font-bold text-htz-navy shadow transition-transform hover:scale-[1.02] disabled:opacity-50"
+      >
+        {busy ? "Please wait…" : mode === "signup" ? `Create account & get ${SIGNUP_POINTS} points` : "Sign in to my account"}
+      </button>
+      {mode === "signin" && (
+        <p className="text-xs text-htz-navy/60">
+          Forgot your password? Email <a href={`mailto:${CONTACT_EMAIL}`} className="underline">{CONTACT_EMAIL}</a> and we&apos;ll send you a new one.
+        </p>
+      )}
+    </form>
+  );
+}
+
 function SignedOut({ googleEnabled, error }: { googleEnabled: boolean; error: string }) {
+  const { refresh } = useAccount();
   return (
     <div className="mx-auto grid max-w-5xl gap-6 px-4 py-10 md:grid-cols-2">
       <div className={`${card} flex flex-col gap-4`}>
         <h1 className="font-display text-3xl font-bold text-htz-navy">Sign in & earn rewards</h1>
         <p className="text-htz-navy/70">
-          Collect points on every order and swap {REDEEM_POINTS} points for {money(REDEEM_VALUE_CENTS)} off. Your wishlist, orders and address are saved too.
+          Collect points on every order and swap {REDEEM_POINTS} points for {money(REDEEM_VALUE_CENTS)} off.
         </p>
         {error && ERRORS[error] && <p className="text-sm font-semibold text-htz-pink">{ERRORS[error]}</p>}
-        <GoogleButton enabled={googleEnabled} />
+        <EmailForm onDone={refresh} />
+        {googleEnabled && (
+          <>
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-htz-navy/40">or</p>
+            <GoogleButton enabled />
+          </>
+        )}
         <p className="text-xs text-htz-navy/50">
-          No account needed to shop – signing in is optional. We only get your name, email and profile photo from Google. See our{" "}
+          No account needed to shop – signing in is optional. Your password is stored scrambled, so nobody can read it. See our{" "}
           <Link href="/privacy" className="underline">Privacy Policy</Link>.
         </p>
       </div>
-      <div className="rounded-2xl bg-gradient-to-br from-htz-navy to-htz-teal p-6 text-white shadow-sm">
+      <div className="self-start rounded-2xl bg-gradient-to-br from-htz-navy to-htz-teal p-6 text-white shadow-sm">
         <h2 className="font-display text-2xl font-bold">🎁 HugosToyz Rewards</h2>
         <ul className="mt-4 flex flex-col gap-3">
           {EARN.map((item) => (
@@ -93,6 +196,43 @@ function SignedOut({ googleEnabled, error }: { googleEnabled: boolean; error: st
         </p>
       </div>
     </div>
+  );
+}
+
+function PasswordCard() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    const response = await fetch("/api/account", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ currentPassword: current, newPassword: next }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok) {
+      setMessage({ ok: true, text: "Password changed!" });
+      setCurrent("");
+      setNext("");
+    } else {
+      setMessage({ ok: false, text: data.error ?? "Couldn't change your password." });
+    }
+  }
+
+  return (
+    <section className={card}>
+      <h2 className="font-display text-xl font-bold text-htz-navy">🔑 Change password</h2>
+      <form onSubmit={save} className="mt-3 flex flex-col gap-3">
+        <input className={inputClass} type="password" placeholder="Current password" aria-label="Current password" value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" required />
+        <input className={inputClass} type="password" placeholder="New password (8+ characters)" aria-label="New password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" minLength={8} required />
+        <button type="submit" className="self-start rounded-full bg-htz-lime px-6 py-2 text-sm font-bold text-htz-navy shadow">
+          Change password
+        </button>
+        {message && <p className={`text-sm font-semibold ${message.ok ? "text-green-700" : "text-htz-pink"}`}>{message.text}</p>}
+      </form>
+    </section>
   );
 }
 
@@ -385,6 +525,7 @@ function SignedIn({ account }: { account: AccountView }) {
               ))}
             </ul>
           </section>
+          {account.hasPassword && <PasswordCard />}
         </div>
       </div>
     </div>
