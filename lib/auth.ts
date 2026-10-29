@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { readStore, writeStore } from "./store";
+import { readStore, updateStore } from "./store";
 
 export const ADMIN_SESSION_COOKIE = "htz_admin_session";
 
@@ -47,8 +47,8 @@ export async function checkAdminPassword(password: string): Promise<boolean> {
 }
 
 export async function setAdminPassword(newPassword: string): Promise<void> {
-  const store = await readStore();
-  await writeStore({ ...store, adminPasswordHash: hashPassword(newPassword) });
+  const adminPasswordHash = hashPassword(newPassword);
+  await updateStore((store) => ({ ...store, adminPasswordHash }));
 }
 
 // Session cookies are signed with ADMIN_PASSWORD as a stable secret, kept

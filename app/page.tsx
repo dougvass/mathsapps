@@ -26,7 +26,7 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLdScript(homeJsonLd(products, config.socialLinks))}
       />
-      <Hero heroImage={config.heroImage} />
+      <Hero heroImage={config.heroImage} text={config.homeText} />
       <SaleBanner banner={config.banner} />
       <ProductGrid
         products={products}
@@ -35,7 +35,7 @@ export default async function Home() {
         sizeOptions={config.sizeOptions}
       />
       <Reviews reviews={reviews} />
-      <About />
+      <About text={config.homeText} />
       <FaqSection faqs={config.faqs} />
     </ShopShell>
   );

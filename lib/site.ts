@@ -4,6 +4,8 @@ export const SITE_URL = "https://hugostoyz.vercel.app";
 
 export const SITE_NAME = "HugosToyz";
 
+export const CONTACT_EMAIL = "hugostoyz1526@gmail.com";
+
 // Other ways people write the name, so search engines link them to this site.
 export const SITE_ALTERNATE_NAMES = ["Hugos Toyz", "Hugo's Toyz", "Hugos Toys", "HTZ"];
 export const SITE_TITLE = "HugosToyz | 3D Printed Fidget Toys & Custom Gifts in Australia";
@@ -14,6 +16,8 @@ export const SITE_DESCRIPTION =
 // Flat-rate domestic shipping, charged at checkout and listed for search engines.
 // Adjust to match real postage costs.
 export const STANDARD_SHIPPING_AUD_CENTS = 995;
+// Standard shipping is free when the items (after any cart discount code) reach this.
+export const FREE_SHIPPING_THRESHOLD_AUD_CENTS = 5000;
 
 // Returns policy, shown in the footer and listed for search engines.
 export const CHANGE_OF_MIND_RETURN_DAYS = 20;

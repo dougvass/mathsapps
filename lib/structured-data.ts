@@ -3,6 +3,7 @@ import { productPhotos } from "./product-types";
 import {
   absoluteUrl,
   CHANGE_OF_MIND_RETURN_DAYS,
+  CONTACT_EMAIL,
   NON_RETURNABLE_CATEGORY,
   productUrl,
   SITE_ALTERNATE_NAMES,
@@ -79,7 +80,7 @@ export function homeJsonLd(products: Product[], socialLinks: SocialLinks) {
         ...(sameAs.length > 0 ? { sameAs } : {}),
         url: SITE_URL,
         description: SITE_DESCRIPTION,
-        email: "hello@hugostoyz.com",
+        email: CONTACT_EMAIL,
         areaServed: { "@type": "Country", name: "Australia" },
       },
       {

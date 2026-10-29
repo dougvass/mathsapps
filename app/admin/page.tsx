@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BADGE_LABELS,
   MAX_GALLERY_PHOTOS,
-  MAX_STOCK,
   type BannerSettings,
   type CategoryDef,
   type Faq,
+  type HomeText,
   type Product,
   type ProductBadge,
   type SizeOption,
@@ -19,9 +19,13 @@ import { DEFAULT_FAQS } from "@/lib/default-faqs";
 import ImageDropzone from "@/components/ImageDropzone";
 import DiscountCodes from "@/components/DiscountCodes";
 import QrCodeCard from "@/components/QrCodeCard";
+import StockEditor from "@/components/StockEditor";
+import OrdersPanel from "@/components/OrdersPanel";
+import ProductImage from "@/components/ProductImage";
 import {
   FaqEditor,
   HeroPhotoSection,
+  HomeTextEditor,
   ReviewsModerator,
   SocialLinksEditor,
 } from "@/components/AdminSiteSections";
@@ -48,11 +52,47 @@ export default function AdminPage() {
     youtube: "",
   });
 
+  const [homeText, setHomeText] = useState<HomeText>({
+    heroHeadline: "",
+    heroHighlight: "",
+    heroIntro: "",
+    aboutTitle: "",
+    aboutText: "",
+  });
+  // Version of the shop data this page was loaded at; saving checks it.
+  const [version, setVersion] = useState<string | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [productFilter, setProductFilter] = useState("");
+
+  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText };
+  const snapshot = JSON.stringify(editable);
+  const dirty = status === "authed" && savedSnapshot !== "" && snapshot !== savedSnapshot;
+
+  // Warn before leaving the page with unsaved changes.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+
+  const visibleProducts = useMemo(() => {
+    const terms = productFilter.toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return products;
+    return products.filter((product) => {
+      const text = `${product.name} ${product.description} ${product.category}`.toLowerCase();
+      return terms.every((term) => text.includes(term));
+    });
+  }, [products, productFilter]);
+
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
 
-  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error" | "conflict">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -78,6 +118,23 @@ export default function AdminPage() {
       setHeroImage(data.heroImage);
       setFaqs(data.faqs);
       setSocialLinks(data.socialLinks);
+      setHomeText(data.homeText);
+      setVersion(data.version);
+      setSavedSnapshot(
+        JSON.stringify({
+          products: data.products,
+          categories: data.categories,
+          colors: data.colors,
+          sizeOptions: data.sizeOptions,
+          settings: data.settings,
+          banner: data.banner,
+          heroImage: data.heroImage,
+          faqs: data.faqs,
+          socialLinks: data.socialLinks,
+          homeText: data.homeText,
+        })
+      );
+      setSaveState("idle");
       setStatus("authed");
     } else {
       setStatus("unauthed");
@@ -134,6 +191,51 @@ export default function AdminPage() {
       stock: "made-to-order",
     };
     setProducts((prev) => [...prev, newProduct]);
+    openAndScrollTo(newProduct.id);
+  }
+
+  function openAndScrollTo(id: string) {
+    setProductFilter("");
+    setExpanded((prev) => new Set(prev).add(id));
+    setTimeout(() => {
+      document.getElementById(`admin-product-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
+  }
+
+  function toggleExpanded(id: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function moveProduct(id: string, delta: number) {
+    setProducts((prev) => {
+      const index = prev.findIndex((product) => product.id === id);
+      const target = index + delta;
+      if (index < 0 || target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  function duplicateProduct(id: string) {
+    const original = products.find((product) => product.id === id);
+    if (!original) return;
+    const copy: Product = {
+      ...original,
+      id: `product-${Date.now()}`,
+      name: `${original.name} (copy)`,
+      active: false,
+    };
+    setProducts((prev) => {
+      const index = prev.findIndex((product) => product.id === id);
+      return [...prev.slice(0, index + 1), copy, ...prev.slice(index + 1)];
+    });
+    openAndScrollTo(copy.id);
   }
 
   function removeProduct(id: string) {
@@ -199,16 +301,20 @@ export default function AdminPage() {
         heroImage,
         faqs,
         socialLinks,
+        homeText,
+        version,
       }),
     });
 
+    const data = await response.json().catch(() => ({}));
     if (response.ok) {
+      setVersion(data.version);
+      setSavedSnapshot(snapshot);
       setSaveState("saved");
-      setTimeout(() => setSaveState("idle"), 2000);
+      setTimeout(() => setSaveState((state) => (state === "saved" ? "idle" : state)), 2000);
     } else {
-      const data = await response.json().catch(() => ({}));
       setSaveError(data.error ?? "Something went wrong while saving.");
-      setSaveState("error");
+      setSaveState(data.conflict ? "conflict" : "error");
     }
   }
 
@@ -290,15 +396,20 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-htz-cream px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-htz-cream px-4 pb-32 pt-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         <Link
           href="/"
+          onClick={(event) => {
+            if (dirty && !window.confirm("You have unsaved changes. Leave without saving?")) {
+              event.preventDefault();
+            }
+          }}
           className="mb-4 inline-flex items-center gap-1 rounded-full bg-white px-4 py-2 text-sm font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"
         >
           ← Back to Store
         </Link>
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between gap-3">
           <div>
             <h1 className="font-display text-2xl font-bold text-htz-navy sm:text-3xl">
               HugosToyz Admin
@@ -311,22 +422,25 @@ export default function AdminPage() {
             <button
               type="button"
               onClick={addProduct}
-              className="rounded-full bg-htz-orange px-4 py-2 text-sm font-bold text-white shadow transition-transform hover:scale-105 active:scale-95"
+              className="whitespace-nowrap rounded-full bg-htz-orange px-4 py-2 text-sm font-bold text-white shadow transition-transform hover:scale-105 active:scale-95"
             >
               + Add Product
             </button>
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-full border border-htz-navy/20 px-4 py-2 text-sm font-semibold text-htz-navy transition-colors hover:bg-htz-navy/5"
+              className="whitespace-nowrap rounded-full border border-htz-navy/20 px-4 py-2 text-sm font-semibold text-htz-navy transition-colors hover:bg-htz-navy/5"
             >
               Log out
             </button>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <OrdersPanel />
+
+        <div className="mt-6 flex flex-col gap-4">
           <HeroPhotoSection heroImage={heroImage} onChange={setHeroImage} />
+          <HomeTextEditor text={homeText} onChange={setHomeText} />
 
           {/* Sale banner */}
           <div className="rounded-2xl bg-white p-5 shadow-sm">
@@ -525,17 +639,116 @@ export default function AdminPage() {
           </div>
 
           {/* Products */}
-          {products.map((product) => (
-            <div key={product.id} className="rounded-2xl bg-white p-5 shadow-sm">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="font-mono text-xs text-htz-navy/40">{product.id}</span>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-display text-xl font-bold text-htz-navy">
+                Products <span className="text-sm font-normal text-htz-navy/60">({products.length})</span>
+              </h2>
+              <p className="text-sm text-htz-navy/60">
+                Tap a product to edit it. ↑ ↓ change the order they appear in the shop.
+              </p>
+            </div>
+            <input
+              type="search"
+              value={productFilter}
+              onChange={(e) => setProductFilter(e.target.value)}
+              placeholder="Find a product…"
+              aria-label="Find a product"
+              className="w-full rounded-full border border-htz-navy/20 bg-white px-4 py-2 text-sm focus:border-htz-orange focus:outline-none sm:w-60"
+            />
+          </div>
+          {visibleProducts.length === 0 && (
+            <p className="text-sm text-htz-navy/60">No products match “{productFilter}”.</p>
+          )}
+          {visibleProducts.map((product) => {
+            const index = products.findIndex((p) => p.id === product.id);
+            const open = expanded.has(product.id);
+            const categoryLabel = categories.find((c) => c.value === product.category)?.label ?? "No category";
+            const stockSummary =
+              typeof product.stock === "number"
+                ? `${product.stock} in stock`
+                : product.stock === "made-to-order"
+                  ? "Made to order"
+                  : "Out of stock";
+            const lowStock = typeof product.stock === "number" && product.stock <= 2;
+            return (
+            <div
+              key={product.id}
+              id={`admin-product-${product.id}`}
+              className={`scroll-mt-4 rounded-2xl bg-white shadow-sm ${open ? "ring-2 ring-htz-orange/40" : ""}`}
+            >
+              <div className="flex items-center gap-2 p-3">
                 <button
                   type="button"
-                  onClick={() => removeProduct(product.id)}
-                  className="text-xs font-semibold text-htz-pink hover:underline"
+                  onClick={() => toggleExpanded(product.id)}
+                  aria-expanded={open}
+                  className="flex min-w-0 flex-1 items-center gap-3 text-left"
                 >
-                  Remove
+                  <span className="h-12 w-12 shrink-0 overflow-hidden rounded-lg">
+                    <ProductImage product={product} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold text-htz-navy">
+                      {product.name || "Untitled product"}
+                    </span>
+                    <span className="block truncate text-xs text-htz-navy/60">
+                      {categoryLabel} · ${product.price.toFixed(2)} · {stockSummary}
+                    </span>
+                  </span>
+                  <span className="hidden shrink-0 gap-1 sm:flex">
+                    {!product.active && (
+                      <span className="rounded-full bg-htz-navy/10 px-2 py-0.5 text-xs font-semibold text-htz-navy/70">Hidden</span>
+                    )}
+                    {lowStock && (
+                      <span className="rounded-full bg-htz-orange/15 px-2 py-0.5 text-xs font-semibold text-htz-orange">Low stock</span>
+                    )}
+                    {product.stock === "out-of-stock" && (
+                      <span className="rounded-full bg-htz-pink/10 px-2 py-0.5 text-xs font-semibold text-htz-pink">Out of stock</span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-xs text-htz-navy/50" aria-hidden="true">{open ? "▲" : "▼"}</span>
                 </button>
+                <div className="flex shrink-0 flex-col">
+                  <button
+                    type="button"
+                    onClick={() => moveProduct(product.id, -1)}
+                    disabled={index === 0 || productFilter !== ""}
+                    aria-label={`Move ${product.name} up`}
+                    className="rounded px-2 text-htz-navy/60 hover:bg-htz-navy/5 disabled:opacity-20"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveProduct(product.id, 1)}
+                    disabled={index === products.length - 1 || productFilter !== ""}
+                    aria-label={`Move ${product.name} down`}
+                    className="rounded px-2 text-htz-navy/60 hover:bg-htz-navy/5 disabled:opacity-20"
+                  >
+                    ↓
+                  </button>
+                </div>
+              </div>
+              {open && (
+              <div className="border-t border-htz-navy/10 p-5">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="font-mono text-xs text-htz-navy/40">{product.id}</span>
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => duplicateProduct(product.id)}
+                    className="text-xs font-semibold text-htz-navy hover:underline"
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeProduct(product.id)}
+                    className="text-xs font-semibold text-htz-pink hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="flex flex-col gap-1">
@@ -581,30 +794,10 @@ export default function AdminPage() {
                   />
                 </label>
 
-                <label className="flex flex-col gap-1">
-                  <span className="text-sm font-semibold text-htz-navy">Stock</span>
-                  <select
-                    value={String(product.stock)}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      updateProduct(product.id, {
-                        stock:
-                          value === "out-of-stock" || value === "made-to-order"
-                            ? value
-                            : Number(value),
-                      });
-                    }}
-                    className="rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none"
-                  >
-                    {Array.from({ length: MAX_STOCK }, (_, i) => i + 1).map((count) => (
-                      <option key={count} value={count}>
-                        {count} in stock
-                      </option>
-                    ))}
-                    <option value="out-of-stock">Out of stock</option>
-                    <option value="made-to-order">Made to order</option>
-                  </select>
-                </label>
+                <StockEditor
+                  stock={product.stock}
+                  onChange={(stock) => updateProduct(product.id, { stock })}
+                />
 
                 <label className="flex flex-col gap-1">
                   <span className="text-sm font-semibold text-htz-navy">Badge</span>
@@ -729,14 +922,19 @@ export default function AdminPage() {
                   View product page ↗
                 </a>
               </div>
+              </div>
+              )}
             </div>
-          ))}
+            );
+          })}
 
           <FaqEditor faqs={faqs} defaults={DEFAULT_FAQS} onChange={setFaqs} />
           <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
         </div>
 
-        <div className="sticky bottom-4 mt-6 flex items-center gap-4 rounded-2xl bg-white p-4 shadow-lg">
+        {/* Pinned to the bottom of the screen for the whole admin page. */}
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-htz-navy/10 bg-white/95 shadow-[0_-4px_16px_rgba(11,43,58,0.08)] backdrop-blur">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
           <button
             type="button"
             onClick={handleSave}
@@ -751,11 +949,27 @@ export default function AdminPage() {
           {saveState === "error" && (
             <span className="text-sm font-semibold text-htz-pink">{saveError}</span>
           )}
-          {saveState === "idle" && (
+          {saveState === "conflict" && (
+            <span className="text-sm font-semibold text-htz-pink">
+              {saveError}{" "}
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="underline"
+              >
+                Reload now
+              </button>
+            </span>
+          )}
+          {saveState === "idle" && dirty && (
+            <span className="text-sm font-semibold text-htz-orange">● Unsaved changes</span>
+          )}
+          {saveState === "idle" && !dirty && (
             <span className="text-xs text-htz-navy/50">
               New photos and banner changes go live when you save.
             </span>
           )}
+          </div>
         </div>
 
         <DiscountCodes />

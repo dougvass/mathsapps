@@ -1,6 +1,7 @@
 import { getActiveProducts } from "@/lib/products";
 import {
   absoluteUrl,
+  FREE_SHIPPING_THRESHOLD_AUD_CENTS,
   productUrl,
   SITE_DESCRIPTION,
   SITE_NAME,
@@ -26,6 +27,7 @@ export async function GET() {
   // out until a photo is uploaded.
   const products = (await getActiveProducts()).filter((product) => product.image);
   const shipping = (STANDARD_SHIPPING_AUD_CENTS / 100).toFixed(2);
+  const freeOver = (FREE_SHIPPING_THRESHOLD_AUD_CENTS / 100).toFixed(2);
 
   const items = products
     .map(
@@ -48,6 +50,10 @@ export async function GET() {
         <g:service>Standard Shipping</g:service>
         <g:price>${shipping} AUD</g:price>
       </g:shipping>
+      <g:free_shipping_threshold>
+        <g:country>AU</g:country>
+        <g:price_threshold>${freeOver} AUD</g:price_threshold>
+      </g:free_shipping_threshold>
       <g:min_handling_time>3</g:min_handling_time>
       <g:max_handling_time>5</g:max_handling_time>
     </item>`

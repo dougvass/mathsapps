@@ -102,6 +102,16 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
+// Used after a successful payment, where the cart provider isn't mounted.
+export function clearSavedCart(): void {
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {}
+  cartItems = EMPTY_CART;
+  hasLoadedFromStorage = true;
+  listeners.forEach((listener) => listener());
+}
+
 function setCartItems(updater: (prev: CartItem[]) => CartItem[]): void {
   cartItems = updater(cartItems);
   hasLoadedFromStorage = true;

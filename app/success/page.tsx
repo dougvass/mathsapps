@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ClearCartOnMount from "@/components/ClearCartOnMount";
+import { CONTACT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Order placed | HugosToyz",
@@ -24,6 +26,13 @@ export default function SuccessPage() {
         printing and packed up super soon. Keep an eye on your inbox for a
         confirmation email.
       </p>
+      <p className="mt-3 text-sm text-htz-navy/60">
+        Questions about your order? Email{" "}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="font-semibold text-htz-orange hover:underline">
+          {CONTACT_EMAIL}
+        </a>
+      </p>
+      <ClearCartOnMount />
       <Link
         href="/"
         className="mt-8 rounded-full bg-htz-lime px-8 py-3 font-display text-lg font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"

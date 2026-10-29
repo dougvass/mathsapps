@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getActiveProducts, getStoreConfig } from "@/lib/products";
 import { productPhotos } from "@/lib/product-types";
-import { absoluteUrl, CHANGE_OF_MIND_RETURN_DAYS, NON_RETURNABLE_CATEGORY, productPath, SITE_NAME } from "@/lib/site";
+import { absoluteUrl, CHANGE_OF_MIND_RETURN_DAYS, FREE_SHIPPING_THRESHOLD_AUD_CENTS, NON_RETURNABLE_CATEGORY, productPath, SITE_NAME } from "@/lib/site";
 import { jsonLdScript, productJsonLd } from "@/lib/structured-data";
 import ShopShell from "@/components/ShopShell";
 import ProductGallery from "@/components/ProductGallery";
@@ -116,7 +116,7 @@ export default async function ProductPage({ params }: Props) {
 
             <ul className="flex flex-col gap-2 text-sm text-htz-navy/70">
               <li>🖨️ 3D printed in PLA and finished by hand in Australia.</li>
-              <li>📦 Printed and posted within 3–5 business days. Australia-wide shipping.</li>
+              <li>📦 Printed and posted within 3–5 business days. Free shipping over ${FREE_SHIPPING_THRESHOLD_AUD_CENTS / 100}.</li>
               <li>↩️ {returnsNote}</li>
               <li>⚠️ Not suitable for children under 3 – small parts.</li>
             </ul>

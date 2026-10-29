@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/auth";
+import { StoreConflictError } from "@/lib/store";
 import {
   isValidStock,
   MAX_GALLERY_PHOTOS,
@@ -7,8 +8,7 @@ import {
   type ProductBadge,
 } from "@/lib/product-types";
 import {
-  getAllProducts,
-  getStoreConfig,
+  getAdminStore,
   saveStoreConfig,
   type Product,
   type StoreConfig,
@@ -19,11 +19,10 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const [products, config] = await Promise.all([getAllProducts(), getStoreConfig()]);
-  return NextResponse.json({ products, ...config });
+  return NextResponse.json(await getAdminStore());
 }
 
-type StorePayload = Partial<StoreConfig> & { products?: Product[] };
+type StorePayload = Partial<StoreConfig> & { products?: Product[]; version?: string };
 
 function isImageUrl(value: unknown): value is string {
   return (
@@ -50,6 +49,18 @@ function validateExtras(body: StorePayload): string | null {
   const { heroImage, faqs, socialLinks } = body;
 
   if (!isImageUrl(heroImage)) return "Invalid homepage photo.";
+
+  const { homeText } = body;
+  if (
+    !homeText ||
+    ![homeText.heroHeadline, homeText.heroHighlight, homeText.heroIntro, homeText.aboutTitle, homeText.aboutText].every(
+      (value) => typeof value === "string"
+    ) ||
+    !homeText.heroHeadline.trim() ||
+    !homeText.aboutTitle.trim()
+  ) {
+    return "The homepage headline and About title can't be empty.";
+  }
 
   if (!Array.isArray(faqs)) return "Invalid FAQ.";
   for (const faq of faqs) {
@@ -174,8 +185,13 @@ export async function PUT(request: Request) {
     }
   }
 
+  if (typeof body.version !== "string") {
+    return NextResponse.json({ error: "Please reload the page and try again." }, { status: 400 });
+  }
+
+  let version: string;
   try {
-    await saveStoreConfig(products, {
+    version = await saveStoreConfig(products, {
       categories,
       colors,
       sizeOptions,
@@ -187,11 +203,21 @@ export async function PUT(request: Request) {
         answer: answer.trim(),
       })),
       socialLinks: body.socialLinks!,
-    });
+      homeText: {
+        heroHeadline: body.homeText!.heroHeadline.trim(),
+        heroHighlight: body.homeText!.heroHighlight.trim(),
+        heroIntro: body.homeText!.heroIntro.trim(),
+        aboutTitle: body.homeText!.aboutTitle.trim(),
+        aboutText: body.homeText!.aboutText.trim(),
+      },
+    }, body.version);
   } catch (error) {
+    if (error instanceof StoreConflictError) {
+      return NextResponse.json({ error: error.message, conflict: true }, { status: 409 });
+    }
     console.error(error);
     const message = error instanceof Error ? error.message : "Couldn't save changes.";
     return NextResponse.json({ error: message }, { status: 500 });
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, version });
 }

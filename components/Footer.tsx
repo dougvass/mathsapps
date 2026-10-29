@@ -1,5 +1,11 @@
+import Link from "next/link";
 import type { SocialLinks } from "@/lib/product-types";
-import { CHANGE_OF_MIND_RETURN_DAYS, FAULTY_ITEM_REPORT_DAYS } from "@/lib/site";
+import {
+  CHANGE_OF_MIND_RETURN_DAYS,
+  CONTACT_EMAIL,
+  FAULTY_ITEM_REPORT_DAYS,
+  FREE_SHIPPING_THRESHOLD_AUD_CENTS,
+} from "@/lib/site";
 import SocialIcons from "./SocialIcons";
 
 export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
@@ -23,8 +29,8 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
             <p className="font-display font-semibold text-white">Contact</p>
             <ul className="mt-2 space-y-1 text-sm">
               <li>
-                <a href="mailto:hello@hugostoyz.com" className="hover:text-htz-lime">
-                  hello@hugostoyz.com
+                <a href={`mailto:${CONTACT_EMAIL}`} className="break-all hover:text-htz-lime">
+                  {CONTACT_EMAIL}
                 </a>
               </li>
             </ul>
@@ -36,6 +42,9 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
               Aussie-wide shipping. Most orders print and ship within 3–5
               business days. Custom designs may take a little longer — worth
               the wait!
+            </p>
+            <p className="mt-2 text-sm font-semibold text-htz-lime">
+              {`Free standard shipping on orders over $${FREE_SHIPPING_THRESHOLD_AUD_CENTS / 100}.`}
             </p>
           </div>
 
@@ -69,6 +78,17 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
           >
             🔐 Admin Login
           </a>
+          <nav className="flex gap-4 text-xs" aria-label="Policies">
+            <Link href="/privacy" className="hover:text-htz-lime">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-htz-lime">
+              Terms &amp; Conditions
+            </Link>
+            <Link href="/#returns" className="hover:text-htz-lime">
+              Returns
+            </Link>
+          </nav>
           <p className="text-xs text-white/50">
             © {new Date().getFullYear()} HugosToyz. All rights reserved.
           </p>

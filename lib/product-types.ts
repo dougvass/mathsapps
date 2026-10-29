@@ -1,6 +1,6 @@
 export type StockLevel = number | "out-of-stock" | "made-to-order";
 
-export const MAX_STOCK = 10;
+export const MAX_STOCK = 9999;
 
 export function isValidStock(value: unknown): value is StockLevel {
   return (
@@ -90,6 +90,21 @@ export type StoreSettings = {
   printerMaxBuildMm: number;
 };
 
+export type AdminOrder = {
+  id: string;
+  paymentIntentId: string | null;
+  createdAt: number;
+  customerName: string;
+  email: string;
+  shippingName: string;
+  address: string;
+  shippingMethod: string;
+  items: { description: string; quantity: number }[];
+  totalCents: number;
+  discountCents: number;
+  postedAt: string | null;
+};
+
 export type DiscountCode = {
   id: string;
   code: string;
@@ -116,7 +131,18 @@ export type StoreData = {
   settings: StoreSettings;
   banner: BannerSettings;
   heroImage: string;
+  homeText: HomeText;
   faqs: Faq[];
   socialLinks: SocialLinks;
   adminPasswordHash: string | null;
+  // Stripe checkout sessions whose items have already been taken off stock.
+  stockAppliedSessions: string[];
+};
+
+export type HomeText = {
+  heroHeadline: string;
+  heroHighlight: string;
+  heroIntro: string;
+  aboutTitle: string;
+  aboutText: string;
 };

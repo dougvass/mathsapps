@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   SOCIAL_NETWORKS,
   type Faq,
+  type HomeText,
   type Review,
   type SocialLinks,
   type SocialNetwork,
@@ -240,6 +241,56 @@ export function SocialLinksEditor({
             />
           </label>
         ))}
+      </div>
+    </div>
+  );
+}
+
+export function HomeTextEditor({
+  text,
+  onChange,
+}: {
+  text: HomeText;
+  onChange: (text: HomeText) => void;
+}) {
+  const field = (key: keyof HomeText, label: string, placeholder: string, rows = 0) => (
+    <label className="flex flex-col gap-1">
+      <span className="text-sm font-semibold text-htz-navy">{label}</span>
+      {rows > 0 ? (
+        <textarea
+          value={text[key]}
+          onChange={(e) => onChange({ ...text, [key]: e.target.value })}
+          rows={rows}
+          placeholder={placeholder}
+          className={inputClass}
+        />
+      ) : (
+        <input
+          type="text"
+          value={text[key]}
+          onChange={(e) => onChange({ ...text, [key]: e.target.value })}
+          placeholder={placeholder}
+          className={inputClass}
+        />
+      )}
+    </label>
+  );
+
+  return (
+    <div className={cardClass}>
+      <h2 className="font-display text-lg font-bold text-htz-navy">Homepage Text</h2>
+      <p className="mb-3 mt-1 text-sm text-htz-navy/60">
+        The big headline at the top of the shop, plus the About section. The highlighted word shows
+        in pink after the headline.
+      </p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+        {field("heroHeadline", "Headline", "Fidgets, but make it")}
+        {field("heroHighlight", "Highlighted word(s)", "FUN.")}
+      </div>
+      <div className="mt-3 flex flex-col gap-3">
+        {field("heroIntro", "Intro line", "Bright, 3D-printed fidgets…", 2)}
+        {field("aboutTitle", "About heading", "Made with love…")}
+        {field("aboutText", "About story", "How HugosToyz started…", 5)}
       </div>
     </div>
   );

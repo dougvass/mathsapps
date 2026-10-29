@@ -1,4 +1,6 @@
-export default function Hero({ heroImage }: { heroImage: string }) {
+import type { HomeText } from "@/lib/product-types";
+
+export default function Hero({ heroImage, text }: { heroImage: string; text: HomeText }) {
   return (
     <section
       id="top"
@@ -10,12 +12,16 @@ export default function Hero({ heroImage }: { heroImage: string }) {
             HugosToyz
           </p>
           <h1 className="font-display mt-3 text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-            Fidgets, but make it{" "}
-            <span className="text-htz-pink">FUN</span>.
+            {text.heroHeadline}
+            {text.heroHighlight && (
+              <>
+                {" "}
+                <span className="text-htz-pink">{text.heroHighlight}</span>
+              </>
+            )}
           </h1>
           <p className="mx-auto mt-5 max-w-md text-lg text-white/80 lg:mx-0">
-            Bright, 3D-printed fidgets and toys for busy hands and big
-            imaginations. Spin it, click it, twist it, love it.
+            {text.heroIntro}
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
             <a

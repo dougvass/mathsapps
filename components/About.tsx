@@ -1,17 +1,13 @@
-export default function About() {
+import type { HomeText } from "@/lib/product-types";
+
+export default function About({ text }: { text: HomeText }) {
   return (
     <section id="about" className="bg-htz-teal text-white">
       <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
         <h2 className="font-display text-3xl font-bold sm:text-4xl">
-          Made with love (and a lot of plastic spaghetti)
+          {text.aboutTitle}
         </h2>
-        <p className="mx-auto mt-5 max-w-2xl text-white/80">
-          HugosToyz started with one 3D printer, one big idea, and a pile of
-          fidget prototypes. Every toy is designed, printed, and finished by
-          hand in small batches — built to spin, click, twist, and survive a
-          backpack full of pencils. Whether you need something to keep your
-          hands busy or a one-of-a-kind gift, we&apos;ve got you covered.
-        </p>
+        <p className="mx-auto mt-5 max-w-2xl whitespace-pre-line text-white/80">{text.aboutText}</p>
         <div className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-6 sm:grid-cols-3">
           <div className="rounded-2xl bg-white/5 p-5">
             <p className="text-3xl">🖨️</p>

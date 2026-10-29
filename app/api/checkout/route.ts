@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getActiveProducts } from "@/lib/products";
 import { cleanCustomText, MAX_CUSTOM_TEXT_LENGTH, stockLimit } from "@/lib/product-types";
-import { absoluteUrl, STANDARD_SHIPPING_AUD_CENTS } from "@/lib/site";
+import { discountCents, lookupDiscount, normaliseCode } from "@/lib/discount-lookup";
+import {
+  absoluteUrl,
+  FREE_SHIPPING_THRESHOLD_AUD_CENTS,
+  STANDARD_SHIPPING_AUD_CENTS,
+} from "@/lib/site";
 
 type CheckoutItem = {
   productId: string;
@@ -13,7 +18,7 @@ type CheckoutItem = {
 };
 
 export async function POST(request: Request) {
-  let body: { items?: CheckoutItem[] };
+  let body: { items?: CheckoutItem[]; discountCode?: string };
   try {
     body = await request.json();
   } catch {
@@ -36,6 +41,7 @@ export async function POST(request: Request) {
   const products = await getActiveProducts();
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
   const quantityByProduct = new Map<string, number>();
+  let subtotalCents = 0;
 
   for (const item of items) {
     const product = products.find((p) => p.id === item.productId);
@@ -74,6 +80,7 @@ export async function POST(request: Request) {
     ].filter((value): value is string => Boolean(value));
     const name = variant.length > 0 ? `${product.name} (${variant.join(", ")})` : product.name;
 
+    subtotalCents += Math.round(product.price * 100) * quantity;
     lineItems.push({
       quantity,
       price_data: {
@@ -82,6 +89,13 @@ export async function POST(request: Request) {
         product_data: {
           name,
           description: product.description,
+          // Read by the Stripe webhook (stock) and the admin order list.
+          metadata: {
+            productId: product.id,
+            color: product.chooseColor ? (item.color ?? "") : "",
+            size: item.size ?? "",
+            customText,
+          },
           ...(product.image ? { images: [absoluteUrl(product.image)] } : {}),
         },
       },
@@ -95,38 +109,75 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   const stripe = new Stripe(secretKey);
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: lineItems,
-    allow_promotion_codes: true,
-    success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/cancel`,
-    shipping_address_collection: { allowed_countries: ["AU"] },
-    shipping_options: [
-      {
-        shipping_rate_data: {
-          type: "fixed_amount",
-          fixed_amount: { amount: STANDARD_SHIPPING_AUD_CENTS, currency: "aud" },
-          display_name: "Standard Shipping",
-          delivery_estimate: {
-            minimum: { unit: "business_day", value: 3 },
-            maximum: { unit: "business_day", value: 7 },
+
+  // A code typed in the cart is applied here; otherwise Stripe's payment page
+  // offers its own "Add promotion code" box (Stripe allows one or the other).
+  let promotionCodeId: string | null = null;
+  let itemsAfterDiscount = subtotalCents;
+  const discountCode = normaliseCode(body.discountCode);
+  if (discountCode) {
+    const result = await lookupDiscount(stripe, discountCode);
+    if (!result.ok) return NextResponse.json({ error: result.error, discountError: true }, { status: 400 });
+    if (result.discount.minimumCents && subtotalCents < result.discount.minimumCents) {
+      return NextResponse.json(
+        {
+          error: `That code needs an order of at least $${(result.discount.minimumCents / 100).toFixed(2)}.`,
+          discountError: true,
+        },
+        { status: 400 }
+      );
+    }
+    promotionCodeId = result.promotionCodeId;
+    itemsAfterDiscount = subtotalCents - discountCents(result.discount, subtotalCents);
+  }
+  const freeShipping = itemsAfterDiscount >= FREE_SHIPPING_THRESHOLD_AUD_CENTS;
+
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: lineItems,
+      ...(promotionCodeId
+        ? { discounts: [{ promotion_code: promotionCodeId }] }
+        : { allow_promotion_codes: true }),
+      success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/cancel`,
+      shipping_address_collection: { allowed_countries: ["AU"] },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: freeShipping ? 0 : STANDARD_SHIPPING_AUD_CENTS, currency: "aud" },
+            display_name: freeShipping ? "Free Standard Shipping" : "Standard Shipping",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 3 },
+              maximum: { unit: "business_day", value: 7 },
+            },
           },
         },
-      },
-      {
-        shipping_rate_data: {
-          type: "fixed_amount",
-          fixed_amount: { amount: 0, currency: "aud" },
-          display_name: "Local Pickup (Free)",
-          delivery_estimate: {
-            minimum: { unit: "business_day", value: 1 },
-            maximum: { unit: "business_day", value: 3 },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 0, currency: "aud" },
+            display_name: "Local Pickup (Free)",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 1 },
+              maximum: { unit: "business_day", value: 3 },
+            },
           },
         },
-      },
-    ],
-  });
+      ],
+    });
+  } catch (error) {
+    // e.g. a first-order-only code used by a returning customer.
+    if (promotionCodeId && error instanceof Stripe.errors.StripeInvalidRequestError) {
+      return NextResponse.json(
+        { error: "That discount code can't be used on this order.", discountError: true },
+        { status: 400 }
+      );
+    }
+    throw error;
+  }
 
   return NextResponse.json({ url: session.url });
 }
