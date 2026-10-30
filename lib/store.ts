@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
-import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
+import { BlobNotFoundError, BlobPreconditionFailedError, get, head, put } from "@vercel/blob";
 import {
   FILE_PRINT_ID,
   GIFT_CARD_ID,
@@ -153,6 +153,19 @@ export function blobConfigured(): boolean {
   return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+// The file's ETag straight from the Blob API: the same value a conditional save
+// checks. (The ETag on a downloaded copy can differ, e.g. when it's compressed,
+// which made every save look like a clash.) Read it before the content, so a save
+// in between makes our save safely fail and retry rather than overwrite.
+export async function blobVersion(pathname: string): Promise<string | null> {
+  try {
+    return (await head(pathname)).etag;
+  } catch (error) {
+    if (error instanceof BlobNotFoundError) return null;
+    throw error;
+  }
+}
+
 // Reads the store plus a version (Blob ETag, or a hash of the local file) that
 // a later write can check, so nobody overwrites changes they haven't seen.
 export async function readStoreVersioned(): Promise<{ store: StoreData; version: string | null }> {
@@ -161,10 +174,11 @@ export async function readStoreVersioned(): Promise<{ store: StoreData; version:
   }
 
   try {
-    const result = await get(BLOB_PATHNAME, { access: "private", useCache: false });
-    if (result && result.statusCode === 200) {
+    const version = await blobVersion(BLOB_PATHNAME);
+    const result = version ? await get(BLOB_PATHNAME, { access: "private", useCache: false }) : null;
+    if (version && result && result.statusCode === 200) {
       const text = await new Response(result.stream).text();
-      return { store: withDefaults(JSON.parse(text) as StoreData), version: result.blob.etag };
+      return { store: withDefaults(JSON.parse(text) as StoreData), version };
     }
   } catch (error) {
     console.error("Reading store from Vercel Blob failed:", error);

@@ -74,7 +74,9 @@ export async function saveStoreConfig(
 
     const next = { ...store, products, ...config };
     try {
-      await writeStore(next, fileVersion);
+      // The shop data still matches what the admin page loaded, so on the last
+      // try save without the file check (in case the check itself misbehaves).
+      await writeStore(next, attempt === WRITE_ATTEMPTS ? undefined : fileVersion);
       return adminVersion(next);
     } catch (error) {
       // Something else (e.g. a password change) saved in between; try again.

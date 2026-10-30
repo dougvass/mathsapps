@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
-import { blobConfigured } from "./store";
+import { blobConfigured, blobVersion } from "./store";
 
 const WRITE_ATTEMPTS = 5;
 
@@ -25,10 +25,12 @@ export function jsonFile<T>({
       if (!fs.existsSync(localPath)) return { data: await empty(), etag: null };
       return { data: normalise(JSON.parse(fs.readFileSync(localPath, "utf-8"))), etag: null };
     }
-    const result = await get(blobPathname, { access: "private", useCache: false });
-    if (result && result.statusCode === 200) {
+    // See blobVersion: the ETag must come from the Blob API, read before the content.
+    const etag = await blobVersion(blobPathname);
+    const result = etag ? await get(blobPathname, { access: "private", useCache: false }) : null;
+    if (etag && result && result.statusCode === 200) {
       const text = await new Response(result.stream).text();
-      return { data: normalise(JSON.parse(text)), etag: result.blob.etag };
+      return { data: normalise(JSON.parse(text)), etag };
     }
     return { data: await empty(), etag: null };
   }
@@ -59,7 +61,12 @@ export function jsonFile<T>({
           contentType: "application/json",
           // First write creates the file; later writes only succeed if nobody
           // changed it since we read it.
-          ...(etag ? { allowOverwrite: true, ifMatch: etag } : { allowOverwrite: false }),
+          // On the last try, overwrite anyway rather than lose the change.
+          ...(attempt === WRITE_ATTEMPTS
+            ? { allowOverwrite: true }
+            : etag
+              ? { allowOverwrite: true, ifMatch: etag }
+              : { allowOverwrite: false }),
         });
         return result;
       } catch (error) {
