@@ -10,3 +10,6 @@ export const WHEEL_PRIZES = [
 export type WheelPrizeKey = (typeof WHEEL_PRIZES)[number]["key"];
 export const WHEEL_POINTS = 20;
 export const WHEEL_CODE_DAYS = 7;
+
+// Fired by buttons elsewhere (e.g. the Deals page) to open the wheel.
+export const OPEN_WHEEL_EVENT = "htz-open-wheel";

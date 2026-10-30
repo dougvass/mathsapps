@@ -18,6 +18,7 @@ import {
   type ToyOfWeek,
 } from "@/lib/product-types";
 import { DEFAULT_FAQS } from "@/lib/default-faqs";
+import { mergeEdits } from "@/lib/admin-merge";
 import ImageDropzone from "@/components/ImageDropzone";
 import DiscountCodes from "@/components/DiscountCodes";
 import { BulkPriceTool, HolidayEditor, SalesDashboard, ToyOfWeekEditor } from "@/components/AdminExtras";
@@ -111,8 +112,24 @@ export default function AdminPage() {
     loadStore();
   }, []);
 
+  // Puts shop data into the editing form.
+  function applyLoaded(data: typeof editable) {
+    setProducts(data.products);
+    setCategories(data.categories);
+    setColors(data.colors);
+    setSizeOptions(data.sizeOptions);
+    setSettings(data.settings);
+    setBanner(data.banner);
+    setHeroImage(data.heroImage);
+    setFaqs(data.faqs);
+    setSocialLinks(data.socialLinks);
+    setHomeText(data.homeText);
+    setToyOfWeek(data.toyOfWeek);
+    setHoliday(data.holiday);
+  }
+
   async function loadStore() {
-    const response = await fetch("/api/admin/store");
+    const response = await fetch("/api/admin/store", { cache: "no-store" });
     if (response.ok) {
       const data = await response.json();
       setProducts(data.products);
@@ -295,39 +312,42 @@ export default function AdminPage() {
     setSizeOptions((prev) => prev.filter((_, i) => i !== index));
   }
 
+  async function putStore(data: typeof editable, atVersion: string | null) {
+    const response = await fetch("/api/admin/store", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, version: atVersion }),
+    });
+    return { response, data: await response.json().catch(() => ({})) };
+  }
+
   async function handleSave() {
     setSaveState("saving");
     setSaveError(null);
 
-    const response = await fetch("/api/admin/store", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        products,
-        categories,
-        colors,
-        sizeOptions,
-        settings,
-        banner,
-        heroImage,
-        faqs,
-        socialLinks,
-        homeText,
-        toyOfWeek,
-        holiday,
-        version,
-      }),
-    });
+    let toSave = editable;
+    let result = await putStore(toSave, version);
 
-    const data = await response.json().catch(() => ({}));
-    if (response.ok) {
-      setVersion(data.version);
-      setSavedSnapshot(snapshot);
+    // Something else saved since this page loaded (another tab or device, or a
+    // sale changing stock): keep these edits on top of the latest data and retry.
+    if (result.data.conflict && savedSnapshot) {
+      const latest = await fetch("/api/admin/store", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null));
+      if (latest) {
+        const { version: latestVersion, ...theirs } = latest;
+        toSave = mergeEdits(JSON.parse(savedSnapshot), editable, theirs);
+        result = await putStore(toSave, latestVersion);
+      }
+    }
+
+    if (result.response.ok) {
+      if (toSave !== editable) applyLoaded(toSave);
+      setVersion(result.data.version);
+      setSavedSnapshot(JSON.stringify(toSave));
       setSaveState("saved");
-      setTimeout(() => setSaveState((state) => (state === "saved" ? "idle" : state)), 2000);
+      setTimeout(() => setSaveState((state) => (state === "saved" ? "idle" : state)), 3000);
     } else {
-      setSaveError(data.error ?? "Something went wrong while saving.");
-      setSaveState(data.conflict ? "conflict" : "error");
+      setSaveError(result.data.error ?? "Something went wrong while saving.");
+      setSaveState(result.data.conflict ? "conflict" : "error");
     }
   }
 

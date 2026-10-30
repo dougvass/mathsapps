@@ -15,7 +15,8 @@ export default function QuizPrompt() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (!PAGES.includes(pathname)) return;
+    // Phones get no pop-ups; the quiz is in the menu instead.
+    if (!PAGES.includes(pathname) || !window.matchMedia("(min-width: 640px)").matches) return;
     try {
       if (localStorage.getItem(SEEN_KEY)) return;
     } catch {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount } from "@/lib/account-context";
 import { saveDiscount } from "@/lib/checkout-client";
-import { WHEEL_CODE_DAYS, WHEEL_POINTS, WHEEL_PRIZES, type WheelPrizeKey } from "@/lib/wheel";
+import { OPEN_WHEEL_EVENT, WHEEL_CODE_DAYS, WHEEL_POINTS, WHEEL_PRIZES, type WheelPrizeKey } from "@/lib/wheel";
 
 const SLICE = 360 / WHEEL_PRIZES.length;
 
@@ -56,6 +56,12 @@ export default function SpinWheel() {
       .catch(() => setStatus("spun"));
   }, []);
 
+  useEffect(() => {
+    const openWheel = () => setOpen(true);
+    window.addEventListener(OPEN_WHEEL_EVENT, openWheel);
+    return () => window.removeEventListener(OPEN_WHEEL_EVENT, openWheel);
+  }, []);
+
   // Only codes are worth coming back to; other results just hide the button.
   const hasCode = Boolean(result?.code);
   if (!open && (status === "loading" || (status === "spun" && !hasCode) || (account?.spunWheel && !hasCode))) {
@@ -103,7 +109,7 @@ export default function SpinWheel() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={hasCode ? "See your prize code" : "Spin and win"}
-          className="fixed bottom-20 left-3 z-30 flex h-12 w-12 items-center justify-center gap-1 rounded-full bg-gradient-to-r from-htz-pink to-htz-orange font-display text-xl font-bold text-white shadow-xl transition-transform hover:scale-105 sm:bottom-6 sm:h-auto sm:w-auto sm:px-4 sm:py-3 sm:text-base"
+          className="fixed bottom-20 left-3 z-30 hidden h-12 w-12 items-center justify-center gap-1 rounded-full bg-gradient-to-r from-htz-pink to-htz-orange font-display text-xl font-bold text-white shadow-xl transition-transform hover:scale-105 sm:bottom-6 sm:flex sm:h-auto sm:w-auto sm:px-4 sm:py-3 sm:text-base"
         >
           {hasCode ? "🎁" : "🎡"}
           <span className="hidden sm:inline">{hasCode ? "My prize" : "Spin & win"}</span>

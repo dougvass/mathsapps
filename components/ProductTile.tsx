@@ -9,6 +9,7 @@ import ProductImage from "./ProductImage";
 import ProductBadgeTag from "./ProductBadgeTag";
 import WishlistButton from "./WishlistButton";
 import Stars from "./Stars";
+import BuyNowButton from "./BuyNowButton";
 
 function stockNote(product: Product): { text: string; className: string } | null {
   if (product.stock === "out-of-stock") return { text: "Out of stock", className: "text-htz-pink" };
@@ -80,17 +81,23 @@ export default function ProductTile({ product }: { product: Product }) {
               Upload file
             </Link>
           ) : quickAdd ? (
-            <button
-              type="button"
-              disabled={!canAddMore(product.id)}
-              title={canAddMore(product.id) ? undefined : "All available stock is in your cart"}
-              onClick={() =>
-                addItem({ productId: product.id, color: "", size: sizeOptions[0]?.label ?? "", customText: "" })
-              }
-              className="w-full rounded-full bg-htz-lime py-2.5 text-base font-bold text-htz-navy shadow-sm transition-transform hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Add to Cart
-            </button>
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                disabled={!canAddMore(product.id)}
+                title={canAddMore(product.id) ? undefined : "All available stock is in your cart"}
+                onClick={() =>
+                  addItem({ productId: product.id, color: "", size: sizeOptions[0]?.label ?? "", customText: "" })
+                }
+                className="w-full rounded-full bg-htz-lime py-2.5 text-base font-bold text-htz-navy shadow-sm transition-transform hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Add to Cart
+              </button>
+              <BuyNowButton
+                item={() => ({ productId: product.id, color: "", size: sizeOptions[0]?.label ?? "", customText: "", quantity: 1 })}
+                className="w-full py-2 text-sm"
+              />
+            </div>
           ) : (
             <Link
               href={href}

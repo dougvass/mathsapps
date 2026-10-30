@@ -59,3 +59,18 @@ export async function startCheckout(
     return { error: "Something went wrong. Please try again.", discountError: false };
   }
 }
+
+// "Buy Now": goes straight to payment for one item (the cart is left alone).
+// A saved discount code is used if it still works, otherwise it's dropped.
+export async function buyNow(item: CartItem): Promise<string | null> {
+  let result = await startCheckout([item], loadSavedDiscount()?.code);
+  if ("error" in result && result.discountError) {
+    saveDiscount(null);
+    result = await startCheckout([item]);
+  }
+  if ("url" in result) {
+    window.location.href = result.url;
+    return null;
+  }
+  return result.error;
+}

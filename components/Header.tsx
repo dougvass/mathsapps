@@ -8,11 +8,13 @@ import { useShop } from "@/lib/shop-context";
 import { useAccount } from "@/lib/account-context";
 import SearchBar from "./SearchBar";
 
-const PAGE_LINKS = [
-  { href: "/account", label: "🎁 Rewards" },
-  { href: "/#reviews", label: "Reviews" },
-  { href: "/#about", label: "About" },
-  { href: "/#faq", label: "FAQ" },
+// The main places to go, shown as big labelled buttons.
+const MAIN_LINKS = [
+  { href: "/shop", label: "Shop all", icon: "🛍️", colour: "bg-htz-lime/40" },
+  { href: "/shop?category=custom", label: "Design Your Own", icon: "🎨", colour: "bg-htz-pink/15" },
+  { href: "/quiz", label: "Quiz", icon: "🧩", colour: "bg-[#7c3aed]/15" },
+  { href: "/deals", label: "Deals", icon: "💸", colour: "bg-htz-orange/15" },
+  { href: "/help", label: "Help", icon: "❓", colour: "bg-htz-teal/10" },
 ];
 
 function CountBubble({ count }: { count: number }) {
@@ -110,43 +112,45 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Category strip */}
-      <nav aria-label="Categories" className="border-b border-ink/10 bg-surface">
-        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 py-2 text-base font-semibold text-ink [scrollbar-width:none] sm:px-6 lg:px-8">
-          <Link href="/shop" className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-ink/5">
-            All toys
-          </Link>
-          {shownCategories.map((category) => (
-            <Link
-              key={category.value}
-              href={`/shop?category=${encodeURIComponent(category.value)}`}
-              className="shrink-0 rounded-full px-3 py-1.5 transition-colors hover:bg-ink/5"
-            >
-              {category.label}
-            </Link>
-          ))}
-          <span className="mx-1 hidden w-px shrink-0 bg-ink/10 sm:block" aria-hidden="true" />
-          {PAGE_LINKS.filter((link) => signInEnabled || link.href !== "/account").map((link) => (
+      {/* Main menu, then the toy categories */}
+      <nav aria-label="Main menu" className="border-b border-ink/10 bg-surface">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-3 py-2 text-sm font-bold text-ink [scrollbar-width:none] sm:px-6 sm:text-base lg:px-8">
+          {MAIN_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="hidden shrink-0 rounded-full px-3 py-1 text-ink/70 transition-colors hover:bg-ink/5 sm:block"
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 transition-transform hover:scale-105 ${link.colour}`}
             >
+              <span aria-hidden="true">{link.icon}</span>
               {link.label}
             </Link>
           ))}
+          <span className="mx-1 h-6 w-px shrink-0 bg-ink/15" aria-hidden="true" />
+          {shownCategories
+            .filter((category) => category.value !== "custom")
+            .map((category) => (
+              <Link
+                key={category.value}
+                href={`/shop?category=${encodeURIComponent(category.value)}`}
+                className="shrink-0 rounded-full px-3 py-2 font-semibold text-ink/75 transition-colors hover:bg-ink/5"
+              >
+                {category.label}
+              </Link>
+            ))}
         </div>
       </nav>
 
       {menuOpen && (
         <nav id="mobile-menu" className="max-h-[70vh] overflow-y-auto bg-htz-navy px-4 pb-4 sm:hidden">
           {[
-            { href: "/shop", label: "Shop all toys" },
+            ...MAIN_LINKS.map((link) => ({ href: link.href, label: `${link.icon} ${link.label}` })),
             ...(signInEnabled
-              ? [{ href: "/account", label: account ? `My account · ${account.points} points` : "Sign in & earn points" }]
+              ? [{ href: "/account", label: account ? `🎁 My account · ${account.points} points` : "🎁 Sign in & earn points" }]
               : []),
-            { href: "/wishlist", label: "Wishlist ♡" },
-            ...PAGE_LINKS.filter((link) => link.href !== "/account"),
+            { href: "/wishlist", label: "♡ Wishlist" },
+            ...shownCategories
+              .filter((category) => category.value !== "custom")
+              .map((category) => ({ href: `/shop?category=${encodeURIComponent(category.value)}`, label: `   ${category.label}` })),
           ].map((link) => (
             <Link
               key={link.href}

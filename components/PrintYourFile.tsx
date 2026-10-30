@@ -7,6 +7,7 @@ import { useShop } from "@/lib/shop-context";
 import { measureStl } from "@/lib/stl";
 import { MAX_STL_BYTES, MAX_UPLOAD_BYTES, PRINT_CENTS_PER_CM3, PRINT_BASE_CENTS, PRINT_MIN_CENTS } from "@/lib/print-pricing";
 import type { PrintFile } from "@/lib/print-files";
+import BuyNowButton from "./BuyNowButton";
 
 function money(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -161,6 +162,18 @@ export default function PrintYourFile({ product }: { product: Product }) {
           >
             {added ? "✓ Added – add again?" : "Add to Cart"}
           </button>
+          <BuyNowButton
+            disabled={product.chooseColor && !color}
+            item={() => ({
+              productId: product.id,
+              color: product.chooseColor ? color : "",
+              size: "",
+              customText: "",
+              extra: quote.id,
+              quantity,
+            })}
+            className="py-3 font-display text-lg"
+          />
           {product.chooseColor && !color && <p className="text-center text-xs text-ink/60">Choose a colour first.</p>}
         </div>
       )}

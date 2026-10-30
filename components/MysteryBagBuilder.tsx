@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Product } from "@/lib/product-types";
 import { useCart } from "@/lib/cart-context";
 import { MYSTERY_COLOURS, MYSTERY_LIKES, mysteryWishes } from "@/lib/mystery-bag";
+import BuyNowButton from "./BuyNowButton";
 
 const LIKE_ICONS: Record<string, string> = {
   Fidgets: "🌀",
@@ -87,6 +88,11 @@ export default function MysteryBagBuilder({ product }: { product: Product }) {
       >
         {outOfStock ? "Sold out for now" : added ? "✓ Added – add another?" : "🎁 Add mystery bag to cart"}
       </button>
+      <BuyNowButton
+        disabled={outOfStock}
+        item={() => ({ productId: product.id, color: "", size: "", customText: "", extra: mysteryWishes(likes, colours), quantity })}
+        className="py-3 font-display text-lg"
+      />
       <p className="text-sm text-ink/60">Each bag has 3–5 toys picked by hand to match your choices. No two bags are the same!</p>
     </div>
   );
