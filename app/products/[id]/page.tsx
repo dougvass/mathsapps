@@ -24,6 +24,7 @@ import ProductReviews from "@/components/ProductReviews";
 import RecentlyViewed from "@/components/RecentlyViewed";
 import ShareButton from "@/components/ShareButton";
 import WishlistButton from "@/components/WishlistButton";
+import MobileBuyBar from "@/components/MobileBuyBar";
 import Stars from "@/components/Stars";
 
 // Always read the latest store data so admin edits show up without a redeploy.
@@ -144,7 +145,7 @@ export default async function ProductPage({ params }: Props) {
               </a>
             )}
             {product.description && <p className="text-lg text-ink/80">{product.description}</p>}
-            <div className="rounded-2xl border border-ink/10 p-4">
+            <div id="buy-box" className="scroll-mt-36 rounded-2xl border border-ink/10 p-4">
               {product.id === FILE_PRINT_ID ? (
                 <PrintYourFile product={product} />
               ) : product.id === MYSTERY_BAG_ID ? (
@@ -169,6 +170,7 @@ export default async function ProductPage({ params }: Props) {
         />
         <ProductReviews productId={product.id} productName={product.name} reviews={productReviews} />
         <RecentlyViewed currentId={product.id} hidden />
+        <MobileBuyBar product={product} />
       </div>
     </ShopShell>
   );

@@ -8,11 +8,30 @@ import {
 } from "@/lib/site";
 import SocialIcons from "./SocialIcons";
 
+// Phones get tap-to-open sections so the footer isn't a wall of text.
+function FooterSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <>
+      <details className="group border-t border-white/10 pt-3 sm:hidden">
+        <summary className="flex cursor-pointer list-none items-center justify-between font-display font-semibold text-white">
+          {title}
+          <span className="text-htz-lime transition-transform group-open:rotate-45" aria-hidden="true">+</span>
+        </summary>
+        {children}
+      </details>
+      <div className="hidden sm:block">
+        <p className="font-display font-semibold text-white">{title}</p>
+        {children}
+      </div>
+    </>
+  );
+}
+
 export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
   return (
     <footer id="footer" className="bg-htz-navy text-white/80">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto max-w-6xl px-4 pb-28 pt-12 sm:px-6 sm:pb-12 lg:px-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-8 lg:grid-cols-4">
           <div>
             <p className="font-display text-xl font-bold text-white">
               Hugos<span className="text-htz-lime">Toyz</span>
@@ -36,8 +55,7 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
             </ul>
           </div>
 
-          <div>
-            <p className="font-display font-semibold text-white">Shipping</p>
+          <FooterSection title="Shipping">
             <p className="mt-2 text-sm">
               Aussie-wide shipping. Most orders print and ship within 3–5
               business days. Custom designs may take a little longer — worth
@@ -46,11 +64,11 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
             <p className="mt-2 text-sm font-semibold text-htz-lime">
               {`Free standard shipping on orders over $${FREE_SHIPPING_THRESHOLD_AUD_CENTS / 100}.`}
             </p>
-          </div>
+          </FooterSection>
 
-          <div id="returns">
-            <p className="font-display font-semibold text-white">Returns</p>
-            <ul className="mt-2 space-y-2 text-sm">
+          <div id="returns" className="scroll-mt-36">
+            <FooterSection title="Returns">
+              <ul className="mt-2 space-y-2 text-sm">
               <li>
                 <span className="font-semibold text-white">Changed your mind?</span>{" "}
                 {`Return unused items within ${CHANGE_OF_MIND_RETURN_DAYS} days and we'll refund your money. Return postage is paid by you.`}
@@ -68,6 +86,7 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
             <p className="mt-2 text-xs text-white/50">
               This doesn&apos;t affect your rights under Australian Consumer Law.
             </p>
+            </FooterSection>
           </div>
         </div>
 

@@ -10,6 +10,7 @@ import BackToTop from "./BackToTop";
 import ReferralCatcher from "./ReferralCatcher";
 import DealsStrip from "./DealsStrip";
 import SpinWheel from "./SpinWheel";
+import QuizPrompt from "./QuizPrompt";
 import { AccountProvider } from "@/lib/account-context";
 
 // Shop data, cart, header, footer and pop-ups shared by every shop page.
@@ -36,6 +37,7 @@ export default function ShopShell({
           <BackToTop />
           <ReferralCatcher />
           <SpinWheel />
+          <QuizPrompt />
         </CartProvider>
       </AccountProvider>
     </ShopDataProvider>

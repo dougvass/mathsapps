@@ -6,7 +6,6 @@ import { useAccount } from "@/lib/account-context";
 import { saveDiscount } from "@/lib/checkout-client";
 import { WHEEL_CODE_DAYS, WHEEL_POINTS, WHEEL_PRIZES, type WheelPrizeKey } from "@/lib/wheel";
 
-const DONE_KEY = "htz-wheel-done";
 const SLICE = 360 / WHEEL_PRIZES.length;
 
 function slicePath(index: number): string {
@@ -19,74 +18,82 @@ function slicePath(index: number): string {
   return `M100,100 L${x1},${y1} A95,95 0 0,1 ${x2},${y2} Z`;
 }
 
-function readDone(): boolean {
-  try {
-    const value = localStorage.getItem(DONE_KEY);
-    return Boolean(value && Number(value) > Date.now());
-  } catch {
-    return false;
-  }
+type Result = { prize: WheelPrizeKey | null; code: string | null };
+
+async function applyCodeToCart(code: string) {
+  const check = await fetch("/api/discounts/check", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  }).catch(() => null);
+  const checked = await check?.json().catch(() => null);
+  if (check?.ok && checked?.discount) saveDiscount(checked.discount);
 }
 
-function markDone(days: number) {
-  try {
-    localStorage.setItem(DONE_KEY, String(Date.now() + days * 24 * 60 * 60 * 1000));
-  } catch {}
-}
-
-// Floating "Spin & win" button with a prize wheel (one spin per visitor).
+// Floating "Spin & win" button with a prize wheel. The server remembers every
+// spin, so refreshing shows the prize you already won instead of a new spin.
 export default function SpinWheel() {
   const { account, refresh } = useAccount();
-  const [hidden, setHidden] = useState(true);
+  // "loading" until the server says whether this visitor has spun.
+  const [status, setStatus] = useState<"loading" | "ready" | "spun">("loading");
   const [open, setOpen] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [spinning, setSpinning] = useState(false);
-  const [result, setResult] = useState<{ prize: WheelPrizeKey; code: string | null } | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHidden(readDone());
+    fetch("/api/spin")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.spun) {
+          setResult({ prize: data.prize, code: data.code });
+          setStatus("spun");
+        } else {
+          setStatus("ready");
+        }
+      })
+      .catch(() => setStatus("spun"));
   }, []);
 
-  if ((hidden || account?.spunWheel) && !open) return null;
+  // Only codes are worth coming back to; other results just hide the button.
+  const hasCode = Boolean(result?.code);
+  if (!open && (status === "loading" || (status === "spun" && !hasCode) || (account?.spunWheel && !hasCode))) {
+    return null;
+  }
 
   async function spin() {
     setSpinning(true);
     setError(null);
     const response = await fetch("/api/spin", { method: "POST" }).catch(() => null);
     const data = await response?.json().catch(() => ({}));
-    if (!response?.ok) {
-      setError(data?.error ?? "The wheel got stuck. Please try again.");
+    if (response?.status === 409) {
+      // Already spun (another tab, or before a refresh): show that prize.
+      setResult({ prize: data?.prize ?? null, code: data?.code ?? null });
+      setStatus("spun");
       setSpinning(false);
-      if (response?.status === 409) markDone(365);
       return;
     }
+    if (!response?.ok) {
+      setError(data?.error ?? "The wheel got stuck. Please try again later.");
+      setSpinning(false);
+      return;
+    }
+    setStatus("spun");
+    if (data.code) applyCodeToCart(data.code);
     const index = WHEEL_PRIZES.findIndex((p) => p.key === data.prize);
     // Several full turns, then stop with the prize under the pointer at the top.
     const jitter = (Math.random() - 0.5) * SLICE * 0.6;
     setRotation((r) => r + 360 * 5 + (360 - (r % 360)) - (index * SLICE + SLICE / 2) + jitter);
-    setTimeout(async () => {
+    setTimeout(() => {
       setResult({ prize: data.prize, code: data.code });
       setSpinning(false);
-      markDone(data.prize === "again" ? 1 : 365);
-      if (data.code) {
-        // Put the code straight into the cart.
-        const check = await fetch("/api/discounts/check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: data.code }),
-        }).catch(() => null);
-        const checked = await check?.json().catch(() => null);
-        if (check?.ok && checked?.discount) saveDiscount(checked.discount);
-      }
       if (data.prize === "points") refresh();
     }, 4200);
   }
 
   function close() {
     setOpen(false);
-    if (result || readDone()) setHidden(true);
   }
 
   return (
@@ -95,9 +102,11 @@ export default function SpinWheel() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 left-3 z-30 flex items-center gap-1 rounded-full bg-gradient-to-r from-htz-pink to-htz-orange px-4 py-3 font-display font-bold text-white shadow-xl transition-transform hover:scale-105 sm:bottom-6"
+          aria-label={hasCode ? "See your prize code" : "Spin and win"}
+          className="fixed bottom-20 left-3 z-30 flex h-12 w-12 items-center justify-center gap-1 rounded-full bg-gradient-to-r from-htz-pink to-htz-orange font-display text-xl font-bold text-white shadow-xl transition-transform hover:scale-105 sm:bottom-6 sm:h-auto sm:w-auto sm:px-4 sm:py-3 sm:text-base"
         >
-          🎡 Spin & win
+          {hasCode ? "🎁" : "🎡"}
+          <span className="hidden sm:inline">{hasCode ? "My prize" : "Spin & win"}</span>
         </button>
       )}
       {open && (
@@ -142,7 +151,9 @@ export default function SpinWheel() {
 
             {result ? (
               <div className="mt-4" role="status">
-                {result.prize === "again" ? (
+                {result.prize === null ? (
+                  <p className="font-display text-xl font-bold text-ink">You&apos;ve already had your spin – thanks for playing! 🎡</p>
+                ) : result.prize === "again" ? (
                   <p className="font-display text-xl font-bold text-ink">So close! Try again tomorrow 🍀</p>
                 ) : result.prize === "points" ? (
                   <p className="font-display text-xl font-bold text-ink">🎉 {WHEEL_POINTS} points added to your account!</p>

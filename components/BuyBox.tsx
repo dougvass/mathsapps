@@ -145,7 +145,7 @@ export default function BuyBox({ product }: { product: Product }) {
           <legend className="mb-1 text-sm font-semibold text-ink">
             Size{size && <span className="font-normal text-ink/60">{`: ${size}`}</span>}
           </legend>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
             {sizeOptions.map((option) => (
               <button
                 key={option.label}

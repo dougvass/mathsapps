@@ -64,6 +64,24 @@ export default function HomeCarousel({
     },
   ];
 
+  slides.push({
+    key: "quiz",
+    label: "Fidget quiz",
+    content: (
+      <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#7c3aed] via-htz-pink to-htz-orange px-6 py-10 text-center text-white">
+        <span className="text-6xl" aria-hidden="true">🧩🤔</span>
+        <p className="font-display text-3xl font-bold sm:text-5xl">Which fidget are you?</p>
+        <p className="max-w-md text-white/90 sm:text-lg">Answer 3 quick questions and we&apos;ll pick your perfect toy.</p>
+        <Link
+          href="/quiz"
+          className="mt-3 rounded-full bg-white px-7 py-2.5 font-display text-lg font-bold text-[#7c3aed] shadow-lg transition-transform hover:scale-105"
+        >
+          Take the quiz →
+        </Link>
+      </div>
+    ),
+  });
+
   if (banner.enabled) {
     slides.push({
       key: "sale",

@@ -47,9 +47,9 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 shadow-md">
       <div className="bg-htz-navy">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:flex-nowrap sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-2 px-3 py-2.5 sm:flex-nowrap sm:gap-x-4 sm:px-6 lg:px-8">
           <Link href="/" onClick={close} className="flex shrink-0 items-baseline gap-2">
-            <span className="font-display text-2xl font-bold text-white">
+            <span className="font-display text-xl font-bold text-white min-[400px]:text-2xl">
               Hugos<span className="text-htz-lime">Toyz</span>
             </span>
             <span className="hidden text-xs font-semibold tracking-widest text-htz-pink lg:inline">HTZ</span>
@@ -59,7 +59,7 @@ export default function Header() {
             <SearchBar />
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1 sm:ml-0 sm:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:ml-0 sm:gap-2">
             {signInEnabled && (
             <Link
               href="/account"
@@ -86,14 +86,14 @@ export default function Header() {
             <Link
               href="/cart"
               onClick={close}
-              className="relative flex items-center gap-1.5 rounded-full bg-htz-lime px-4 py-2.5 text-base font-bold text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"
+              className="relative flex items-center gap-1.5 rounded-full bg-htz-lime px-3 py-2.5 text-base font-bold min-[400px]:px-4 text-htz-navy shadow transition-transform hover:scale-105 active:scale-95"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="9" cy="20" r="1.5" />
                 <circle cx="18" cy="20" r="1.5" />
                 <path d="M2 3h3l2.5 12h12l2-8H6.2" />
               </svg>
-              Cart
+              <span className="max-[359px]:sr-only">Cart</span>
               <CountBubble count={totalItems} />
             </Link>
             <button
