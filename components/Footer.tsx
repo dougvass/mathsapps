@@ -97,7 +97,13 @@ export default function Footer({ socialLinks }: { socialLinks: SocialLinks }) {
           >
             🔐 Admin Login
           </a>
-          <nav className="flex gap-4 text-xs" aria-label="Policies">
+          <nav className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs" aria-label="Policies">
+            <Link href="/track" className="hover:text-htz-lime">
+              Track order
+            </Link>
+            <Link href="/help" className="hover:text-htz-lime">
+              Help
+            </Link>
             <Link href="/privacy" className="hover:text-htz-lime">
               Privacy Policy
             </Link>

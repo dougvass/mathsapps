@@ -4,6 +4,7 @@ import path from "path";
 import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
 import {
   FILE_PRINT_ID,
+  GIFT_CARD_ID,
   MYSTERY_BAG_ID,
   type BannerSettings,
   type HomeText,
@@ -84,14 +85,33 @@ const SPECIAL_PRODUCTS: Product[] = [
     stock: "made-to-order",
     wasPrice: 0,
   },
+  {
+    id: GIFT_CARD_ID,
+    name: "HugosToyz Gift Card",
+    category: "gift-cards",
+    price: 10,
+    description: "Let them pick their own toys! Choose $10, $20 or $50. The code shows straight after paying.",
+    emoji: "🎟️",
+    image: "",
+    gallery: [],
+    badge: "new",
+    active: true,
+    chooseColor: false,
+    needsCustomText: false,
+    stock: "made-to-order",
+    wasPrice: 0,
+  },
 ];
 
 // Data saved before a field existed won't have it, so fill in defaults.
 function withDefaults(data: StoreData): StoreData {
-  // The special products are added once; after that the admin can edit or remove them.
-  const products = data.specialProductsAdded
-    ? data.products
-    : [...data.products, ...SPECIAL_PRODUCTS.filter((p) => !data.products.some((existing) => existing.id === p.id))];
+  // Each built-in product is added once; after that the admin can edit or remove it.
+  // (Stores from before this list existed already had the first two added.)
+  const alreadyAdded = data.specialsAdded ?? (data.specialProductsAdded ? [MYSTERY_BAG_ID, FILE_PRINT_ID] : []);
+  const products = [
+    ...data.products,
+    ...SPECIAL_PRODUCTS.filter((p) => !alreadyAdded.includes(p.id) && !data.products.some((existing) => existing.id === p.id)),
+  ];
   return {
     ...data,
     products: products.map((product) => ({
@@ -110,8 +130,10 @@ function withDefaults(data: StoreData): StoreData {
     stockAppliedSessions: data.stockAppliedSessions ?? [],
     toyOfWeek: data.toyOfWeek ?? { productId: "", blurb: "" },
     holiday: data.holiday ?? { enabled: false, until: "", message: "" },
+    season: data.season ?? "auto",
     soldCounts: data.soldCounts ?? {},
     specialProductsAdded: true,
+    specialsAdded: SPECIAL_PRODUCTS.map((p) => p.id),
   };
 }
 

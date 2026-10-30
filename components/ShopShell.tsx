@@ -11,6 +11,8 @@ import ReferralCatcher from "./ReferralCatcher";
 import DealsStrip from "./DealsStrip";
 import SpinWheel from "./SpinWheel";
 import QuizPrompt from "./QuizPrompt";
+import SeasonEffects from "./SeasonEffects";
+import CompareBar from "./CompareBar";
 import { AccountProvider } from "@/lib/account-context";
 
 // Shop data, cart, header, footer and pop-ups shared by every shop page.
@@ -38,6 +40,8 @@ export default function ShopShell({
           <ReferralCatcher />
           <SpinWheel />
           <QuizPrompt />
+          <SeasonEffects />
+          <CompareBar />
         </CartProvider>
       </AccountProvider>
     </ShopDataProvider>

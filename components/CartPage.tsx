@@ -8,15 +8,16 @@ import { loadSavedDiscount, saveDiscount, startCheckout } from "@/lib/checkout-c
 import { FREE_SHIPPING_THRESHOLD_AUD_CENTS } from "@/lib/site";
 import { useAccount } from "@/lib/account-context";
 import { useShop } from "@/lib/shop-context";
+import { GIFT_CARD_ID } from "@/lib/product-types";
 import {
   BUNDLE_MIN_TOYS,
   BUNDLE_PERCENT_OFF,
   bundleApplies,
   bundleSavingCents,
+  countsForBundle,
   GIFT_MESSAGE_MAX,
   GIFT_WRAP_CENTS,
 } from "@/lib/deals";
-import { FILE_PRINT_ID } from "@/lib/product-types";
 import { POINTS_PER_DOLLAR } from "@/lib/rewards-rules";
 import ProductImage from "./ProductImage";
 
@@ -75,7 +76,7 @@ export default function CartPage() {
 
   const fullPriceCents = Math.round(totalPrice * 100);
   const bundleCents = bundleSavingCents(lines);
-  const toysInCart = lines.filter((l) => l.productId !== FILE_PRINT_ID).reduce((sum, l) => sum + l.quantity, 0);
+  const toysInCart = lines.filter(countsForBundle).reduce((sum, l) => sum + l.quantity, 0);
   const subtotalCents = fullPriceCents - bundleCents;
   const belowMinimum = Boolean(discount?.minimumCents && subtotalCents < discount.minimumCents);
   const savingCents = discount && !belowMinimum ? discountCents(discount, subtotalCents) : 0;
@@ -304,7 +305,13 @@ export default function CartPage() {
             )}
             <div className="flex justify-between">
               <dt>Shipping</dt>
-              <dd>{toFreeShippingCents > 0 ? "Calculated at checkout" : "Free"}</dd>
+              <dd>
+                {lines.every((l) => l.productId === GIFT_CARD_ID)
+                  ? "Not needed"
+                  : toFreeShippingCents > 0
+                    ? "Calculated at checkout"
+                    : "Free"}
+              </dd>
             </div>
             <div className="mt-2 flex justify-between border-t border-ink/10 pt-2 font-display text-lg font-bold text-ink">
               <dt>Total</dt>

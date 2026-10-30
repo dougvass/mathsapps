@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AdminOrder, CategoryDef, HolidayMode, Product, ToyOfWeek } from "@/lib/product-types";
+import { SEASON_SETTINGS, type SeasonSetting } from "@/lib/season";
 
 const cardClass = "rounded-2xl bg-white p-5 shadow-sm";
 const inputClass = "rounded-lg border border-htz-navy/20 px-3 py-2 focus:border-htz-orange focus:outline-none";
@@ -266,6 +267,29 @@ export function BulkPriceTool({
         >
           End sale{onSale > 0 ? ` (${onSale} on sale)` : ""}
         </button>
+      </div>
+    </div>
+  );
+}
+
+export function SeasonEditor({ value, onChange }: { value: SeasonSetting; onChange: (value: SeasonSetting) => void }) {
+  return (
+    <div className={cardClass}>
+      <h2 className="font-display text-lg font-bold text-htz-navy">🎄🎃 Christmas & Halloween decorations</h2>
+      <p className="text-sm text-htz-navy/60">Snow or bats on the shop, a seasonal banner and festive colours.</p>
+      <div className="mt-3 flex flex-col gap-2">
+        {SEASON_SETTINGS.map((option) => (
+          <label key={option.value} className="flex cursor-pointer items-center gap-3 rounded-xl border border-htz-navy/10 px-4 py-3 text-htz-navy">
+            <input
+              type="radio"
+              name="season"
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="h-5 w-5 accent-htz-orange"
+            />
+            {option.label}
+          </label>
+        ))}
       </div>
     </div>
   );

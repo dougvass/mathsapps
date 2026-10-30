@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { AdminOrder } from "@/lib/product-types";
+import { orderNumber } from "@/lib/order-number";
+import { SITE_URL } from "@/lib/site";
 
 function money(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -9,6 +11,29 @@ function money(cents: number): string {
 
 function escapeHtml(text: string): string {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+// A ready-to-send "it's posted" email, opened in the iPad/computer's Mail app.
+function postedEmailLink(order: AdminOrder): string {
+  const firstName = (order.shippingName || order.customerName).split(" ")[0] || "there";
+  const pickup = /pickup/i.test(order.shippingMethod);
+  const subject = pickup ? "Your HugosToyz order is ready to pick up! 🎉" : "Your HugosToyz order is on its way! 📦";
+  const items = order.items.map((item) => `- ${item.quantity} × ${item.description}`).join("\n");
+  const body = [
+    `Hi ${firstName},`,
+    "",
+    pickup ? "Good news – your HugosToyz order is ready to pick up!" : "Good news – your HugosToyz order has been posted!",
+    "",
+    "What's in it:",
+    items,
+    "",
+    pickup ? "Just reply to this email to arrange a time." : "It usually arrives in 2–6 business days.",
+    `Order number: ${orderNumber(order.id)} (check it any time at ${SITE_URL}/track)`,
+    "",
+    "Thanks for shopping with us!",
+    "Hugo – HugosToyz",
+  ].join("\n");
+  return `mailto:${order.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 // Opens a simple packing slip in a new window and prints it.
@@ -46,7 +71,7 @@ function OrderCard({
   onPostedChange,
 }: {
   order: AdminOrder;
-  onPostedChange: (order: AdminOrder, posted: boolean) => void;
+  onPostedChange: (order: AdminOrder, posted: boolean) => Promise<boolean>;
 }) {
   const [busy, setBusy] = useState(false);
   const date = new Date(order.createdAt * 1000).toLocaleString("en-AU", {
@@ -72,6 +97,7 @@ function OrderCard({
           )}
         </p>
       </div>
+      <p className="text-xs font-semibold text-htz-navy/60">Order {orderNumber(order.id)}</p>
       <ul className="mt-2 text-sm text-htz-navy">
         {order.items.map((item, index) => (
           <li key={index}>
@@ -143,12 +169,14 @@ function OrderCard({
               disabled={busy}
               onClick={async () => {
                 setBusy(true);
-                await onPostedChange(order, true);
+                const saved = await onPostedChange(order, true);
                 setBusy(false);
+                // Then open a ready-written email to tell the customer.
+                if (saved && order.email) window.location.href = postedEmailLink(order);
               }}
-              className="rounded-full bg-htz-lime px-4 py-1 text-xs font-bold text-htz-navy shadow disabled:opacity-50"
+              className="rounded-full bg-htz-lime px-5 py-2 text-sm font-bold text-htz-navy shadow disabled:opacity-50"
             >
-              {busy ? "Saving…" : "Mark as posted"}
+              {busy ? "Saving…" : order.email ? "Mark as posted & email customer" : "Mark as posted"}
             </button>
           )}
         </div>
@@ -178,7 +206,7 @@ export default function OrdersPanel() {
     load();
   }, [load]);
 
-  async function setPosted(order: AdminOrder, posted: boolean) {
+  async function setPosted(order: AdminOrder, posted: boolean): Promise<boolean> {
     const response = await fetch("/api/admin/orders", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -187,9 +215,10 @@ export default function OrdersPanel() {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       window.alert(data.error ?? "Couldn't update the order.");
-      return;
+      return false;
     }
     setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, postedAt: data.postedAt } : o)) ?? null);
+    return true;
   }
 
   const toPost = orders?.filter((order) => !order.postedAt) ?? [];

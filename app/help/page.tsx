@@ -33,6 +33,9 @@ export default async function Help() {
     <ShopShell shop={shop} socialLinks={config.socialLinks}>
       <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8">
         <h1 className="font-display text-4xl font-bold text-ink">❓ Help</h1>
+        <Link href="/track" className="flex items-center gap-3 self-start rounded-2xl bg-htz-navy px-5 py-4 font-display text-xl font-bold text-htz-lime shadow-md">
+          📦 Track my order →
+        </Link>
 
         <section className={box}>
           <h2 className="font-display text-2xl font-bold text-ink">How ordering works</h2>

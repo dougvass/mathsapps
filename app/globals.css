@@ -108,3 +108,34 @@ body {
     background: linear-gradient(to bottom right, #1e2a15, #13282a);
   }
 }
+
+/* Christmas snow and Halloween bats (see SeasonEffects). */
+.season-snow,
+.season-spooky {
+  position: absolute;
+  top: -40px;
+  animation-name: season-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.season-snow {
+  color: #ffffff;
+  text-shadow: 0 0 4px rgba(11, 43, 58, 0.35);
+  opacity: 0.85;
+}
+.season-spooky {
+  opacity: 0.55;
+  animation-name: season-drift;
+}
+@keyframes season-fall {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(40px, 110vh) rotate(360deg); }
+}
+@keyframes season-drift {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-50px, 55vh); }
+  100% { transform: translate(30px, 110vh); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .season-effects { display: none; }
+}

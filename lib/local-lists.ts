@@ -92,3 +92,18 @@ export function useRecentlyViewed() {
   }, []);
   return { ids, record };
 }
+
+const COMPARE_KEY = "htz-compare";
+export const MAX_COMPARE = 3;
+
+// Up to 3 toys picked to see side by side.
+export function useCompare() {
+  const ids = useList(COMPARE_KEY);
+  const toggle = useCallback((id: string) => {
+    const current = read(COMPARE_KEY);
+    if (current.includes(id)) write(COMPARE_KEY, current.filter((x) => x !== id));
+    else write(COMPARE_KEY, [...current, id].slice(-MAX_COMPARE));
+  }, []);
+  const clear = useCallback(() => write(COMPARE_KEY, []), []);
+  return { ids, has: (id: string) => ids.includes(id), toggle, clear };
+}

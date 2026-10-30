@@ -19,9 +19,11 @@ import {
 } from "@/lib/product-types";
 import { DEFAULT_FAQS } from "@/lib/default-faqs";
 import { mergeEdits } from "@/lib/admin-merge";
+import { AdminTab, AdminTabBar, type AdminTabId } from "@/components/AdminTabs";
 import ImageDropzone from "@/components/ImageDropzone";
 import DiscountCodes from "@/components/DiscountCodes";
-import { BulkPriceTool, HolidayEditor, SalesDashboard, ToyOfWeekEditor } from "@/components/AdminExtras";
+import { BulkPriceTool, HolidayEditor, SalesDashboard, SeasonEditor, ToyOfWeekEditor } from "@/components/AdminExtras";
+import type { SeasonSetting } from "@/lib/season";
 import QrCodeCard from "@/components/QrCodeCard";
 import StockEditor from "@/components/StockEditor";
 import OrdersPanel from "@/components/OrdersPanel";
@@ -66,13 +68,15 @@ export default function AdminPage() {
   });
   const [toyOfWeek, setToyOfWeek] = useState<ToyOfWeek>({ productId: "", blurb: "" });
   const [holiday, setHoliday] = useState<HolidayMode>({ enabled: false, until: "", message: "" });
+  const [season, setSeason] = useState<SeasonSetting>("auto");
   // Version of the shop data this page was loaded at; saving checks it.
   const [version, setVersion] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [productFilter, setProductFilter] = useState("");
+  const [tab, setTab] = useState<AdminTabId>("products");
 
-  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText, toyOfWeek, holiday };
+  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText, toyOfWeek, holiday, season };
   const snapshot = JSON.stringify(editable);
   const dirty = status === "authed" && savedSnapshot !== "" && snapshot !== savedSnapshot;
 
@@ -126,6 +130,7 @@ export default function AdminPage() {
     setHomeText(data.homeText);
     setToyOfWeek(data.toyOfWeek);
     setHoliday(data.holiday);
+    setSeason(data.season);
   }
 
   async function loadStore() {
@@ -144,6 +149,7 @@ export default function AdminPage() {
       setHomeText(data.homeText);
       setToyOfWeek(data.toyOfWeek);
       setHoliday(data.holiday);
+      setSeason(data.season);
       setVersion(data.version);
       setSavedSnapshot(
         JSON.stringify({
@@ -159,6 +165,7 @@ export default function AdminPage() {
           homeText: data.homeText,
           toyOfWeek: data.toyOfWeek,
           holiday: data.holiday,
+          season: data.season,
         })
       );
       setSaveState("idle");
@@ -469,17 +476,31 @@ export default function AdminPage() {
           </div>
         </div>
 
+        <AdminTabBar current={tab} onChange={setTab} />
+
+        <AdminTab id="orders" current={tab}>
         <SalesDashboard products={products} />
 
         <OrdersPanel />
+        </AdminTab>
 
         <div className="mt-6 flex flex-col gap-4">
+          <AdminTab id="deals" current={tab}>
           <HolidayEditor holiday={holiday} onChange={setHoliday} />
+          <SeasonEditor value={season} onChange={setSeason} />
+          </AdminTab>
+          <AdminTab id="home" current={tab}>
           <ToyOfWeekEditor value={toyOfWeek} products={products} onChange={setToyOfWeek} />
+          </AdminTab>
+          <AdminTab id="deals" current={tab}>
           <BulkPriceTool products={products} categories={categories} onChange={setProducts} />
+          </AdminTab>
+          <AdminTab id="home" current={tab}>
           <HeroPhotoSection heroImage={heroImage} onChange={setHeroImage} />
           <HomeTextEditor text={homeText} onChange={setHomeText} />
+          </AdminTab>
 
+          <AdminTab id="home" current={tab}>
           {/* Sale banner */}
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
@@ -532,6 +553,8 @@ export default function AdminPage() {
             </p>
           </div>
 
+          </AdminTab>
+          <AdminTab id="setup" current={tab}>
           {/* Categories */}
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="mb-3 flex items-center justify-between">
@@ -676,6 +699,8 @@ export default function AdminPage() {
             </div>
           </div>
 
+          </AdminTab>
+          <AdminTab id="products" current={tab}>
           {/* Products */}
           <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -980,16 +1005,23 @@ export default function AdminPage() {
             );
           })}
 
+          </AdminTab>
+          <AdminTab id="home" current={tab}>
           <FaqEditor faqs={faqs} defaults={DEFAULT_FAQS} onChange={setFaqs} />
           <SocialLinksEditor links={socialLinks} onChange={setSocialLinks} />
+          </AdminTab>
         </div>
 
-        <DiscountCodes />
+        <AdminTab id="deals" current={tab}>
+          <DiscountCodes />
+        </AdminTab>
 
-        <ReviewsModerator products={products} />
+        <AdminTab id="people" current={tab}>
+          <ReviewsModerator products={products} />
+          <RewardsMembers />
+        </AdminTab>
 
-        <RewardsMembers />
-
+        <AdminTab id="setup" current={tab}>
         <QrCodeCard />
 
         {/* Change password */}
@@ -1041,6 +1073,7 @@ export default function AdminPage() {
             </div>
           </form>
         </div>
+        </AdminTab>
 
         {/* Last thing on the page, and sticks to the bottom of the screen all the way down. */}
         <div className="sticky bottom-0 z-30 -mx-4 mt-8 border-t sm:-mx-6 lg:-mx-8 border-htz-navy/10 bg-white/95 shadow-[0_-4px_16px_rgba(11,43,58,0.08)] backdrop-blur">

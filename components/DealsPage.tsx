@@ -7,6 +7,7 @@ import { FREE_SHIPPING_THRESHOLD_AUD_CENTS } from "@/lib/site";
 import { REDEEM_POINTS, REDEEM_VALUE_CENTS } from "@/lib/rewards-rules";
 import { OPEN_WHEEL_EVENT } from "@/lib/wheel";
 import ProductTile from "./ProductTile";
+import { GIFT_CARD_ID } from "@/lib/product-types";
 
 const card = "flex flex-col gap-1 rounded-2xl p-5 text-white shadow-md";
 
@@ -43,6 +44,13 @@ export default function DealsPage() {
             <p className="text-3xl" aria-hidden="true">🎁</p>
             <p className="font-display text-2xl font-bold">Reward points</p>
             <p className="text-white/90">{`Earn points on every order. ${REDEEM_POINTS} points = $${REDEEM_VALUE_CENTS / 100} off.`}</p>
+          </Link>
+        )}
+        {products.some((p) => p.id === GIFT_CARD_ID) && (
+          <Link href={`/products/${GIFT_CARD_ID}`} className={`${card} bg-gradient-to-br from-[#0ea5e9] to-[#7c3aed] transition-transform hover:-translate-y-1`}>
+            <p className="text-3xl" aria-hidden="true">🎟️</p>
+            <p className="font-display text-2xl font-bold">Gift cards</p>
+            <p className="text-white/90">$10, $20 or $50 – the perfect present when you can&apos;t choose.</p>
           </Link>
         )}
         <div className={`${card} bg-gradient-to-br from-[#facc15] to-htz-orange`}>

@@ -1,4 +1,4 @@
-import { FILE_PRINT_ID } from "./product-types";
+import { FILE_PRINT_ID, GIFT_CARD_ID } from "./product-types";
 
 // Automatic bundle deal: buy enough toys and each one is cheaper.
 export const BUNDLE_MIN_TOYS = 3;
@@ -8,9 +8,9 @@ export const GIFT_MESSAGE_MAX = 200;
 
 type DealLine = { productId: string; quantity: number; unitCents: number };
 
-// Printing a customer's own file isn't a toy, so it doesn't count.
-function countsForBundle(line: DealLine): boolean {
-  return line.productId !== FILE_PRINT_ID;
+// Printing a customer's own file and gift cards aren't toys, so they don't count.
+export function countsForBundle(line: { productId: string }): boolean {
+  return line.productId !== FILE_PRINT_ID && line.productId !== GIFT_CARD_ID;
 }
 
 export function bundleApplies(lines: DealLine[]): boolean {

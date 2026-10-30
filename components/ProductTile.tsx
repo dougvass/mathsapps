@@ -4,12 +4,13 @@ import Link from "next/link";
 import type { Product } from "@/lib/product-types";
 import { useCart } from "@/lib/cart-context";
 import { needsOptions, SHOW_SOLD_FROM, useShop } from "@/lib/shop-context";
-import { FILE_PRINT_ID } from "@/lib/product-types";
+import { FILE_PRINT_ID, GIFT_CARD_ID } from "@/lib/product-types";
 import ProductImage from "./ProductImage";
 import ProductBadgeTag from "./ProductBadgeTag";
 import WishlistButton from "./WishlistButton";
 import Stars from "./Stars";
 import BuyNowButton from "./BuyNowButton";
+import { useCompare } from "@/lib/local-lists";
 
 function stockNote(product: Product): { text: string; className: string } | null {
   if (product.stock === "out-of-stock") return { text: "Out of stock", className: "text-htz-pink" };
@@ -28,6 +29,8 @@ export default function ProductTile({ product }: { product: Product }) {
   const note = stockNote(product);
   const outOfStock = product.stock === "out-of-stock";
   const quickAdd = !needsOptions(product, sizeOptions);
+  const compare = useCompare();
+  const comparing = compare.has(product.id);
 
   return (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-ink/5 transition-shadow hover:shadow-lg">
@@ -51,7 +54,7 @@ export default function ProductTile({ product }: { product: Product }) {
         </Link>
         {rating && <Stars rating={rating.average} count={rating.count} />}
         <p className="font-display text-xl font-bold text-ink sm:text-2xl">
-          {product.id === FILE_PRINT_ID && <span className="mr-1 text-sm font-semibold text-ink/60">From</span>}
+          {(product.id === FILE_PRINT_ID || product.id === GIFT_CARD_ID) && <span className="mr-1 text-sm font-semibold text-ink/60">From</span>}
           <span className="align-top text-xs">$</span>
           {product.price.toFixed(2)}
           {product.wasPrice > product.price && (
@@ -65,6 +68,14 @@ export default function ProductTile({ product }: { product: Product }) {
         )}
         {sold >= SHOW_SOLD_FROM && <p className="text-xs font-semibold text-htz-orange">🔥 {sold} sold</p>}
         {note && <p className={`text-sm font-semibold ${note.className}`}>{note.text}</p>}
+        <button
+          type="button"
+          onClick={() => compare.toggle(product.id)}
+          aria-pressed={comparing}
+          className={`self-start rounded-full px-2.5 py-1 text-xs font-semibold transition-colors ${comparing ? "bg-htz-navy text-white" : "bg-ink/5 text-ink/70 hover:bg-ink/10"}`}
+        >
+          {comparing ? "✓ Comparing" : "⇄ Compare"}
+        </button>
         <div className="mt-auto pt-2">
           {outOfStock ? (
             <Link
@@ -73,12 +84,12 @@ export default function ProductTile({ product }: { product: Product }) {
             >
               See details
             </Link>
-          ) : product.id === FILE_PRINT_ID ? (
+          ) : product.id === FILE_PRINT_ID || product.id === GIFT_CARD_ID ? (
             <Link
               href={href}
               className="block w-full rounded-full bg-htz-lime py-2.5 text-center text-base font-bold text-htz-navy shadow-sm transition-transform hover:scale-[1.02] active:scale-95"
             >
-              Upload file
+              {product.id === FILE_PRINT_ID ? "Upload file" : "Choose amount"}
             </Link>
           ) : quickAdd ? (
             <div className="flex flex-col gap-1.5">

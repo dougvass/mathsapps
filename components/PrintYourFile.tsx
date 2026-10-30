@@ -8,6 +8,7 @@ import { measureStl } from "@/lib/stl";
 import { MAX_STL_BYTES, MAX_UPLOAD_BYTES, PRINT_CENTS_PER_CM3, PRINT_BASE_CENTS, PRINT_MIN_CENTS } from "@/lib/print-pricing";
 import type { PrintFile } from "@/lib/print-files";
 import BuyNowButton from "./BuyNowButton";
+import ColourDots from "./ColourDots";
 
 function money(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -135,17 +136,7 @@ export default function PrintYourFile({ product }: { product: Product }) {
           <p className="font-display text-3xl font-bold text-ink">
             {money(quote.priceCents)} <span className="text-sm font-normal text-ink/50">each</span>
           </p>
-          {product.chooseColor && (
-            <label className="flex flex-col gap-1 text-sm font-semibold text-ink">
-              Colour
-              <select value={color} onChange={(e) => setColor(e.target.value)} className="rounded-lg border border-ink/20 px-3 py-2">
-                <option value="">Choose a colour…</option>
-                {colors.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </label>
-          )}
+          {product.chooseColor && <ColourDots colours={colors} value={color} onChange={setColor} />}
           <label className="flex items-center gap-2 text-sm font-semibold text-ink">
             Qty
             <select value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} className="w-20 rounded-lg border border-ink/20 px-3 py-2" aria-label="Quantity">

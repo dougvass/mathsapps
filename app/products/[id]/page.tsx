@@ -17,7 +17,8 @@ import ProductGallery from "@/components/ProductGallery";
 import BuyBox from "@/components/BuyBox";
 import PrintYourFile from "@/components/PrintYourFile";
 import MysteryBagBuilder from "@/components/MysteryBagBuilder";
-import { FILE_PRINT_ID, MYSTERY_BAG_ID } from "@/lib/product-types";
+import GiftCardBuilder from "@/components/GiftCardBuilder";
+import { FILE_PRINT_ID, GIFT_CARD_ID, MYSTERY_BAG_ID } from "@/lib/product-types";
 import ProductBadgeTag from "@/components/ProductBadgeTag";
 import ProductRow from "@/components/ProductRow";
 import ProductReviews from "@/components/ProductReviews";
@@ -148,6 +149,8 @@ export default async function ProductPage({ params }: Props) {
             <div id="buy-box" className="scroll-mt-36 rounded-2xl border border-ink/10 p-4">
               {product.id === FILE_PRINT_ID ? (
                 <PrintYourFile product={product} />
+              ) : product.id === GIFT_CARD_ID ? (
+                <GiftCardBuilder product={product} />
               ) : product.id === MYSTERY_BAG_ID ? (
                 <MysteryBagBuilder product={product} />
               ) : (

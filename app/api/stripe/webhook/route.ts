@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { applyOrderToStock } from "@/lib/stock";
-import { recordOrder } from "@/lib/accounts";
+import { recordOrder, updateAccount } from "@/lib/accounts";
+import { issueGiftCards } from "@/lib/gift-cards";
 import { POINTS_PER_DOLLAR } from "@/lib/rewards-rules";
 
 // Adds the order (and its points) to the shopper's account, if they were signed in.
@@ -53,6 +54,17 @@ export async function POST(request: Request) {
       try {
         await applyOrderToStock(stripe, session.id);
         await addOrderToAccount(stripe, session);
+        const giftCards = await issueGiftCards(stripe, session.id);
+        // Gift cards bought while signed in are also kept on the account page.
+        const accountId = session.metadata?.accountId;
+        if (accountId && giftCards.length > 0) {
+          await updateAccount(accountId, (a) => {
+            const fresh = giftCards
+              .filter((card) => !a.rewardCodes.some((r) => r.code === card.code))
+              .map((card) => ({ ...card, createdAt: new Date().toISOString() }));
+            return fresh.length ? { ...a, rewardCodes: [...fresh, ...a.rewardCodes].slice(0, 30) } : null;
+          });
+        }
       } catch (error) {
         console.error("Recording order failed:", error);
         // A failure response makes Stripe retry later (both steps are safe to repeat).

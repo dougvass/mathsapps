@@ -29,12 +29,12 @@ export async function getActiveProducts(): Promise<Product[]> {
 // password hash or internal bookkeeping.
 export type StoreConfig = Omit<
   StoreData,
-  "products" | "adminPasswordHash" | "stockAppliedSessions" | "soldCounts" | "specialProductsAdded"
+  "products" | "adminPasswordHash" | "stockAppliedSessions" | "soldCounts" | "specialProductsAdded" | "specialsAdded"
 >;
 
 function toConfig(store: StoreData): StoreConfig {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { products, adminPasswordHash, stockAppliedSessions, soldCounts, specialProductsAdded, ...config } = store;
+  const { products, adminPasswordHash, stockAppliedSessions, soldCounts, specialProductsAdded, specialsAdded, ...config } = store;
   return config;
 }
 

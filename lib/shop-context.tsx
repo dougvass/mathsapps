@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { Season } from "./season";
 import {
   SPECIAL_PRODUCT_IDS,
   type CategoryDef,
@@ -18,6 +19,7 @@ export type ShopData = {
   ratings: Record<string, Rating>;
   signInEnabled: boolean;
   holiday: HolidayMode;
+  season: Season;
   soldCounts: Record<string, number>;
 };
 

@@ -8,9 +8,15 @@ import { SIGNUP_POINTS } from "@/lib/rewards-rules";
 
 // Thin coloured bar above the header. Phones show one message at a time.
 export default function DealsStrip() {
-  const { signInEnabled, holiday } = useShop();
+  const { signInEnabled, holiday, season, categories } = useShop();
+  const seasonCategory = season ? categories.find((c) => c.value === season) : undefined;
   const notice = holidayNotice(holiday);
   const messages = [
+    ...(season === "christmas"
+      ? [{ text: "🎄 The Christmas Shop is open – gifts printed by hand!", href: seasonCategory ? `/shop?category=${season}` : "/shop" }]
+      : season === "halloween"
+        ? [{ text: "🎃 Spooky Halloween toys are here!", href: seasonCategory ? `/shop?category=${season}` : "/shop" }]
+        : []),
     { text: `🚚 FREE shipping on orders over $${FREE_SHIPPING_THRESHOLD_AUD_CENTS / 100}`, href: "/shop" },
     ...(signInEnabled ? [{ text: `🎁 Join HugosToyz Rewards – get ${SIGNUP_POINTS} points free`, href: "/account" }] : []),
     { text: "🧩 Take the fidget quiz – find your perfect toy", href: "/quiz" },
@@ -32,7 +38,15 @@ export default function DealsStrip() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-htz-pink via-htz-orange to-htz-pink text-sm font-semibold text-white">
+    <div
+      className={`text-sm font-semibold text-white ${
+        season === "christmas"
+          ? "bg-gradient-to-r from-[#b91c1c] via-[#15803d] to-[#b91c1c]"
+          : season === "halloween"
+            ? "bg-gradient-to-r from-[#6d28d9] via-htz-orange to-[#6d28d9]"
+            : "bg-gradient-to-r from-htz-pink via-htz-orange to-htz-pink"
+      }`}
+    >
       <div className="mx-auto flex max-w-7xl justify-center gap-8 px-4 py-1.5">
         {messages.map((message, i) => (
           <Link

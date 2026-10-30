@@ -3,6 +3,7 @@ import { getActiveProducts, getSoldCounts, getStoreConfig } from "./products";
 import { getReviews } from "./reviews";
 import { ratingsByProduct } from "./ratings";
 import { signInConfigured } from "./user-session";
+import { activeSeason } from "./season";
 
 // Everything a shop page needs, read once per request.
 export const loadShopData = cache(async () => {
@@ -24,6 +25,7 @@ export const loadShopData = cache(async () => {
       ratings: ratingsByProduct(reviews),
       signInEnabled: signInConfigured(),
       holiday: config.holiday,
+      season: activeSeason(config.season),
       soldCounts,
     },
   };

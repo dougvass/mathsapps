@@ -14,6 +14,7 @@ import { loadSavedDiscount, saveDiscount, startCheckout } from "@/lib/checkout-c
 import { FREE_SHIPPING_THRESHOLD_AUD_CENTS } from "@/lib/site";
 import StockBadge from "./StockBadge";
 import StockAlertButton from "./StockAlertButton";
+import ColourDots from "./ColourDots";
 import { SHOW_SOLD_FROM } from "@/lib/shop-context";
 
 const fieldClass =
@@ -126,19 +127,7 @@ export default function BuyBox({ product }: { product: Product }) {
       <StockBadge stock={product.stock} />
       {outOfStock && <StockAlertButton productId={product.id} />}
 
-      {product.chooseColor && (
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-semibold text-ink">Colour</span>
-          <select value={color} onChange={(e) => setColor(e.target.value)} className={fieldClass}>
-            <option value="">Choose a colour…</option>
-            {colors.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      {product.chooseColor && <ColourDots colours={colors} value={color} onChange={setColor} />}
 
       {sizeOptions.length > 1 && (
         <fieldset>

@@ -1,3 +1,4 @@
+import type { SeasonSetting } from "./season";
 export type StockLevel = number | "out-of-stock" | "made-to-order";
 
 export const MAX_STOCK = 9999;
@@ -55,7 +56,8 @@ export type Product = {
 // Built-in products with their own order pages.
 export const MYSTERY_BAG_ID = "mystery-bag";
 export const FILE_PRINT_ID = "print-your-file";
-export const SPECIAL_PRODUCT_IDS = [MYSTERY_BAG_ID, FILE_PRINT_ID];
+export const GIFT_CARD_ID = "gift-card";
+export const SPECIAL_PRODUCT_IDS = [MYSTERY_BAG_ID, FILE_PRINT_ID, GIFT_CARD_ID];
 
 export type ToyOfWeek = { productId: string; blurb: string };
 export type HolidayMode = { enabled: boolean; until: string; message: string };
@@ -157,10 +159,13 @@ export type StoreData = {
   stockAppliedSessions: string[];
   toyOfWeek: ToyOfWeek;
   holiday: HolidayMode;
+  season: SeasonSetting;
   // How many of each product have sold (counted by the Stripe webhook).
   soldCounts: Record<string, number>;
   // Set once the mystery bag and file printing products have been added.
   specialProductsAdded: boolean;
+  // Which built-in products have been added (each once; the admin can remove them after).
+  specialsAdded: string[];
 };
 
 export type HomeText = {

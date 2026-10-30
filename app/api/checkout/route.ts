@@ -4,6 +4,7 @@ import { getActiveProducts } from "@/lib/products";
 import {
   cleanCustomText,
   FILE_PRINT_ID,
+  GIFT_CARD_ID,
   MAX_CUSTOM_TEXT_LENGTH,
   MYSTERY_BAG_ID,
   stockLimit,
@@ -11,6 +12,7 @@ import {
 import { bundleApplies, bundledUnitCents, GIFT_MESSAGE_MAX, GIFT_WRAP_CENTS } from "@/lib/deals";
 import { getPrintFile, type PrintFile } from "@/lib/print-files";
 import { validMysteryWishes } from "@/lib/mystery-bag";
+import { giftCardAmount } from "@/lib/gift-cards";
 import { discountCents, lookupDiscount, normaliseCode } from "@/lib/discount-lookup";
 import { getAccount } from "@/lib/accounts";
 import { ensureStripeCustomer } from "@/lib/account-view";
@@ -29,6 +31,39 @@ type CheckoutItem = {
   extra?: string;
   quantity: number;
 };
+
+// Postage choices for orders with something to post.
+function shippingSettings(
+  freeShipping: boolean
+): Pick<Stripe.Checkout.SessionCreateParams, "shipping_address_collection" | "shipping_options"> {
+  return {
+    shipping_address_collection: { allowed_countries: ["AU"] },
+    shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: freeShipping ? 0 : STANDARD_SHIPPING_AUD_CENTS, currency: "aud" },
+            display_name: freeShipping ? "Free Standard Shipping" : "Standard Shipping",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 3 },
+              maximum: { unit: "business_day", value: 7 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: { amount: 0, currency: "aud" },
+            display_name: "Local Pickup (Free)",
+            delivery_estimate: {
+              minimum: { unit: "business_day", value: 1 },
+              maximum: { unit: "business_day", value: 3 },
+            },
+          },
+        },
+    ],
+  };
+}
 
 export async function POST(request: Request) {
   let body: { items?: CheckoutItem[]; discountCode?: string; gift?: { wrap?: unknown; message?: unknown } };
@@ -98,6 +133,7 @@ export async function POST(request: Request) {
     // The price of a customer's own file comes from our scan of it, never from the browser.
     let unitCents = Math.round(product.price * 100);
     let extra = "";
+    let giftAmount = "";
     if (product.id === FILE_PRINT_ID) {
       const file = item.extra ? await getPrintFile(item.extra) : null;
       if (!file) {
@@ -106,6 +142,12 @@ export async function POST(request: Request) {
       unitCents = file.priceCents;
       extra = `File: ${file.name}`;
       if (!printFiles.some((f) => f.id === file.id)) printFiles.push(file);
+    } else if (product.id === GIFT_CARD_ID) {
+      const amount = giftCardAmount(item.extra);
+      if (!amount) return NextResponse.json({ error: "Please choose a gift card amount." }, { status: 400 });
+      unitCents = amount * 100;
+      extra = `$${amount} gift card`;
+      giftAmount = String(amount);
     } else if (product.id === MYSTERY_BAG_ID) {
       if (!validMysteryWishes(item.extra)) {
         return NextResponse.json({ error: "Please choose what you like for your mystery bag again." }, { status: 400 });
@@ -133,6 +175,7 @@ export async function POST(request: Request) {
         size: item.size ?? "",
         customText,
         extra,
+        ...(giftAmount ? { giftAmount } : {}),
       },
     });
   }
@@ -234,31 +277,8 @@ export async function POST(request: Request) {
         : { allow_promotion_codes: true }),
       success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/cancel`,
-      shipping_address_collection: { allowed_countries: ["AU"] },
-      shipping_options: [
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: freeShipping ? 0 : STANDARD_SHIPPING_AUD_CENTS, currency: "aud" },
-            display_name: freeShipping ? "Free Standard Shipping" : "Standard Shipping",
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: 3 },
-              maximum: { unit: "business_day", value: 7 },
-            },
-          },
-        },
-        {
-          shipping_rate_data: {
-            type: "fixed_amount",
-            fixed_amount: { amount: 0, currency: "aud" },
-            display_name: "Local Pickup (Free)",
-            delivery_estimate: {
-              minimum: { unit: "business_day", value: 1 },
-              maximum: { unit: "business_day", value: 3 },
-            },
-          },
-        },
-      ],
+      // Gift cards are codes, so an order of only gift cards has nothing to post.
+      ...(lines.every((line) => line.productId === GIFT_CARD_ID) ? {} : shippingSettings(freeShipping)),
     });
   } catch (error) {
     // e.g. a first-order-only code used by a returning customer.

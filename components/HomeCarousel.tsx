@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { sizedImage } from "./ProductImage";
 import type { BannerSettings, HomeText } from "@/lib/product-types";
+import { useShop } from "@/lib/shop-context";
 
 type Slide = { key: string; label: string; content: React.ReactNode };
 
@@ -81,6 +82,36 @@ export default function HomeCarousel({
       </div>
     ),
   });
+
+  // Christmas or Halloween goes first while it's on.
+  const { season, categories } = useShop();
+  if (season) {
+    const christmas = season === "christmas";
+    const hasCategory = categories.some((c) => c.value === season);
+    slides.unshift({
+      key: season,
+      label: christmas ? "Christmas Shop" : "Halloween",
+      content: (
+        <div
+          className={`flex h-full flex-col items-center justify-center gap-2 px-6 py-10 text-center text-white ${
+            christmas ? "bg-gradient-to-br from-[#b91c1c] via-[#991b1b] to-[#15803d]" : "bg-gradient-to-br from-[#1e1b4b] via-[#6d28d9] to-htz-orange"
+          }`}
+        >
+          <span className="text-6xl" aria-hidden="true">{christmas ? "🎄🎁⛄" : "🎃🦇👻"}</span>
+          <p className="font-display text-4xl font-bold sm:text-6xl">{christmas ? "The Christmas Shop" : "Spooky Season!"}</p>
+          <p className="max-w-md text-white/90 sm:text-lg">
+            {christmas ? "Handmade gifts and stocking fillers, printed in Australia." : "Wiggly skeletons, pumpkins and more Halloween fun."}
+          </p>
+          <Link
+            href={hasCategory ? `/shop?category=${season}` : "/shop"}
+            className="mt-3 rounded-full bg-white px-7 py-2.5 font-display text-lg font-bold text-htz-navy shadow-lg transition-transform hover:scale-105"
+          >
+            {christmas ? "Shop Christmas 🎅" : "Shop Halloween 🎃"}
+          </Link>
+        </div>
+      ),
+    });
+  }
 
   if (banner.enabled) {
     slides.push({
