@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { BlobPreconditionFailedError, get, put } from "@vercel/blob";
-import { blobConfigured, blobVersion } from "./store";
+import { blobConfigured, blobVersion, withTimeout } from "./store";
 
 const WRITE_ATTEMPTS = 5;
 
@@ -12,11 +12,14 @@ export function jsonFile<T>({
   localFile,
   empty,
   normalise,
+  cacheMs = 0,
 }: {
   blobPathname: string;
   localFile: string;
   empty: () => Promise<T> | T;
   normalise: (raw: unknown) => T;
+  // Reuse a read for this long (for data every page shows, like reviews).
+  cacheMs?: number;
 }) {
   const localPath = path.join(process.cwd(), ".local-data", localFile);
 
@@ -27,7 +30,7 @@ export function jsonFile<T>({
     }
     // See blobVersion: the ETag must come from the Blob API, read before the content.
     const etag = await blobVersion(blobPathname);
-    const result = etag ? await get(blobPathname, { access: "private", useCache: false }) : null;
+    const result = etag ? await withTimeout(get(blobPathname, { access: "private", useCache: false })) : null;
     if (etag && result && result.statusCode === 200) {
       const text = await new Response(result.stream).text();
       return { data: normalise(JSON.parse(text)), etag };
@@ -35,8 +38,20 @@ export function jsonFile<T>({
     return { data: await empty(), etag: null };
   }
 
+  let cached: { data: T; at: number } | null = null;
+
+  // A plain read: one storage request (no ETag check, that's only for saving).
   async function read(): Promise<T> {
-    return (await load()).data;
+    if (cached && Date.now() - cached.at < cacheMs) return cached.data;
+    let data: T;
+    if (!blobConfigured()) {
+      data = (await load()).data;
+    } else {
+      const result = await withTimeout(get(blobPathname, { access: "private", useCache: false }));
+      data = result && result.statusCode === 200 ? normalise(JSON.parse(await new Response(result.stream).text())) : await empty();
+    }
+    if (cacheMs > 0) cached = { data, at: Date.now() };
+    return data;
   }
 
   // `change` may run more than once, so it must not have side effects.
@@ -48,6 +63,7 @@ export function jsonFile<T>({
       const { data, result } = change((await load()).data);
       fs.mkdirSync(path.dirname(localPath), { recursive: true });
       fs.writeFileSync(localPath, JSON.stringify(data, null, 2));
+      cached = null;
       return result;
     }
 
@@ -55,7 +71,7 @@ export function jsonFile<T>({
       const { data: current, etag } = await load();
       const { data, result } = change(current);
       try {
-        await put(blobPathname, JSON.stringify(data, null, 2), {
+        await withTimeout(put(blobPathname, JSON.stringify(data, null, 2), {
           access: "private",
           addRandomSuffix: false,
           contentType: "application/json",
@@ -67,7 +83,8 @@ export function jsonFile<T>({
             : etag
               ? { allowOverwrite: true, ifMatch: etag }
               : { allowOverwrite: false }),
-        });
+        }));
+        cached = null;
         return result;
       } catch (error) {
         // Someone saved first (changed ETag, or created the file before us): retry.

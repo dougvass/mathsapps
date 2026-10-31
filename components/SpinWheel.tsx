@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount } from "@/lib/account-context";
+import { useShop } from "@/lib/shop-context";
 import { saveDiscount } from "@/lib/checkout-client";
 import { OPEN_WHEEL_EVENT, WHEEL_CODE_DAYS, WHEEL_POINTS, WHEEL_PRIZES, type WheelPrizeKey } from "@/lib/wheel";
 
@@ -34,6 +35,7 @@ async function applyCodeToCart(code: string) {
 // spin, so refreshing shows the prize you already won instead of a new spin.
 export default function SpinWheel() {
   const { account, refresh } = useAccount();
+  const { storageOffline } = useShop();
   // "loading" until the server says whether this visitor has spun.
   const [status, setStatus] = useState<"loading" | "ready" | "spun">("loading");
   const [open, setOpen] = useState(false);
@@ -44,9 +46,12 @@ export default function SpinWheel() {
 
   useEffect(() => {
     fetch("/api/spin")
-      .then((response) => (response.ok ? response.json() : null))
+      .then((response) => (response.ok ? response.json() : { unavailable: true }))
       .then((data) => {
-        if (data?.spun) {
+        // If the wheel can't be used right now, don't show it.
+        if (data?.unavailable) {
+          setStatus("spun");
+        } else if (data?.spun) {
           setResult({ prize: data.prize, code: data.code });
           setStatus("spun");
         } else {
@@ -64,6 +69,7 @@ export default function SpinWheel() {
 
   // Only codes are worth coming back to; other results just hide the button.
   const hasCode = Boolean(result?.code);
+  if (storageOffline && !open) return null;
   if (!open && (status === "loading" || (status === "spun" && !hasCode) || (account?.spunWheel && !hasCode))) {
     return null;
   }

@@ -4,145 +4,316 @@
       "id": "infinity-cube",
       "name": "Infinity Cube",
       "category": "fidgets",
-      "price": 10,
-      "description": "Endlessly foldable and satisfyingly clicky. The fidget that never gets boring.",
-      "emoji": "🔲",
-      "image": "",
+      "price": 8,
+      "description": "Endlessly foldable and satisfying. The fidget that never gets boring.",
+      "emoji": "\ud83d\udd32",
+      "image": "/api/images/25a16162-09bd-42c8-a9c4-01986260d22b.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "fidget-spinner-pro",
       "name": "Fidget Spinner Pro",
       "category": "fidgets",
-      "price": 8,
+      "price": 7,
       "description": "Smooth-spinning, pocket-sized stress relief. Give it a flick and zone out.",
-      "emoji": "🌀",
-      "image": "",
+      "emoji": "\ud83c\udf00",
+      "image": "/api/images/0f167f9e-a16c-4149-8aa5-74844ba920f8.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "pop-click-slider",
       "name": "Pop-Click Slider",
       "category": "fidgets",
-      "price": 9,
+      "price": 8,
       "description": "Click, slide, repeat. A tiny tactile rhythm machine for busy hands.",
-      "emoji": "🔘",
-      "image": "",
+      "emoji": "\ud83d\udd18",
+      "image": "/api/images/079af091-98cf-4952-8dc3-3345e22bfbdf.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [
+        "/api/images/9b7dd67e-4429-4ece-95bf-5bb17f711ca4.jpg"
+      ],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "twisty-puzzle-sphere",
-      "name": "Twisty Puzzle Sphere",
+      "name": "Puzzle Sphere(3 Parts)",
       "category": "fidgets",
-      "price": 12,
-      "description": "Part puzzle, part fidget. Twist it into new shapes, or just twist for fun.",
-      "emoji": "🔮",
-      "image": "",
+      "price": 10,
+      "description": "Part puzzle, part fidget. Assemble for a challenge, or just for fun.",
+      "emoji": "\ud83d\udd2e",
+      "image": "/api/images/30e7c694-9537-4e4f-901c-99175be77840.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "gear-stim-toy",
       "name": "Gear Stim Toy",
       "category": "fidgets",
-      "price": 11,
+      "price": 8,
       "description": "Interlocking gears that spin together in a satisfying chain reaction.",
-      "emoji": "⚙️",
-      "image": "",
+      "emoji": "\u2699\ufe0f",
+      "image": "/api/images/4e92ef74-15aa-4008-a11f-75770d29bd74.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "articulated-dragon",
       "name": "Articulated Dragon",
       "category": "shapes",
-      "price": 20,
+      "price": 15,
       "description": "A fully poseable 3D-printed dragon with wiggly joints from nose to tail.",
-      "emoji": "🐉",
-      "image": "",
+      "emoji": "\ud83d\udc09",
+      "image": "/api/images/2d2834d8-b1eb-4770-81fd-c80969404198.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "flexi-rainbow-snake",
-      "name": "Flexi Rainbow Snake",
+      "name": "Flexi Snake",
       "category": "shapes",
-      "price": 15,
-      "description": "A colourful, bendy snake that slithers and coils right in your hands.",
-      "emoji": "🐍",
-      "image": "",
+      "price": 16,
+      "description": "A long, bendy snake that slithers and coils right in your hands.",
+      "emoji": "\ud83d\udc0d",
+      "image": "/api/images/450ef4be-b56f-47ef-8882-cf5eca8b6a92.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "mini-articulated-fox",
-      "name": "Mini Articulated Fox",
+      "name": "Articulated Fox",
       "category": "shapes",
-      "price": 16,
-      "description": "A pocket-sized fox with poseable joints, ready for desk adventures.",
-      "emoji": "🦊",
-      "image": "",
+      "price": 8,
+      "description": "A cute fox with movable joints, ready for desk adventures.",
+      "emoji": "\ud83e\udd8a",
+      "image": "/api/images/db88b826-d31d-4c2d-821d-bfe9973e21a1.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "geometric-gem",
-      "name": "Geometric Gem (Crystal)",
+      "name": "Geometric Crystal Bunch",
       "category": "shapes",
-      "price": 12,
-      "description": "A faceted crystal centrepiece that catches the light beautifully.",
-      "emoji": "💎",
-      "image": "",
+      "price": 10,
+      "description": "3 crystal centrepieces that are beautifully perfect.",
+      "emoji": "\ud83d\udc8e",
+      "image": "/api/images/a86e3841-ccf4-4476-9e38-229251672077.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [
+        "/api/images/5cc4195c-60ab-4cab-a12f-7082c8d603b6.jpg"
+      ],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "articulated-axolotl",
-      "name": "Articulated Axolotl",
+      "name": "Articulated Octopus",
       "category": "shapes",
-      "price": 18,
-      "description": "A friendly, wiggly axolotl with a swishy tail and a big smile.",
-      "emoji": "🦎",
-      "image": "",
+      "price": 9,
+      "description": "A friendly, wiggly octopus with many swishy arms and a big smile.",
+      "emoji": "\ud83e\udd8e",
+      "image": "/api/images/24b01cd1-8ab3-4f9c-9f60-3f8cd038f5ad.jpg",
       "active": true,
       "chooseColor": false,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
     },
     {
       "id": "custom-name-keychain",
-      "name": "Custom Name Keychain/Tag",
+      "name": "Custom Nametag Keychain",
       "category": "custom",
       "price": 20,
       "description": "Your name, your colours. A personalised keychain or bag tag made just for you.",
-      "emoji": "🏷️",
-      "image": "",
+      "emoji": "\ud83c\udff7\ufe0f",
+      "image": "/api/images/bd74269f-63fa-4a3b-94fc-36d6c4789733.jpg",
       "active": true,
       "chooseColor": true,
-      "stock": "made-to-order"
+      "stock": "made-to-order",
+      "gallery": [
+        "/api/images/f8390c5b-1f8a-4372-b581-badf79184ed2.jpg"
+      ],
+      "badge": "",
+      "needsCustomText": true
     },
     {
       "id": "build-your-own-dragon",
       "name": "Build-Your-Own Dragon",
       "category": "custom",
-      "price": 30,
-      "description": "Design your dream dragon — pick the colours and size, and we'll print it just for you.",
-      "emoji": "🐲",
-      "image": "",
+      "price": 25,
+      "description": "Design your dream dragon \u2014 pick the colours and size, and we'll print it just for you.",
+      "emoji": "\ud83d\udc32",
+      "image": "/api/images/150d71cf-844c-46f9-bc5e-4a916123861c.jpg",
       "active": true,
       "chooseColor": true,
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "bestseller",
+      "needsCustomText": false
+    },
+    {
+      "id": "product-1791700559294",
+      "name": "Benchy(Boat)",
+      "category": "shapes",
+      "price": 5,
+      "description": "A little boat that holds a big history.",
+      "emoji": "\u2728",
+      "image": "/api/images/18ecb711-4df3-4805-bf85-fb4518b88a7f.jpg",
+      "active": true,
+      "chooseColor": false,
+      "stock": "made-to-order",
+      "gallery": [
+        "/api/images/52765c5e-344c-43b0-be52-eca3542a9b81.jpg",
+        "/api/images/ed62d6d7-ccba-47c0-99e3-05fc5f98d825.jpg"
+      ],
+      "badge": "bestseller",
+      "needsCustomText": false
+    },
+    {
+      "id": "product-1791844320354",
+      "name": "Clicky Gear Fidget",
+      "category": "fidgets",
+      "price": 7,
+      "description": "A small gear that clicks with each turn. Vey satisfying!",
+      "emoji": "\u2728",
+      "image": "/api/images/e907e252-fadd-441a-b05a-baaf55e65af1.jpg",
+      "active": true,
+      "chooseColor": false,
+      "stock": "made-to-order",
+      "gallery": [],
+      "badge": "",
+      "needsCustomText": false
+    },
+    {
+      "id": "product-1792570915846",
+      "name": "Mini Skeleton",
+      "category": "halloween",
+      "price": 6,
+      "description": "A little skeleton figure that has wiggly arms and legs.",
+      "emoji": "\u2728",
+      "image": "/api/images/8cdd30b0-f8a8-4030-8991-2717fa02644b.jpg",
+      "active": true,
+      "chooseColor": false,
+      "needsCustomText": false,
+      "gallery": [],
+      "badge": "new",
       "stock": "made-to-order"
+    },
+    {
+      "id": "product-1792570916403",
+      "name": "Mini Pumpkin",
+      "category": "halloween",
+      "price": 5,
+      "description": "A mini pumpkin that is the cutest Halloween decoration ever!",
+      "emoji": "\u2728",
+      "image": "/api/images/c75162e4-7146-4289-a7d6-3b1e6d30eec2.jpg",
+      "active": true,
+      "chooseColor": false,
+      "needsCustomText": false,
+      "gallery": [],
+      "badge": "new",
+      "stock": "made-to-order"
+    },
+    {
+      "id": "product-1792570916891",
+      "name": "File Printing",
+      "category": "custom",
+      "price": 30,
+      "description": "Upload your file, we will check the size, then we will print it!",
+      "emoji": "\u2728",
+      "image": "/api/images/1930fd83-3a10-403f-86d7-8d60d5ce8045.jpg",
+      "active": true,
+      "chooseColor": false,
+      "needsCustomText": false,
+      "gallery": [
+        "/api/images/10966f38-f668-4cde-aaf1-77481816e5a4.jpg"
+      ],
+      "badge": "new",
+      "stock": "out-of-stock"
+    },
+    {
+      "id": "product-1792570917230",
+      "name": " Quiet Clicker",
+      "category": "fidgets",
+      "price": 5,
+      "description": "A small handheld clicker fidget that has 3 seperate clicker parts, and does not make a sound. Perfect for places such as classrooms.",
+      "emoji": "\u2728",
+      "image": "/api/images/78056588-042b-4638-a7b3-3c7f532b84ed.jpg",
+      "active": true,
+      "chooseColor": false,
+      "needsCustomText": false,
+      "gallery": [
+        "/api/images/8abcafb4-e530-4e0e-b8da-1d06bf9cf01e.jpg"
+      ],
+      "badge": "new",
+      "stock": "made-to-order"
+    },
+    {
+      "id": "product-1792570917536",
+      "name": "Loud Clicker",
+      "category": "fidgets",
+      "price": 6,
+      "description": "Similar to the quiet clicker, but it makes a clicky sound instead.",
+      "emoji": "\u2728",
+      "image": "/api/images/a4e5bafd-7f66-445e-bd9c-8735fb7d2f81.jpg",
+      "active": true,
+      "chooseColor": false,
+      "needsCustomText": false,
+      "gallery": [
+        "/api/images/36aa8284-1a68-4955-9641-6ff2f67ee320.jpg"
+      ],
+      "badge": "new",
+      "stock": "made-to-order"
+    },
+    {
+      "id": "product-1793248311625",
+      "name": "Christmas Themed Mystery Bag",
+      "category": "christmas",
+      "price": 15,
+      "description": "A random mystery bag with Christmas themed items inside.",
+      "emoji": "\u2728",
+      "image": "",
+      "active": true,
+      "chooseColor": false,
+      "needsCustomText": false,
+      "gallery": [],
+      "badge": "new",
+      "stock": "out-of-stock"
     }
   ],
   "categories": [
@@ -157,33 +328,27 @@
     {
       "value": "custom",
       "label": "Design Your Own"
+    },
+    {
+      "value": "christmas",
+      "label": "Christmas Shop"
+    },
+    {
+      "value": "halloween",
+      "label": "Halloween Shop"
     }
   ],
   "colors": [
-    "Black",
-    "White",
-    "Grey",
     "Red",
     "Orange",
     "Yellow",
     "Green",
     "Blue",
-    "Purple",
-    "Pink",
-    "Glow in the Dark",
-    "Rainbow (Gradient)"
+    "Random"
   ],
   "sizeOptions": [
     {
-      "label": "Small",
-      "maxDimensionMm": 80
-    },
-    {
-      "label": "Medium",
-      "maxDimensionMm": 140
-    },
-    {
-      "label": "Large",
+      "label": "Normal Size",
       "maxDimensionMm": 220
     }
   ],
@@ -191,10 +356,56 @@
     "printerMaxBuildMm": 220
   },
   "banner": {
-    "enabled": false,
-    "image": "",
-    "headline": "Sale Now On",
-    "subtext": "Bonus on your first order"
+    "enabled": true,
+    "image": "/api/images/5be4d431-109e-4aa5-971d-81cccb6ae6ac.webp",
+    "headline": "Get a free benchy with your first order.",
+    "subtext": "Offer ends October 31st 2026."
   },
-  "adminPasswordHash": null
+  "adminPasswordHash": null,
+  "heroImage": "/api/images/d3c3b148-f332-45ad-96b8-f5969cbbe294.jpg",
+  "homeText": {
+    "heroHeadline": "Fidgets, but make it",
+    "heroHighlight": "FUN.",
+    "heroIntro": "Bright, 3D-printed fidgets and toys for busy hands and big imaginations. Spin it, click it, twist it, love it.",
+    "aboutTitle": "Made with love (and a lot of plastic spaghetti)",
+    "aboutText": "HugosToyz started with one 3D printer, one big idea, and a pile of fidget prototypes. Every toy is designed, printed, and finished by hand in small batches \u2014 built to spin, click, twist, and survive a backpack full of pencils. Whether you need something to keep your hands busy or a one-of-a-kind gift, we've got you covered."
+  },
+  "specialProductsAdded": true,
+  "specialsAdded": [
+    "print-your-file"
+  ],
+  "reviews": [
+    {
+      "id": "review-a551ea92-2472-435e-80d3-f73c9c008435",
+      "name": "DUDE",
+      "text": "So good love it so fidgety and satisfying awesome",
+      "rating": 5,
+      "createdAt": "2026-10-29T08:29:05.471Z",
+      "productId": ""
+    },
+    {
+      "id": "review-a2baec08-1cc4-4a13-bea2-8fbe759c418d",
+      "name": "Anonymous",
+      "text": "This is so cool this website bro",
+      "rating": 5,
+      "createdAt": "2026-10-29T07:40:26.819Z",
+      "productId": ""
+    },
+    {
+      "id": "review-9b9549ce-d5b6-4b9e-abd0-0f0fe54333ef",
+      "name": "Oli.j",
+      "text": "they are so good and fidgety",
+      "rating": 5,
+      "createdAt": "2026-10-27T22:10:26.492Z",
+      "productId": ""
+    },
+    {
+      "id": "review-7714690b-6669-416a-be02-bfd75d50b2b7",
+      "name": "Josh",
+      "text": "They are so satisfying! Can\u2019t wait to get more.",
+      "rating": 4,
+      "createdAt": "2026-10-20T20:12:53.194Z",
+      "productId": ""
+    }
+  ]
 }

@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/lib/product-types";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
@@ -22,10 +25,22 @@ export default function ProductImage({
   width?: 320 | 640 | 960;
   eager?: boolean;
 }) {
-  if (product.image) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [broken, setBroken] = useState(false);
+
+  // A photo that fails (e.g. storage paused) shows the emoji tile instead.
+  // Checked after load too, because it can fail before the page is interactive.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setBroken(true);
+  }, []);
+
+  if (product.image && !broken) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
+        ref={imgRef}
+        onError={() => setBroken(true)}
         src={sizedImage(product.image, width)}
         alt={product.name}
         loading={eager ? "eager" : "lazy"}

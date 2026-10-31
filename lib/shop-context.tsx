@@ -20,6 +20,7 @@ export type ShopData = {
   signInEnabled: boolean;
   holiday: HolidayMode;
   season: Season;
+  storageOffline: boolean;
   soldCounts: Record<string, number>;
 };
 

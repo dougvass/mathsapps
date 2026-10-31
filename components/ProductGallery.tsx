@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/lib/product-types";
 import { productPhotos } from "@/lib/product-types";
 import ProductImage, { sizedImage } from "./ProductImage";
@@ -10,8 +10,17 @@ export default function ProductGallery({ product }: { product: Product }) {
   const photos = productPhotos(product);
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const [broken, setBroken] = useState(false);
 
-  if (photos.length === 0) {
+  // If the photos can't load (e.g. storage paused), show the emoji tile instead.
+  useEffect(() => {
+    if (photos.length === 0) return;
+    const test = new Image();
+    test.onerror = () => setBroken(true);
+    test.src = sizedImage(photos[0], 960);
+  }, [photos]);
+
+  if (photos.length === 0 || broken) {
     return (
       <div className="aspect-square overflow-hidden rounded-3xl shadow-md">
         <ProductImage product={product} width={960} eager />

@@ -243,6 +243,12 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: error.message, conflict: true }, { status: 409 });
     }
     console.error(error);
+    if (error instanceof Error && /suspend|paused|answer in time|fetch failed/i.test(error.message)) {
+      return NextResponse.json(
+        { error: "Can't save right now: Vercel has paused the website's storage (see the message at the top)." },
+        { status: 503 }
+      );
+    }
     const message = error instanceof Error ? error.message : "Couldn't save changes.";
     return NextResponse.json({ error: message }, { status: 500 });
   }

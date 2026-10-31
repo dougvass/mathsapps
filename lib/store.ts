@@ -153,13 +153,33 @@ export function blobConfigured(): boolean {
   return Boolean(process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+// Give up on storage after this long, so pages never hang if it's unreachable.
+// (The Blob library keeps retrying and ignores abort signals, so race it.)
+export const BLOB_TIMEOUT_MS = 8000;
+
+export function withTimeout<T>(promise: Promise<T>, ms = BLOB_TIMEOUT_MS): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("Storage didn't answer in time.")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+}
+
 // The file's ETag straight from the Blob API: the same value a conditional save
 // checks. (The ETag on a downloaded copy can differ, e.g. when it's compressed,
 // which made every save look like a clash.) Read it before the content, so a save
 // in between makes our save safely fail and retry rather than overwrite.
 export async function blobVersion(pathname: string): Promise<string | null> {
   try {
-    return (await head(pathname)).etag;
+    return (await withTimeout(head(pathname))).etag;
   } catch (error) {
     if (error instanceof BlobNotFoundError) return null;
     throw error;
@@ -175,7 +195,7 @@ export async function readStoreVersioned(): Promise<{ store: StoreData; version:
 
   try {
     const version = await blobVersion(BLOB_PATHNAME);
-    const result = version ? await get(BLOB_PATHNAME, { access: "private", useCache: false }) : null;
+    const result = version ? await withTimeout(get(BLOB_PATHNAME, { access: "private", useCache: false })) : null;
     if (version && result && result.statusCode === 200) {
       const text = await new Response(result.stream).text();
       return { store: withDefaults(JSON.parse(text) as StoreData), version };
@@ -193,8 +213,51 @@ export async function readStoreVersioned(): Promise<{ store: StoreData; version:
 
 // On Vercel the filesystem is read-only, so data lives in Vercel Blob. Locally,
 // and until Blob is connected, it falls back to the bundled data/store.json.
+// Shop pages reuse the data for a minute instead of reading storage on every
+// visit: the free Vercel plan only allows so many storage reads a month.
+const READ_CACHE_MS = 60_000;
+let cachedStore: { store: StoreData; at: number } | null = null;
+let lastReadOffline = false;
+
+// True when the last read couldn't reach storage and showed the built-in copy.
+export function storageOffline(): boolean {
+  return lastReadOffline;
+}
+
 export async function readStore(): Promise<StoreData> {
-  return (await readStoreVersioned()).store;
+  if (cachedStore && Date.now() - cachedStore.at < READ_CACHE_MS) return cachedStore.store;
+  let store: StoreData;
+  if (!blobConfigured()) {
+    store = readLocal().store;
+  } else {
+    try {
+      const result = await withTimeout(get(BLOB_PATHNAME, { access: "private" }));
+      if (result && result.statusCode === 200) {
+        store = withDefaults(JSON.parse(await new Response(result.stream).text()) as StoreData);
+        lastReadOffline = false;
+      } else {
+        store = (await readStoreVersioned()).store;
+      }
+    } catch (error) {
+      // Storage unavailable (e.g. paused by Vercel): show the built-in copy.
+      console.error("Reading store from Vercel Blob failed:", error);
+      store = readLocal().store;
+      lastReadOffline = true;
+    }
+  }
+  cachedStore = { store, at: Date.now() };
+  return store;
+}
+
+// True when storage can't be reached, so the shop is showing its built-in copy.
+export async function storageUnavailable(): Promise<boolean> {
+  if (!blobConfigured()) return false;
+  try {
+    await blobVersion(BLOB_PATHNAME);
+    return false;
+  } catch {
+    return true;
+  }
 }
 
 // Saves the store and returns its new version. With expectedVersion, the save
@@ -212,17 +275,21 @@ export async function writeStore(data: StoreData, expectedVersion?: string | nul
       throw new StoreConflictError();
     }
     fs.writeFileSync(DATA_FILE, json);
+    cachedStore = null;
     return hash(json);
   }
 
   try {
-    const result = await put(BLOB_PATHNAME, json, {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-      ...(expectedVersion ? { ifMatch: expectedVersion } : {}),
-    });
+    const result = await withTimeout(
+      put(BLOB_PATHNAME, json, {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: "application/json",
+        ...(expectedVersion ? { ifMatch: expectedVersion } : {}),
+      })
+    );
+    cachedStore = { store: data, at: Date.now() };
     return result.etag;
   } catch (error) {
     if (error instanceof BlobPreconditionFailedError) throw new StoreConflictError();

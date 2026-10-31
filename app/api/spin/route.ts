@@ -54,7 +54,14 @@ function withSpinCookie(response: NextResponse, id: string, request: Request) {
 
 // Has this visitor spun? (So a refresh shows their prize instead of a new spin.)
 export async function GET(request: Request) {
-  const { record } = await previousSpin(request);
+  // Nobody who hasn't spun has the cookie, so most visitors need no storage read.
+  if (!(await cookies()).get(SPUN_COOKIE)) return NextResponse.json({ spun: false });
+  let record: SpinRecord | null = null;
+  try {
+    record = (await previousSpin(request)).record;
+  } catch {
+    return NextResponse.json({ error: "Storage unavailable" }, { status: 503 });
+  }
   const accountId = await currentAccountId();
   const account = accountId ? await getAccount(accountId) : null;
   if (record) return NextResponse.json({ spun: true, prize: record.prize, code: record.code });

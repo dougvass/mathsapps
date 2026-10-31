@@ -13,6 +13,7 @@ import SpinWheel from "./SpinWheel";
 import QuizPrompt from "./QuizPrompt";
 import SeasonEffects from "./SeasonEffects";
 import CompareBar from "./CompareBar";
+import BrokenImageHider from "./BrokenImageHider";
 import { AccountProvider } from "@/lib/account-context";
 
 // Shop data, cart, header, footer and pop-ups shared by every shop page.
@@ -42,6 +43,7 @@ export default function ShopShell({
           <QuizPrompt />
           <SeasonEffects />
           <CompareBar />
+          <BrokenImageHider />
         </CartProvider>
       </AccountProvider>
     </ShopDataProvider>

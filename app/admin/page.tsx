@@ -75,6 +75,7 @@ export default function AdminPage() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [productFilter, setProductFilter] = useState("");
   const [tab, setTab] = useState<AdminTabId>("products");
+  const [storageDown, setStorageDown] = useState(false);
 
   const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText, toyOfWeek, holiday, season };
   const snapshot = JSON.stringify(editable);
@@ -150,6 +151,7 @@ export default function AdminPage() {
       setToyOfWeek(data.toyOfWeek);
       setHoliday(data.holiday);
       setSeason(data.season);
+      setStorageDown(Boolean(data.storageUnavailable));
       setVersion(data.version);
       setSavedSnapshot(
         JSON.stringify({
@@ -476,6 +478,16 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {storageDown && (
+          <div className="mb-4 rounded-2xl border-2 border-htz-pink bg-white p-4 text-htz-navy shadow-sm" role="alert">
+            <p className="font-display text-lg font-bold text-htz-pink">⚠️ Saving is paused</p>
+            <p className="text-sm">
+              Vercel has paused the website&apos;s storage (usually because the free plan&apos;s monthly limit was reached).
+              The shop is showing a saved copy of your toys, so customers can still buy. Photos and saving will come back
+              when it&apos;s unlocked: check the Usage page in your Vercel account.
+            </p>
+          </div>
+        )}
         <AdminTabBar current={tab} onChange={setTab} />
 
         <AdminTab id="orders" current={tab}>

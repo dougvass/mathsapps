@@ -2,7 +2,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { get, put } from "@vercel/blob";
-import { blobConfigured } from "./store";
+import { blobConfigured, withTimeout } from "./store";
 
 export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
@@ -92,7 +92,7 @@ export async function loadImage(
   const contentType = TYPES[name.split(".").pop() as Ext];
 
   if (blobConfigured()) {
-    const result = await get(BLOB_PREFIX + name, { access: "private" });
+    const result = await withTimeout(get(BLOB_PREFIX + name, { access: "private" })).catch(() => null);
     if (!result || result.statusCode !== 200) return null;
     return { body: result.stream, contentType };
   }

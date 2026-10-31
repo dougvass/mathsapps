@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { readStore, readStoreVersioned, StoreConflictError, writeStore } from "./store";
+import { blobConfigured, readStore, readStoreVersioned, StoreConflictError, writeStore } from "./store";
 import type { Product, StoreData } from "./product-types";
 
 export type {
@@ -57,8 +57,15 @@ export async function getStoreConfig(): Promise<StoreConfig> {
 
 // For the admin panel: products, settings and the version they were read at.
 export async function getAdminStore() {
-  const store = await readStore();
-  return { products: store.products, ...toConfig(store), version: adminVersion(store) };
+  // Always fresh for the admin page (shop pages use a short-lived copy).
+  const { store, version: fileVersion } = await readStoreVersioned();
+  return {
+    products: store.products,
+    ...toConfig(store),
+    version: adminVersion(store),
+    // No file version means storage couldn't be reached and this is the built-in copy.
+    storageUnavailable: fileVersion === null && blobConfigured(),
+  };
 }
 
 // Saves only if products/settings haven't changed since `version` was read
