@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { BlobNotFoundError, BlobPreconditionFailedError, get, head, put } from "@vercel/blob";
 import {
   FILE_PRINT_ID,
@@ -186,78 +187,112 @@ export async function blobVersion(pathname: string): Promise<string | null> {
   }
 }
 
-// Reads the store plus a version (Blob ETag, or a hash of the local file) that
-// a later write can check, so nobody overwrites changes they haven't seen.
-export async function readStoreVersioned(): Promise<{ store: StoreData; version: string | null }> {
-  if (!blobConfigured()) {
-    return readLocal();
-  }
+// The free Vercel plan only allows so many storage reads a month, so shop pages
+// don't read storage themselves. They share one copy kept in Next's cache (it
+// outlives deploys and is shared by every server), which is thrown away the
+// moment something is saved and otherwise refreshed about once an hour.
+export const SHARED_CACHE_SECONDS = 60 * 60;
+// Each server also remembers its last read briefly, so one page view is one lookup.
+export const MEMORY_CACHE_MS = 15_000;
+// While storage is unreachable, only try it again this often.
+export const OFFLINE_RETRY_MS = 5 * 60_000;
+const STORE_TAG = "htz-store";
 
+// Throws away a shared copy after a save, so the next visit reads the new data.
+export function expireShared(tag: string): void {
   try {
-    const version = await blobVersion(BLOB_PATHNAME);
-    const result = version ? await withTimeout(get(BLOB_PATHNAME, { access: "private", useCache: false })) : null;
-    if (version && result && result.statusCode === 200) {
-      const text = await new Response(result.stream).text();
-      return { store: withDefaults(JSON.parse(text) as StoreData), version };
-    }
-  } catch (error) {
-    console.error("Reading store from Vercel Blob failed:", error);
-    return { store: readLocal().store, version: null };
+    revalidateTag(tag, { expire: 0 });
+  } catch {
+    // Not inside a request (nothing to expire from here); the copy refreshes on its own.
   }
-
-  // No blob yet (first run on this project) - seed it from the bundled data.
-  const seed = readLocal().store;
-  const version = await writeStore(seed);
-  return { store: seed, version };
 }
 
-// On Vercel the filesystem is read-only, so data lives in Vercel Blob. Locally,
-// and until Blob is connected, it falls back to the bundled data/store.json.
-// Shop pages reuse the data for a minute instead of reading storage on every
-// visit: the free Vercel plan only allows so many storage reads a month.
-const READ_CACHE_MS = 60_000;
-let cachedStore: { store: StoreData; at: number } | null = null;
-let lastReadOffline = false;
+class MissingFileError extends Error {}
 
-// True when the last read couldn't reach storage and showed the built-in copy.
-export function storageOffline(): boolean {
-  return lastReadOffline;
+// One storage read, always the latest saved file.
+async function fetchStore(): Promise<StoreData> {
+  const result = await withTimeout(get(BLOB_PATHNAME, { access: "private", useCache: false }));
+  if (!result || result.statusCode !== 200) throw new MissingFileError();
+  return JSON.parse(await new Response(result.stream).text()) as StoreData;
 }
 
-export async function readStore(): Promise<StoreData> {
-  if (cachedStore && Date.now() - cachedStore.at < READ_CACHE_MS) return cachedStore.store;
-  let store: StoreData;
-  if (!blobConfigured()) {
-    store = readLocal().store;
-  } else {
-    try {
-      const result = await withTimeout(get(BLOB_PATHNAME, { access: "private" }));
-      if (result && result.statusCode === 200) {
-        store = withDefaults(JSON.parse(await new Response(result.stream).text()) as StoreData);
-        lastReadOffline = false;
-      } else {
-        store = (await readStoreVersioned()).store;
-      }
-    } catch (error) {
-      // Storage unavailable (e.g. paused by Vercel): show the built-in copy.
-      console.error("Reading store from Vercel Blob failed:", error);
-      store = readLocal().store;
-      lastReadOffline = true;
-    }
-  }
-  cachedStore = { store, at: Date.now() };
+const fetchStoreShared = unstable_cache(fetchStore, [BLOB_PATHNAME], {
+  tags: [STORE_TAG],
+  revalidate: SHARED_CACHE_SECONDS,
+});
+
+// Pages and API routes are bundled separately, so this lives on globalThis:
+// a save in the admin API then shows on the very next page view.
+export function serverMemory<T>(key: string, initial: () => T): T {
+  const all = ((globalThis as { __htzMemory?: Record<string, unknown> }).__htzMemory ??= {});
+  return (all[key] ??= initial()) as T;
+}
+
+const state = serverMemory("store", () => ({
+  memory: null as { store: StoreData; until: number } | null,
+  reading: null as Promise<StoreData> | null,
+  // True when the last read couldn't reach storage and showed the built-in copy.
+  offline: false,
+}));
+
+function remember(store: StoreData, ms = MEMORY_CACHE_MS): StoreData {
+  state.memory = { store, until: Date.now() + ms };
   return store;
 }
 
-// True when storage can't be reached, so the shop is showing its built-in copy.
-export async function storageUnavailable(): Promise<boolean> {
-  if (!blobConfigured()) return false;
+export function storageOffline(): boolean {
+  return state.offline;
+}
+
+// Reads through `fetch`; falls back to the built-in copy if storage can't be reached.
+async function load(fetch: () => Promise<StoreData>): Promise<{ store: StoreData; offline: boolean }> {
+  if (!blobConfigured()) return { store: readLocal().store, offline: false };
   try {
-    await blobVersion(BLOB_PATHNAME);
-    return false;
-  } catch {
-    return true;
+    const store = withDefaults(await fetch());
+    state.offline = false;
+    return { store: remember(store), offline: false };
+  } catch (error) {
+    // No file yet (first run on this project): create it from the bundled data.
+    if (error instanceof MissingFileError) return { store: await seedStore(), offline: false };
+    // Storage unavailable (e.g. paused by Vercel): show the built-in copy.
+    console.error("Reading store from Vercel Blob failed:", error);
+    state.offline = true;
+    return { store: remember(readLocal().store, OFFLINE_RETRY_MS), offline: true };
   }
+}
+
+async function seedStore(): Promise<StoreData> {
+  const seed = readLocal().store;
+  await writeStore(seed);
+  return seed;
+}
+
+// What shop pages use. On Vercel the filesystem is read-only, so data lives in
+// Vercel Blob; locally, and until Blob is connected, it's the bundled data/store.json.
+export function readStore(): Promise<StoreData> {
+  if (state.memory && Date.now() < state.memory.until) return Promise.resolve(state.memory.store);
+  // Everything asking at the same moment shares one read.
+  state.reading ??= load(fetchStoreShared)
+    .then((result) => result.store)
+    .finally(() => {
+      state.reading = null;
+    });
+  return state.reading;
+}
+
+// For the admin page: always the latest saved data (one storage read).
+export function readStoreFresh(): Promise<{ store: StoreData; offline: boolean }> {
+  return load(fetchStore);
+}
+
+// Reads the store plus a version (Blob ETag, or a hash of the local file) that
+// a later write can check, so nobody overwrites changes they haven't seen.
+// Only used when saving: it costs two storage requests.
+async function readStoreVersioned(): Promise<{ store: StoreData; version: string | null }> {
+  if (!blobConfigured()) return readLocal();
+  const version = await blobVersion(BLOB_PATHNAME);
+  if (!version) return { store: readLocal().store, version: null };
+  return { store: withDefaults(await fetchStore()), version };
 }
 
 // Saves the store and returns its new version. With expectedVersion, the save
@@ -275,7 +310,6 @@ export async function writeStore(data: StoreData, expectedVersion?: string | nul
       throw new StoreConflictError();
     }
     fs.writeFileSync(DATA_FILE, json);
-    cachedStore = null;
     return hash(json);
   }
 
@@ -284,12 +318,15 @@ export async function writeStore(data: StoreData, expectedVersion?: string | nul
       put(BLOB_PATHNAME, json, {
         access: "private",
         addRandomSuffix: false,
+        // No expected version means "create it" (first run) or "save regardless".
         allowOverwrite: true,
         contentType: "application/json",
         ...(expectedVersion ? { ifMatch: expectedVersion } : {}),
       })
     );
-    cachedStore = { store: data, at: Date.now() };
+    state.offline = false;
+    remember(data);
+    expireShared(STORE_TAG);
     return result.etag;
   } catch (error) {
     if (error instanceof BlobPreconditionFailedError) throw new StoreConflictError();
@@ -297,14 +334,18 @@ export async function writeStore(data: StoreData, expectedVersion?: string | nul
   }
 }
 
-// Read-change-write that retries if someone else saved in between. Used for
-// automatic changes (sales, password) that don't need a person to re-check.
-export async function updateStore(change: (store: StoreData) => StoreData): Promise<void> {
-  for (let attempt = 1; attempt <= WRITE_ATTEMPTS; attempt++) {
+// Read-change-write that retries if someone else saved in between. `change`
+// may run more than once; it can throw (e.g. StoreConflictError) to cancel.
+// The last try saves without the file check, in case the check itself misbehaves.
+export async function updateStore(change: (store: StoreData) => StoreData): Promise<StoreData> {
+  for (let attempt = 1; ; attempt++) {
     const { store, version } = await readStoreVersioned();
+    const next = change(store);
+    // Nothing to change: don't spend a storage write.
+    if (next === store) return store;
     try {
-      await writeStore(change(store), version);
-      return;
+      await writeStore(next, attempt === WRITE_ATTEMPTS ? undefined : version);
+      return next;
     } catch (error) {
       if (!(error instanceof StoreConflictError) || attempt === WRITE_ATTEMPTS) throw error;
     }

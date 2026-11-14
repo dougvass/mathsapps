@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { blobConfigured, readStore, readStoreVersioned, StoreConflictError, writeStore } from "./store";
+import { readStore, readStoreFresh, StoreConflictError, updateStore } from "./store";
 import type { Product, StoreData } from "./product-types";
 
 export type {
@@ -13,8 +13,6 @@ export type {
   SocialLinks,
   HomeText,
 } from "./product-types";
-
-const WRITE_ATTEMPTS = 5;
 
 export async function getAllProducts(): Promise<Product[]> {
   const store = await readStore();
@@ -57,14 +55,13 @@ export async function getStoreConfig(): Promise<StoreConfig> {
 
 // For the admin panel: products, settings and the version they were read at.
 export async function getAdminStore() {
-  // Always fresh for the admin page (shop pages use a short-lived copy).
-  const { store, version: fileVersion } = await readStoreVersioned();
+  const { store, offline } = await readStoreFresh();
   return {
     products: store.products,
     ...toConfig(store),
     version: adminVersion(store),
-    // No file version means storage couldn't be reached and this is the built-in copy.
-    storageUnavailable: fileVersion === null && blobConfigured(),
+    // Storage couldn't be reached and this is the built-in copy, so saving won't work.
+    storageUnavailable: offline,
   };
 }
 
@@ -75,20 +72,9 @@ export async function saveStoreConfig(
   config: StoreConfig,
   version: string
 ): Promise<string> {
-  for (let attempt = 1; attempt <= WRITE_ATTEMPTS; attempt++) {
-    const { store, version: fileVersion } = await readStoreVersioned();
+  const saved = await updateStore((store) => {
     if (adminVersion(store) !== version) throw new StoreConflictError();
-
-    const next = { ...store, products, ...config };
-    try {
-      // The shop data still matches what the admin page loaded, so on the last
-      // try save without the file check (in case the check itself misbehaves).
-      await writeStore(next, attempt === WRITE_ATTEMPTS ? undefined : fileVersion);
-      return adminVersion(next);
-    } catch (error) {
-      // Something else (e.g. a password change) saved in between; try again.
-      if (!(error instanceof StoreConflictError) || attempt === WRITE_ATTEMPTS) throw error;
-    }
-  }
-  throw new StoreConflictError();
+    return { ...store, products, ...config };
+  });
+  return adminVersion(saved);
 }

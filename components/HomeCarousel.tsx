@@ -121,7 +121,7 @@ export default function HomeCarousel({
         <Link href="/shop" className="block h-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={banner.image}
+            src={sizedImage(banner.image, 960)}
             alt={[banner.headline, banner.subtext].filter(Boolean).join(" – ")}
             className="h-full w-full object-cover"
           />

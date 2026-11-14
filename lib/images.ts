@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import fs from "fs";
 import path from "path";
+import { unstable_cache } from "next/cache";
 import { get, put } from "@vercel/blob";
 import { blobConfigured, withTimeout } from "./store";
 
@@ -46,17 +47,6 @@ async function optimise(bytes: Uint8Array): Promise<Uint8Array> {
   }
 }
 
-// A smaller copy for tiles and thumbnails (null if it can't be made).
-export async function resizeImage(source: Buffer, width: number): Promise<Buffer | null> {
-  try {
-    const sharp = (await import("sharp")).default;
-    return await sharp(source).rotate().resize({ width, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer();
-  } catch (error) {
-    console.error("Resizing image failed:", error);
-    return null;
-  }
-}
-
 export async function saveImage(original: Uint8Array): Promise<string> {
   if (!detectExt(original)) {
     throw new Error("Please upload a JPEG, PNG or WebP image.");
@@ -87,7 +77,7 @@ export async function saveImage(original: Uint8Array): Promise<string> {
 
 export async function loadImage(
   name: string
-): Promise<{ body: ReadableStream<Uint8Array> | Buffer; contentType: string } | null> {
+): Promise<{ body: BodyInit; contentType: string } | null> {
   if (!NAME_PATTERN.test(name)) return null;
   const contentType = TYPES[name.split(".").pop() as Ext];
 
@@ -100,4 +90,37 @@ export async function loadImage(
   const file = path.join(LOCAL_DIR, name);
   if (!fs.existsSync(file)) return null;
   return { body: fs.readFileSync(file), contentType };
+}
+
+class ResizeError extends Error {}
+
+// Small copies are made once and kept in Next's cache, which outlives deploys.
+// (The CDN forgets everything on each deploy, and then every photo would be
+// read from storage again.) An upload never changes, so they're kept for good.
+const smallImage = unstable_cache(
+  async (name: string, width: number): Promise<string> => {
+    const image = await loadImage(name);
+    if (!image) throw new Error("Image unavailable");
+    try {
+      const sharp = (await import("sharp")).default;
+      const source = Buffer.from(await new Response(image.body as BodyInit).arrayBuffer());
+      const small = await sharp(source).rotate().resize({ width, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer();
+      return small.toString("base64");
+    } catch (error) {
+      console.error("Resizing image failed:", error);
+      throw new ResizeError();
+    }
+  },
+  ["htz-small-image"],
+  { revalidate: false }
+);
+
+// A smaller copy for tiles and thumbnails; the original if it can't be shrunk.
+export async function loadSmallImage(name: string, width: number): Promise<{ body: BodyInit; contentType: string } | null> {
+  if (!NAME_PATTERN.test(name)) return null;
+  try {
+    return { body: Buffer.from(await smallImage(name, width), "base64"), contentType: TYPES.webp };
+  } catch (error) {
+    return error instanceof ResizeError ? loadImage(name) : null;
+  }
 }

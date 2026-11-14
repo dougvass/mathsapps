@@ -22,7 +22,7 @@ const file = jsonFile<Review[]>({
   blobPathname: "hugostoyz/reviews.json",
   localFile: "reviews.json",
   normalise,
-  cacheMs: 60_000,
+  sharedTag: "htz-reviews",
   // Reviews added in the admin panel before reviews had their own file.
   empty: async () => normalise(((await readStore()) as { reviews?: unknown }).reviews ?? []),
 });
@@ -30,8 +30,7 @@ const file = jsonFile<Review[]>({
 export async function getReviews(): Promise<Review[]> {
   try {
     return await file.read();
-  } catch (error) {
-    console.error("Reading reviews failed:", error);
+  } catch {
     // Storage unavailable: show the reviews kept in the built-in shop copy.
     return normalise(((await readStore()) as { reviews?: unknown }).reviews ?? []);
   }
