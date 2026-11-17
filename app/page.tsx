@@ -22,7 +22,7 @@ export default async function Home() {
       />
       <HomeCarousel heroImage={config.heroImage} text={config.homeText} banner={config.banner} />
       <HomeRows toyOfWeek={config.toyOfWeek} />
-      <Reviews reviews={reviews} />
+      {shop.reviewsEnabled && <Reviews reviews={reviews} />}
       <About text={config.homeText} />
       <FaqSection faqs={config.faqs} />
     </ShopShell>

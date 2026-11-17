@@ -16,7 +16,7 @@ function stockText(product: Product): string {
 // Picked toys side by side.
 export default function ComparePage() {
   const { ids, toggle, clear } = useCompare();
-  const { products, categories, ratings, soldCounts } = useShop();
+  const { products, categories, ratings, soldCounts, reviewsEnabled } = useShop();
   const picked = ids.map((id) => products.find((p) => p.id === id)).filter((p): p is Product => Boolean(p));
 
   if (picked.length === 0) {
@@ -34,10 +34,15 @@ export default function ComparePage() {
 
   const rows: { label: string; value: (p: Product) => React.ReactNode }[] = [
     { label: "Price", value: (p) => <span className="font-display text-xl font-bold">${p.price.toFixed(2)}</span> },
-    {
-      label: "Rating",
-      value: (p) => (ratings[p.id] ? <Stars rating={ratings[p.id].average} count={ratings[p.id].count} /> : <span className="text-ink/50">No reviews yet</span>),
-    },
+    ...(reviewsEnabled
+      ? [
+          {
+            label: "Rating",
+            value: (p: Product) =>
+              ratings[p.id] ? <Stars rating={ratings[p.id].average} count={ratings[p.id].count} /> : <span className="text-ink/50">No reviews yet</span>,
+          },
+        ]
+      : []),
     { label: "Type", value: (p) => categories.find((c) => c.value === p.category)?.label ?? "–" },
     { label: "Stock", value: stockText },
     { label: "Sold", value: (p) => (soldCounts[p.id] ? `${soldCounts[p.id]} sold` : "–") },

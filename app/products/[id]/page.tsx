@@ -140,11 +140,11 @@ export default async function ProductPage({ params }: Props) {
                 <Stars rating={rating.average} size="text-base" />
                 {`${rating.average.toFixed(1)} · ${rating.count} ${rating.count === 1 ? "review" : "reviews"}`}
               </a>
-            ) : (
+            ) : shop.reviewsEnabled ? (
               <a href="#product-reviews" className="text-sm text-accent hover:underline">
                 Be the first to review this
               </a>
-            )}
+            ) : null}
             {product.description && <p className="text-lg text-ink/80">{product.description}</p>}
             <div id="buy-box" className="scroll-mt-36 rounded-2xl border border-ink/10 p-4">
               {product.id === FILE_PRINT_ID ? (
@@ -171,7 +171,7 @@ export default async function ProductPage({ params }: Props) {
           products={related}
           seeAllHref={category ? `/shop?category=${encodeURIComponent(category.value)}` : "/shop"}
         />
-        <ProductReviews productId={product.id} productName={product.name} reviews={productReviews} />
+        {shop.reviewsEnabled && <ProductReviews productId={product.id} productName={product.name} reviews={productReviews} />}
         <RecentlyViewed currentId={product.id} hidden />
         <MobileBuyBar product={product} />
       </div>

@@ -143,6 +143,13 @@ export type BannerSettings = {
   subtext: string;
 };
 
+export type ReviewSettings = {
+  // Off hides every review and star rating, and nobody can post new ones.
+  enabled: boolean;
+  // Extra words or phrases (on top of the built-in list) that reviews can't use.
+  blockedWords: string[];
+};
+
 export type StoreData = {
   products: Product[];
   categories: CategoryDef[];
@@ -160,6 +167,7 @@ export type StoreData = {
   toyOfWeek: ToyOfWeek;
   holiday: HolidayMode;
   season: SeasonSetting;
+  reviewSettings: ReviewSettings;
   // How many of each product have sold (counted by the Stripe webhook).
   soldCounts: Record<string, number>;
   // Set once the mystery bag and file printing products have been added.

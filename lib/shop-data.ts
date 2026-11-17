@@ -8,12 +8,10 @@ import { storageOffline } from "./store";
 
 // Everything a shop page needs, read once per request.
 export const loadShopData = cache(async () => {
-  const [products, config, reviews, soldCounts] = await Promise.all([
-    getActiveProducts(),
-    getStoreConfig(),
-    getReviews(),
-    getSoldCounts(),
-  ]);
+  const [products, config, soldCounts] = await Promise.all([getActiveProducts(), getStoreConfig(), getSoldCounts()]);
+  // Reviews switched off in the admin panel: show none (and don't read them).
+  const reviewsEnabled = config.reviewSettings.enabled;
+  const reviews = reviewsEnabled ? await getReviews() : [];
   return {
     products,
     config,
@@ -24,6 +22,7 @@ export const loadShopData = cache(async () => {
       colors: config.colors,
       sizeOptions: config.sizeOptions,
       ratings: ratingsByProduct(reviews),
+      reviewsEnabled,
       signInEnabled: signInConfigured(),
       holiday: config.holiday,
       season: activeSeason(config.season),

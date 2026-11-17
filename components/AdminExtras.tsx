@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { AdminOrder, CategoryDef, HolidayMode, Product, ToyOfWeek } from "@/lib/product-types";
+import type { AdminOrder, CategoryDef, HolidayMode, Product, ReviewSettings, ToyOfWeek } from "@/lib/product-types";
 import { SEASON_SETTINGS, type SeasonSetting } from "@/lib/season";
 
 const cardClass = "rounded-2xl bg-white p-5 shadow-sm";
@@ -291,6 +291,43 @@ export function SeasonEditor({ value, onChange }: { value: SeasonSetting; onChan
           </label>
         ))}
       </div>
+    </div>
+  );
+}
+
+export function ReviewSettingsEditor({ value, onChange }: { value: ReviewSettings; onChange: (v: ReviewSettings) => void }) {
+  return (
+    <div className={`${cardClass} ${value.enabled ? "" : "ring-2 ring-htz-pink"}`}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display text-lg font-bold text-htz-navy">💬 Reviews &amp; comments</h2>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={value.enabled}
+            onChange={(e) => onChange({ ...value, enabled: e.target.checked })}
+            className="h-5 w-5 accent-htz-orange"
+          />
+          <span className="text-sm font-semibold text-htz-navy">{value.enabled ? "On" : "Off"}</span>
+        </label>
+      </div>
+      <p className="text-sm text-htz-navy/60">
+        {value.enabled
+          ? "Customers can read and write reviews. Switch off to hide every review and star rating and stop new ones."
+          : "Reviews are hidden and nobody can post. Nothing is deleted – switch back on to show them again."}
+      </p>
+      <label className="mt-3 flex flex-col gap-1 text-sm font-semibold text-htz-navy">
+        Extra blocked words or phrases (one per line)
+        <textarea
+          rows={3}
+          value={value.blockedWords.join("\n")}
+          placeholder={"e.g.\npoo\nsmelly"}
+          onChange={(e) => onChange({ ...value, blockedWords: e.target.value.split("\n") })}
+          className={inputClass}
+        />
+      </label>
+      <p className="mt-1 text-xs text-htz-navy/60">
+        Swear words and insults are already blocked. A review using any blocked word can&apos;t be posted. Remember to Save.
+      </p>
     </div>
   );
 }

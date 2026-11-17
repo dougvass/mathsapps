@@ -132,6 +132,7 @@ function withDefaults(data: StoreData): StoreData {
     toyOfWeek: data.toyOfWeek ?? { productId: "", blurb: "" },
     holiday: data.holiday ?? { enabled: false, until: "", message: "" },
     season: data.season ?? "auto",
+    reviewSettings: data.reviewSettings ?? { enabled: true, blockedWords: [] },
     soldCounts: data.soldCounts ?? {},
     specialProductsAdded: true,
     specialsAdded: SPECIAL_PRODUCTS.map((p) => p.id),

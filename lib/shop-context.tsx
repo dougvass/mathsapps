@@ -17,6 +17,7 @@ export type ShopData = {
   colors: string[];
   sizeOptions: SizeOption[];
   ratings: Record<string, Rating>;
+  reviewsEnabled: boolean;
   signInEnabled: boolean;
   holiday: HolidayMode;
   season: Season;

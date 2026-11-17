@@ -9,6 +9,7 @@ import {
   type CategoryDef,
   type Faq,
   type HolidayMode,
+  type ReviewSettings,
   type HomeText,
   type Product,
   type ProductBadge,
@@ -22,7 +23,7 @@ import { mergeEdits } from "@/lib/admin-merge";
 import { AdminTab, AdminTabBar, type AdminTabId } from "@/components/AdminTabs";
 import ImageDropzone from "@/components/ImageDropzone";
 import DiscountCodes from "@/components/DiscountCodes";
-import { BulkPriceTool, HolidayEditor, SalesDashboard, SeasonEditor, ToyOfWeekEditor } from "@/components/AdminExtras";
+import { BulkPriceTool, HolidayEditor, ReviewSettingsEditor, SalesDashboard, SeasonEditor, ToyOfWeekEditor } from "@/components/AdminExtras";
 import type { SeasonSetting } from "@/lib/season";
 import QrCodeCard from "@/components/QrCodeCard";
 import StockEditor from "@/components/StockEditor";
@@ -69,6 +70,7 @@ export default function AdminPage() {
   const [toyOfWeek, setToyOfWeek] = useState<ToyOfWeek>({ productId: "", blurb: "" });
   const [holiday, setHoliday] = useState<HolidayMode>({ enabled: false, until: "", message: "" });
   const [season, setSeason] = useState<SeasonSetting>("auto");
+  const [reviewSettings, setReviewSettings] = useState<ReviewSettings>({ enabled: true, blockedWords: [] });
   // Version of the shop data this page was loaded at; saving checks it.
   const [version, setVersion] = useState<string | null>(null);
   const [savedSnapshot, setSavedSnapshot] = useState("");
@@ -77,7 +79,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<AdminTabId>("products");
   const [storageDown, setStorageDown] = useState(false);
 
-  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText, toyOfWeek, holiday, season };
+  const editable = { products, categories, colors, sizeOptions, settings, banner, heroImage, faqs, socialLinks, homeText, toyOfWeek, holiday, season, reviewSettings };
   const snapshot = JSON.stringify(editable);
   const dirty = status === "authed" && savedSnapshot !== "" && snapshot !== savedSnapshot;
 
@@ -132,6 +134,7 @@ export default function AdminPage() {
     setToyOfWeek(data.toyOfWeek);
     setHoliday(data.holiday);
     setSeason(data.season);
+    setReviewSettings(data.reviewSettings);
   }
 
   async function loadStore() {
@@ -151,6 +154,7 @@ export default function AdminPage() {
       setToyOfWeek(data.toyOfWeek);
       setHoliday(data.holiday);
       setSeason(data.season);
+      setReviewSettings(data.reviewSettings);
       setStorageDown(Boolean(data.storageUnavailable));
       setVersion(data.version);
       setSavedSnapshot(
@@ -168,6 +172,7 @@ export default function AdminPage() {
           toyOfWeek: data.toyOfWeek,
           holiday: data.holiday,
           season: data.season,
+          reviewSettings: data.reviewSettings,
         })
       );
       setSaveState("idle");
@@ -1029,6 +1034,7 @@ export default function AdminPage() {
         </AdminTab>
 
         <AdminTab id="people" current={tab}>
+          <ReviewSettingsEditor value={reviewSettings} onChange={setReviewSettings} />
           <ReviewsModerator products={products} />
           <RewardsMembers />
         </AdminTab>

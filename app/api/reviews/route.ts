@@ -7,7 +7,8 @@ import {
   REVIEW_TEXT_MIN,
   type Review,
 } from "@/lib/product-types";
-import { getActiveProducts } from "@/lib/products";
+import { getActiveProducts, getStoreConfig } from "@/lib/products";
+import { hasRudeWords } from "@/lib/rude-words";
 import { updateReviews } from "@/lib/reviews";
 import { claimReviewPoints } from "@/lib/accounts";
 import { currentAccountId } from "@/lib/user-session";
@@ -49,6 +50,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Please take a moment to write your review." }, { status: 400 });
   }
 
+  const { reviewSettings } = await getStoreConfig();
+  if (!reviewSettings.enabled) {
+    return NextResponse.json({ error: "Reviews are switched off at the moment." }, { status: 403 });
+  }
+
   const name = cleanCustomText(body.name);
   const text = cleanCustomText(body.text);
   const rating = body.rating;
@@ -67,6 +73,10 @@ export async function POST(request: Request) {
   }
   if (LINK_PATTERN.test(name) || LINK_PATTERN.test(text)) {
     return NextResponse.json({ error: "Links aren't allowed in reviews." }, { status: 400 });
+  }
+
+  if (hasRudeWords(name, reviewSettings.blockedWords) || hasRudeWords(text, reviewSettings.blockedWords)) {
+    return NextResponse.json({ error: "Please keep it friendly – that review has words we don't allow." }, { status: 400 });
   }
 
   let productId = "";

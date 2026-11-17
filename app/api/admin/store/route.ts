@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/auth";
 import { StoreConflictError } from "@/lib/store";
 import { isSeasonSetting } from "@/lib/season";
+import { cleanBlockedWords } from "@/lib/rude-words";
 import {
   isValidStock,
   MAX_GALLERY_PHOTOS,
@@ -90,6 +91,11 @@ function validateExtras(body: StorePayload): string | null {
   }
 
   if (!isSeasonSetting(body.season)) return "Invalid season setting.";
+
+  const { reviewSettings } = body;
+  if (!reviewSettings || typeof reviewSettings.enabled !== "boolean" || !Array.isArray(reviewSettings.blockedWords)) {
+    return "Invalid review settings.";
+  }
 
   if (!socialLinks || typeof socialLinks !== "object") return "Invalid social links.";
   for (const network of SOCIAL_NETWORKS) {
@@ -225,6 +231,10 @@ export async function PUT(request: Request) {
       socialLinks: body.socialLinks!,
       toyOfWeek: { productId: body.toyOfWeek!.productId, blurb: body.toyOfWeek!.blurb.trim().slice(0, 200) },
       season: body.season!,
+      reviewSettings: {
+        enabled: body.reviewSettings!.enabled,
+        blockedWords: cleanBlockedWords(body.reviewSettings!.blockedWords),
+      },
       holiday: {
         enabled: body.holiday!.enabled,
         until: body.holiday!.until,
